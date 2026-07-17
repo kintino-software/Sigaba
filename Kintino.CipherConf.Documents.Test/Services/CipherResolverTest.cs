@@ -1,15 +1,16 @@
 ﻿using Kintino.CipherConf.Documents.Services.Json;
-using Kintino.CipherConf.Documents.TestHelpers;
+using System.IO.Abstractions.TestingHelpers;
 
 namespace Kintino.CipherConf.Documents.Services;
 
-public class CipherResolverTest : BaseTest
+public class CipherResolverTest
 {
     private readonly JsonDocumentCipher jsonDocumentCipher = new(Substitute.For<IValueCipher>());
+    private readonly MockFileSystem fs = new();
 
     private ICipherResolver CreateService(params IDocumentCipher[] availableDocumentCiphers)
     {
-        return new CipherResolver(availableDocumentCiphers, this.Fs);
+        return new CipherResolver(availableDocumentCiphers, fs);
     }
 
     // Resolve

@@ -1,4 +1,4 @@
-﻿using Kintino.CipherConf.App.Primitives;
+﻿using Kintino.CipherConf.Primitives;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 

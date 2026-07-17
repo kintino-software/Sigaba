@@ -1,25 +1,23 @@
-﻿using Kintino.CipherConf.App.Dependencies;
-using Kintino.CipherConf.App.Models;
-using Kintino.CipherConf.App.Primitives;
+﻿using Kintino.CipherConf.Crypto;
+using Kintino.CipherConf.Models;
+using Kintino.CipherConf.Primitives;
 
 namespace Kintino.CipherConf.App.Services;
 
 internal class Facade(IAsymmetricCipher asymmetricCipher, IRandomKeyGenerator randomKeyGenerator) : IFacade
 {
-    PlainKey IFacade.DecryptKeyFromContext(Context context)
+    PlainKey IFacade.DecryptKeyFromContext(IContext context)
     {
-        var cryptoBytes = new CryptoBytes(context.Key.Bytes);
-        var plainBytes = asymmetricCipher.Decrypt(cryptoBytes, context.PrivateKey);
-        return new PlainKey(plainBytes.Bytes);
+        var encryptedData = new EncryptedData(context.Key.Bytes);
+        var plainData = asymmetricCipher.Decrypt(encryptedData, context.PrivateKey);
+        return new PlainKey(plainData);
     }
 
-    (PublicKey, PrivateKey, CryptoKey) IFacade.CreateContextKeys()
+    (PublicKey, PrivateKey, EncryptedKey) IFacade.CreateContextKeys()
     {
-        asymmetricCipher.CreateNewKeyPair(out var publicKey, out var privateKey);
+        var (publicKey, privateKey) = asymmetricCipher.CreateNewKeyPair();
         var plainKey = randomKeyGenerator.GenerateNewKey();
-        var plainBytes = new PlainBytes(plainKey.Bytes);
-        var cryptoBytes = asymmetricCipher.Encrypt(plainBytes, publicKey);
-        var cryptoKey = new CryptoKey(cryptoBytes.Bytes);
-        return (publicKey, privateKey, cryptoKey);
+        var encryptedData = asymmetricCipher.Encrypt(new PlainData(plainKey.Bytes), publicKey);
+        return (publicKey, privateKey, new EncryptedKey(encryptedData));
     }
 }

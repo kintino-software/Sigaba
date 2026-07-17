@@ -1,4 +1,8 @@
 <Solution>
+  <Folder Name="/01 Common/">
+    <Project Path="Kintino.CipherConf.Abstractions/Kintino.CipherConf.Abstractions.csproj" Id="95254681-ab9b-4d9c-8851-a1e82e66a800" />
+    <Project Path="Kintino.CipherConfig.Test.Helpers/Kintino.CipherConfig.Test.Helpers.csproj" Id="04c890e9-28c6-4ba0-9f92-32f97edbf7ff" />
+  </Folder>
   <Folder Name="/App/">
     <Project Path="Kintino.CipherConf.App.Test/Kintino.CipherConf.App.Test.csproj" Id="74e1df41-31e4-40e9-bfe9-17fb8ea497d1" />
     <Project Path="Kintino.CipherConf.App/Kintino.CipherConf.App.csproj" Id="605781c5-76f2-46a4-b11e-5173cf641776" />

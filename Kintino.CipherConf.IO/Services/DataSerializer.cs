@@ -1,5 +1,5 @@
-﻿using Kintino.CipherConf.App.Primitives;
-using Kintino.CipherConf.IO.Primitives;
+﻿using Kintino.CipherConf.IO.Primitives;
+using Kintino.CipherConf.Primitives;
 using System.Text.Json;
 
 namespace Kintino.CipherConf.IO.Services;
@@ -25,33 +25,11 @@ internal class DataSerializer : IDataSerializer
         return toolSettings;
     }
 
-    PublicKey IDataSerializer.DeserializePublicKey(string str)
-    {
-        var string64 = new String64(str);
-        var bytes = string64.AsBytes();
-        var publicKey = new PublicKey(bytes);
-        return publicKey;
-    }
+    PublicKey IDataSerializer.DeserializePublicKey(string str) => new(new PlainData(str.FromBase64String()));
 
-    string IDataSerializer.SerializePublicKey(PublicKey publicKey)
-    {
-        var string64 = publicKey.Bytes.AsBase64();
-        return string64.Value;
-    }
+    string IDataSerializer.SerializePublicKey(PublicKey publicKey) => publicKey.Bytes.ToBase64String();
 
-    PrivateKey IDataSerializer.DeserializePrivateKey(string str)
-    {
-        var string64 = new String64(str);
-        var bytes = string64.AsBytes();
-        var privateKey = new PrivateKey(bytes);
-        return privateKey;
-    }
+    PrivateKey IDataSerializer.DeserializePrivateKey(string str) => new(new PlainData(str.FromBase64String()));
 
-    string IDataSerializer.SerializePrivateKey(PrivateKey privateKey)
-    {
-        var string64 = privateKey.Bytes.AsBase64();
-        return string64.Value;
-    }
-
-
+    string IDataSerializer.SerializePrivateKey(PrivateKey privateKey) => privateKey.Bytes.ToBase64String();
 }

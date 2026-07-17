@@ -1,35 +1,36 @@
-﻿using Kintino.CipherConf.App.Primitives;
+﻿using Kintino.CipherConf.Primitives;
 using System.Text.Json;
 
 namespace Kintino.CipherConf.Documents.Models;
 
-internal record CipherPack(CryptoBytes CipherBytes, Nonce Nonce, JsonValueKind ValueKind, int Version)
+internal record CipherPack(EncryptedData EncryptedData, Nonce Nonce, JsonValueKind ValueKind, int Version)
 {
     public const char Separator = '.';
+
+    public string Pack()
+    {
+        var nonceStr = Nonce.Bytes.ToBase64String();                 // 0: nonce
+        var encryptedDataStr = EncryptedData.Bytes.ToBase64String(); // 1: encrypted data
+        var valueKindStr = ValueKind.ToString();                     // 2: value kind
+        var versionStr = Version.ToString();                         // 3: version
+        return $"{nonceStr}{Separator}{encryptedDataStr}{Separator}{valueKindStr}{Separator}{versionStr}";
+    }
 
     public static CipherPack Unpack(string package)
     {
         var parts = package.Split(Separator);
-        if (parts.Length != 4)
+        if (parts.Length != 4) // 4 components
         {
             throw new InvalidOperationException("Invalid package format");
         }
 
-        var nonce = new Nonce(new String64(parts[0]).AsBytes());
-        var cipherBytes = new CryptoBytes(new String64(parts[1]).AsBytes());
-        var valueKind = Enum.Parse<JsonValueKind>(parts[2]);
-        var version = int.Parse(parts[3]);
+        var nonce = new Nonce(new PlainData(parts[0].FromBase64String())); // 0: nonce
+        var encriptedData = new EncryptedData(parts[1].FromBase64String());  // 1: encrypted data
+        var valueKind = Enum.Parse<JsonValueKind>(parts[2]);               // 2: value kind
+        var version = int.Parse(parts[3]);                                 // 3: version
 
-        return new CipherPack(cipherBytes, nonce, valueKind, version);
+        return new CipherPack(encriptedData, nonce, valueKind, version);
     }
 
-    public string Pack()
-    {
-        // convert all values explictly to avoid any implicit conversion issues
-        var nonceBase64 = Nonce.Bytes.AsBase64();
-        var cipherBytesBase64 = CipherBytes.Bytes.AsBase64();
-        var valueKindString = ValueKind.ToString();
-        var versionString = Version.ToString();
-        return $"{nonceBase64}{Separator}{cipherBytesBase64}{Separator}{valueKindString}{Separator}{versionString}";
-    }
+
 }

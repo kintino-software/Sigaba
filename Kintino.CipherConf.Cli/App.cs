@@ -1,5 +1,4 @@
-﻿using Kintino.CipherConf.App.Dependencies;
-using Kintino.CipherConf.Cli.Adaptors.SpectreConsole;
+﻿using Kintino.CipherConf.Cli.Adaptors.SpectreConsole;
 using Kintino.CipherConf.Cli.Commands;
 using Kintino.CipherConf.Cli.DependencyInjection;
 using Spectre.Console.Cli;

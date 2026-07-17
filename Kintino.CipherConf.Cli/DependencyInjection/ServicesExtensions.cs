@@ -1,5 +1,4 @@
-﻿using Kintino.CipherConf.App.Dependencies;
-using Kintino.CipherConf.App.DependencyInjection;
+﻿using Kintino.CipherConf.App.DependencyInjection;
 using Kintino.CipherConf.Crypto.DependencyInjection;
 using Kintino.CipherConf.Documents.DependencyInjection;
 using Kintino.CipherConf.IO.DependencyInjection;

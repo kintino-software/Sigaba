@@ -1,5 +1,5 @@
 ﻿
-using Kintino.CipherConf.App.Primitives;
+using Kintino.CipherConf.Primitives;
 
 namespace Kintino.CipherConf.Documents.Services;
 

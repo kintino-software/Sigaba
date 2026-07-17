@@ -1,7 +1,7 @@
-﻿using Kintino.CipherConf.App.Dependencies;
-using Kintino.CipherConf.Documents.Services;
+﻿using Kintino.CipherConf.Documents.Services;
 using Kintino.CipherConf.Documents.Services.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Kintino.CipherConf.Documents.Implementations;
 
 namespace Kintino.CipherConf.Documents.DependencyInjection;
 

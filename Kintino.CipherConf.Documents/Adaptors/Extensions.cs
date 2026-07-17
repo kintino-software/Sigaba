@@ -10,6 +10,11 @@ internal static class Extensions
         {
             return Encoding.UTF8.GetBytes(str);
         }
+
+        public byte[] FromBase64String()
+        {
+            return Convert.FromBase64String(str);
+        }
     }
 
     extension(byte[] data)
@@ -17,6 +22,11 @@ internal static class Extensions
         public string ToUTF8String()
         {
             return Encoding.UTF8.GetString(data);
+        }
+
+        public string ToBase64String()
+        {
+            return Convert.ToBase64String(data);
         }
     }
 }

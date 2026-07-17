@@ -1,5 +1,4 @@
-﻿using Kintino.CipherConf.Crypto.Primitives;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 
 namespace Kintino.CipherConf.Crypto.Services.Algos;
 
@@ -10,7 +9,7 @@ internal static class AESCipher
     public static byte[] Encrypt(byte[] plainData, byte[] key, byte[] nonce)
     {
         if (plainData == null || plainData.Length == 0)
-            throw new CryptoException("Cannot encrypt null or empty data.");
+            throw new ArgumentException("Cannot encrypt null or empty data.", nameof(plainData));
 
         byte[] cipher = new byte[plainData.Length];
         byte[] tag = new byte[TagSize];
@@ -24,7 +23,7 @@ internal static class AESCipher
         }
         catch (Exception ex) when (ex is CryptographicException)
         {
-            throw new CryptoException("Could not encrypt data.", ex);
+            throw new Exception("Could not encrypt data.", ex);
         }
 
     }
@@ -43,7 +42,7 @@ internal static class AESCipher
         }
         catch (Exception ex) when (ex is CryptographicException || ex is AuthenticationTagMismatchException)
         {
-            throw new CryptoException("Decryption failed.", ex);
+            throw new Exception("Decryption failed.", ex);
         }
 
     }

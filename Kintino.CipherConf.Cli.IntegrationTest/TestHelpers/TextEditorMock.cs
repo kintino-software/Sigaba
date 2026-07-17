@@ -1,5 +1,4 @@
-﻿using Kintino.CipherConf.App.Dependencies;
-
+﻿
 namespace Kintino.CipherConf.Cli.TestHelpers;
 
 public class TextEditorMock : ITextEditor

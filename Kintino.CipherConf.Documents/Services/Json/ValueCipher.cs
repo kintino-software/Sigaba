@@ -1,6 +1,6 @@
-﻿using Kintino.CipherConf.App.Dependencies;
-using Kintino.CipherConf.App.Primitives;
+﻿using Kintino.CipherConf.Crypto;
 using Kintino.CipherConf.Documents.Models;
+using Kintino.CipherConf.Primitives;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -33,7 +33,7 @@ internal class ValueCipher(ISymmetricCipher symmetricCipher, INonceGenerator non
         var jsonPack = originalEncryptedJsonValue.GetValue<string>();
         var pack = CipherPack.Unpack(EncUnwrap(jsonPack));
         AssertCorrectVersion(pack.Version);
-        var jsonNode = Decrypt(pack.CipherBytes, key, pack.Nonce);
+        var jsonNode = Decrypt(pack.EncryptedData, key, pack.Nonce);
         AssertCorrectType(pack.ValueKind, jsonNode);
         return jsonNode;
     }
@@ -53,17 +53,17 @@ internal class ValueCipher(ISymmetricCipher symmetricCipher, INonceGenerator non
 
     // helper methods
 
-    private CryptoBytes Encrypt(JsonNode? jsonNode, PlainKey key, Nonce nonce)
+    private EncryptedData Encrypt(JsonNode? jsonNode, PlainKey key, Nonce nonce)
     {
         var plainJsonString = jsonNode?.ToJsonString(serializerOptions) ?? JsonStringForNullValue;
-        var plainBytes = new PlainBytes(plainJsonString.ToUTF8Bytes());
+        var plainBytes = new PlainData(plainJsonString.ToUTF8Bytes());
         return symmetricCipher.Encrypt(key, plainBytes, nonce);
     }
 
-    private JsonNode? Decrypt(CryptoBytes cipherBytes, PlainKey key, Nonce nonce)
+    private JsonNode? Decrypt(EncryptedData encryptedData, PlainKey key, Nonce nonce)
     {
-        var plainBytes = symmetricCipher.Decrypt(key, cipherBytes, nonce);
-        var jsonStr = plainBytes.Bytes.Value.ToUTF8String();
+        var plainBytes = symmetricCipher.Decrypt(key, encryptedData, nonce);
+        var jsonStr = plainBytes.Bytes.ToUTF8String();
         var plainNode = JsonNode.Parse(JsonSerializer.Deserialize<string>(jsonStr)!);
         return plainNode;
     }

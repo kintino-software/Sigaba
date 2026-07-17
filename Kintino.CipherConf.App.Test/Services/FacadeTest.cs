@@ -1,10 +1,15 @@
-﻿using Kintino.CipherConf.App.Models;
-using Kintino.CipherConf.App.Primitives;
+﻿
+using Kintino.CipherConf.Crypto;
+using Kintino.CipherConf.Primitives;
+using Kintino.CipherConfig;
 
 namespace Kintino.CipherConf.App.Services;
 
-public class FacadeTest : BaseTest
+public class FacadeTest
 {
+    private readonly IAsymmetricCipher AsymmetricCipher = Substitute.For<IAsymmetricCipher>();
+    private readonly IRandomKeyGenerator RandomKeyGenerator = Substitute.For<IRandomKeyGenerator>();
+
     private IFacade CreateService()
     {
         return new Facade(this.AsymmetricCipher, this.RandomKeyGenerator);
@@ -17,9 +22,9 @@ public class FacadeTest : BaseTest
     {
         var publicKey = PublicKey.FakePublicKey();
         var privateKey = PrivateKey.FakePrivateKey();
-        var cryptoBytes = CryptoBytes.FakeCryptoBytes();
+        var cryptoBytes = EncryptedData.FakeEncryptedData();
         var randonPlainKey = PlainKey.FakePlainKey();
-        this.AsymmetricCipher.MockKeysGeneration(publicKey, privateKey);
+        this.AsymmetricCipher.CreateNewKeyPair().Returns((publicKey, privateKey));
         this.RandomKeyGenerator.GenerateNewKey().Returns(randonPlainKey);
         this.AsymmetricCipher.Encrypt(default, default).ReturnsForAnyArgs(cryptoBytes);
         var service = CreateService();
@@ -36,14 +41,14 @@ public class FacadeTest : BaseTest
     [Fact]
     public void Should_get_plain_key_from_context()
     {
-        var decryptedPlainBytes = PlainBytes.FakePlainBytes();
-        var context = Context.FakeContext();
+        var decryptedPlainBytes = PlainData.FakePlainData();
+        var context = new FakeContext();
         this.AsymmetricCipher.Decrypt(default, default).ReturnsForAnyArgs(decryptedPlainBytes);
         var service = CreateService();
 
         var plainKey = service.DecryptKeyFromContext(context);
 
-        plainKey.Should().BeEquivalentTo(new PlainKey(decryptedPlainBytes.Bytes));
+        plainKey.Should().BeEquivalentTo(new PlainKey(decryptedPlainBytes));
 
     }
 }

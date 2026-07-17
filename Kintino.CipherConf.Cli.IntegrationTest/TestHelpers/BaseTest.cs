@@ -1,5 +1,4 @@
-﻿using Kintino.CipherConf.App.Dependencies;
-using System.IO.Abstractions.TestingHelpers;
+﻿using System.IO.Abstractions.TestingHelpers;
 using System.Text.Json;
 
 namespace Kintino.CipherConf.Cli.TestHelpers;

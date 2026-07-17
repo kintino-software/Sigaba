@@ -1,17 +1,19 @@
-﻿using Kintino.CipherConf.App.Primitives;
-using Kintino.CipherConf.Documents.TestHelpers;
+﻿using Kintino.CipherConf.Primitives;
+using Kintino.CipherConfig;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace Kintino.CipherConf.Documents.Services.Json;
 
-public class ValueCipherTest : BaseTest
+public class ValueCipherTest
 {
     private readonly PlainKey key = PlainKey.FakePlainKey();
+    private readonly FakeSymmetricCipher symmetricCipher = new();
+    private readonly FakeNonceGenerator nonceGenerator = new();
 
     private IValueCipher CreateService()
     {
-        return new ValueCipher(this.SymmetricCipherMock, this.NonceGeneratorMock);
+        return new ValueCipher(symmetricCipher, nonceGenerator);
     }
 
     // CreateEncryptedValue

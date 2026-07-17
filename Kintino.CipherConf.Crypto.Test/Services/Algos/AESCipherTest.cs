@@ -1,6 +1,4 @@
-﻿using Kintino.CipherConf.Crypto.Primitives;
-
-namespace Kintino.CipherConf.Crypto.Services.Algos;
+﻿namespace Kintino.CipherConf.Crypto.Services.Algos;
 
 public class AESCipherTest : BaseTest
 {
@@ -10,7 +8,7 @@ public class AESCipherTest : BaseTest
     public void Should_decrypt_encrypted_value()
     {
         var key = KeyGenerator.GenerateKey();
-        var nonce = NonceGenerator.GenerateNonce();
+        var nonce = RandomNonceGenerator.GenerateNonce();
         var plain = this.GetRandomBytes();
         var secret = AESCipher.Encrypt(plain, key, nonce);
 
@@ -23,14 +21,14 @@ public class AESCipherTest : BaseTest
     public void Should_throw_exception_when_decrypting_with_invalid_key()
     {
         var key = KeyGenerator.GenerateKey();
-        var nonce = NonceGenerator.GenerateNonce();
+        var nonce = RandomNonceGenerator.GenerateNonce();
         var plain = this.GetRandomBytes();
         var secret = AESCipher.Encrypt(plain, key, nonce);
         var invalidKey = KeyGenerator.GenerateKey();
 
         var act = () => AESCipher.Decrypt(secret, invalidKey, nonce);
 
-        act.Should().Throw<CryptoException>("Decryption failed.");
+        act.Should().Throw<Exception>().WithMessage("Decryption failed.");
     }
 
     // Encrypt
@@ -39,7 +37,7 @@ public class AESCipherTest : BaseTest
     public void Should_generate_same_encrypted_values_for_same_input_and_nonce()
     {
         var key = KeyGenerator.GenerateKey();
-        var nonce = NonceGenerator.GenerateNonce();
+        var nonce = RandomNonceGenerator.GenerateNonce();
         var plain = this.GetRandomBytes();
 
         var secret1 = AESCipher.Encrypt(plain, key, nonce);
@@ -52,8 +50,8 @@ public class AESCipherTest : BaseTest
     public void Should_generate_different_encrypted_values_for_same_input_and_different_nonce()
     {
         var key = KeyGenerator.GenerateKey();
-        var nonce1 = NonceGenerator.GenerateNonce();
-        var nonce2 = NonceGenerator.GenerateNonce();
+        var nonce1 = RandomNonceGenerator.GenerateNonce();
+        var nonce2 = RandomNonceGenerator.GenerateNonce();
         var plain = this.GetRandomBytes();
 
         var secret1 = AESCipher.Encrypt(plain, key, nonce1);

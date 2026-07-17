@@ -43,6 +43,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kintino.CipherConf.IO\Kintino.CipherConf.IO.csproj" />
+    <ProjectReference Include="..\Kintino.CipherConfig.Test.Helpers\Kintino.CipherConfig.Test.Helpers.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>

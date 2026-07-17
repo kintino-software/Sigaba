@@ -1,21 +1,22 @@
-﻿using Kintino.CipherConf.App.Primitives;
-using Kintino.CipherConf.Documents.TestHelpers;
+﻿using Kintino.CipherConf.Primitives;
+using Kintino.CipherConfig;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace Kintino.CipherConf.Documents.Services.Json;
 
-public class JsonDocumentCipherTest : BaseTest
+public class JsonDocumentCipherTest
 {
-    private readonly PlainKey plainKey = PlainKey.FakePlainKey();
     private readonly IValueCipher valueCipher;
+    private readonly FakeSymmetricCipher symmetricCipher = new();
+    private readonly FakeNonceGenerator nonceGenerator = new();
 
     public JsonDocumentCipherTest()
     {
         // integrating with the real ValueCipher implementation because:
         // 1. value cipher and document cipher must work really close together
         // 2. mocking value cipher with json edge cases is too complex and error-prone
-        valueCipher = new ValueCipher(this.SymmetricCipherMock, this.NonceGeneratorMock);
+        valueCipher = new ValueCipher(symmetricCipher, nonceGenerator);
     }
 
     private IDocumentCipher CreateService()
@@ -47,7 +48,7 @@ public class JsonDocumentCipherTest : BaseTest
 
         //
 
-        var result = service.Encrypt(plainKey, json, null);
+        var result = service.Encrypt(PlainKey.FakePlainKey(), json, null);
 
         //
 
@@ -69,7 +70,7 @@ public class JsonDocumentCipherTest : BaseTest
 
         //
 
-        var result = service.Encrypt(plainKey, plain, p => p == "email");
+        var result = service.Encrypt(PlainKey.FakePlainKey(), plain, p => p == "email");
 
         //
         var rootNode = JsonNode.Parse(result);
@@ -89,11 +90,11 @@ public class JsonDocumentCipherTest : BaseTest
         }
         """;
         var service = CreateService();
-        var encrypted = service.Encrypt(plainKey, original, null);
+        var encrypted = service.Encrypt(PlainKey.FakePlainKey(), original, null);
 
         //
 
-        var result = service.Decrypt(plainKey, encrypted);
+        var result = service.Decrypt(PlainKey.FakePlainKey(), encrypted);
 
         //
 
@@ -135,6 +136,7 @@ public class JsonDocumentCipherTest : BaseTest
             }
         }
         """;
+        var plainKey = PlainKey.FakePlainKey();
         var service = CreateService();
 
         //

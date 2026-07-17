@@ -12,7 +12,6 @@
   <ItemGroup>
     <Using Include="AwesomeAssertions" />
     <Using Include="NSubstitute" />
-    <Using Include="Kintino.CipherConf.App.TestHelpers" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,6 +39,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kintino.CipherConf.App\Kintino.CipherConf.App.csproj" />
+    <ProjectReference Include="..\Kintino.CipherConfig.Test.Helpers\Kintino.CipherConfig.Test.Helpers.csproj" />
   </ItemGroup>
 
   <ItemGroup>

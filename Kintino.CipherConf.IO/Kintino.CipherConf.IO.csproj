@@ -12,10 +12,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Using Include="Kintino.CipherConf.IO.Adaptors"/>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="System.IO.Abstractions" Version="22.2.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Kintino.CipherConf.Abstractions\Kintino.CipherConf.Abstractions.csproj" />
     <ProjectReference Include="..\Kintino.CipherConf.App\Kintino.CipherConf.App.csproj" />
   </ItemGroup>
 
