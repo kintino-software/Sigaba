@@ -1,5 +1,4 @@
-﻿using Kintino.CipherConf.Crypto.Services.Algos;
-namespace Kintino.CipherConf.Crypto.Services.Algos;
+﻿namespace Kintino.CipherConf.Crypto.Services.Algos;
 
 internal static class KeyGenerator
 {

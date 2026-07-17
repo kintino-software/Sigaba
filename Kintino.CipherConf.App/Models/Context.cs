@@ -1,5 +1,5 @@
-﻿using System.Text.RegularExpressions;
-using Kintino.CipherConf.App.Primitives;
+﻿using Kintino.CipherConf.App.Primitives;
+using System.Text.RegularExpressions;
 
 namespace Kintino.CipherConf.App.Models;
 

@@ -1,5 +1,4 @@
 ﻿using System.Text.RegularExpressions;
-using Kintino.CipherConf.App.Dependencies;
 
 namespace Kintino.CipherConf.App.Dependencies;
 

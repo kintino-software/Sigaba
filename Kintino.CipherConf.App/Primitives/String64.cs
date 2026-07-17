@@ -1,5 +1,4 @@
 ﻿using System.Buffers.Text;
-using Kintino.CipherConf.App.Primitives;
 
 namespace Kintino.CipherConf.App.Primitives;
 

@@ -1,5 +1,5 @@
-﻿using System.Security.Cryptography;
-using Kintino.CipherConf.Crypto.Primitives;
+﻿using Kintino.CipherConf.Crypto.Primitives;
+using System.Security.Cryptography;
 
 namespace Kintino.CipherConf.Crypto.Services.Algos;
 

@@ -1,6 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Kintino.CipherConf.App.Dependencies;
+﻿using Kintino.CipherConf.App.Dependencies;
 using Kintino.CipherConf.App.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Kintino.CipherConf.App.DependencyInjection;
 

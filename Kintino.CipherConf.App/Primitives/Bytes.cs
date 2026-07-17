@@ -1,6 +1,4 @@
-﻿using Kintino.CipherConf.App.Primitives;
-
-namespace Kintino.CipherConf.App.Primitives;
+﻿namespace Kintino.CipherConf.App.Primitives;
 
 public record Bytes // TODO rename to PlainBytes or RawBytes to avoid confusion with CryptoBytes
 {

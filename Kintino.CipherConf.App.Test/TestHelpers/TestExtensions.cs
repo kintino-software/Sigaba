@@ -1,7 +1,7 @@
-﻿using System.Security.Cryptography;
-using Kintino.CipherConf.App.Dependencies;
+﻿using Kintino.CipherConf.App.Dependencies;
 using Kintino.CipherConf.App.Models;
 using Kintino.CipherConf.App.Primitives;
+using System.Security.Cryptography;
 
 namespace Kintino.CipherConf.App.TestHelpers;
 
