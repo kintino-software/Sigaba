@@ -1,8 +1,8 @@
 ﻿using Kintino.CipherConf.IO.Dependencies;
 
-namespace Kintino.CipherConf.IO.DependencyInjection;
+namespace Kintino.CipherConf.App.DependencyInjection;
 
-public record IOConfiguration : IIOConfiguration
+public partial class AppConfiguration : IIOConfiguration
 {
     public required string PrivateKeyFileName { get; init; }
     public required string PublicKeyFileName { get; init; }

@@ -1,4 +1,4 @@
-﻿namespace Kintino.CipherConf;
+﻿namespace Kintino.CipherConf.App.Services;
 
 public interface IEncryptConfigApp
 {

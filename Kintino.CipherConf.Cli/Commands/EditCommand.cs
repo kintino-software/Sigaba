@@ -6,7 +6,7 @@ using System.IO.Abstractions;
 
 namespace Kintino.CipherConf.Cli.Commands;
 
-internal class EditCommand(IECApp app, IFileSystem fs) : CommandWithGlobalSettings<EditCommand.EditCommandSettings>
+internal class EditCommand(IEncryptConfigApp app, IFileSystem fs) : CommandWithGlobalSettings<EditCommand.EditCommandSettings>
 {
     public class EditCommandSettings : GlobalSettings
     {

@@ -2,6 +2,7 @@
 using Kintino.CipherConf.Crypto.DependencyInjection;
 using Kintino.CipherConf.Documents.DependencyInjection;
 using Kintino.CipherConf.IO.DependencyInjection;
+using Kintino.CipherConf.Tooling;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -19,7 +20,8 @@ internal static class ServicesExtensions
         services.RemoveAll<ITextEditor>();
 
         // solution services
-        services.AddECApp(textEditor);
+        services.AddSingleton<ITextEditor>(textEditor);
+        services.AddApp();
         services.AddECCrypto();
         services.AddECDocuments();
         services.AddECFileSystem(new()

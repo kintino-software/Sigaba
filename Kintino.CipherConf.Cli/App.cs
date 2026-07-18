@@ -1,6 +1,7 @@
 ﻿using Kintino.CipherConf.Cli.Adaptors.SpectreConsole;
 using Kintino.CipherConf.Cli.Commands;
 using Kintino.CipherConf.Cli.DependencyInjection;
+using Kintino.CipherConf.Tooling;
 using Spectre.Console.Cli;
 using System.IO.Abstractions;
 

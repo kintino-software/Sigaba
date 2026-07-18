@@ -5,10 +5,10 @@ using System.IO.Abstractions;
 
 namespace Kintino.CipherConf.Cli.Commands;
 
-internal class InitCommand(IECApp ecapp, IFileSystem fs) : CommandWithGlobalSettings
+internal class InitCommand(IEncryptConfigApp app, IFileSystem fs) : CommandWithGlobalSettings
 {
     protected override Task<int> ExecuteAsync(CommandContext context, GlobalSettings settings, CancellationToken cancellationToken)
     {
-        return TryRunAsync(() => ecapp.Init(GetProjectTargetDir(settings, fs)));
+        return TryRunAsync(() => app.Init(GetProjectTargetDir(settings, fs)));
     }
 }

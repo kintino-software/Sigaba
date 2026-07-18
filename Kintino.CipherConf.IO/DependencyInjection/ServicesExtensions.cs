@@ -7,7 +7,7 @@ namespace Kintino.CipherConf.IO.DependencyInjection;
 
 public static class ServicesExtensions
 {
-    public static IServiceCollection AddECFileSystem(this IServiceCollection services, IOConfiguration configuration)
+    public static IServiceCollection AddECFileSystem(this IServiceCollection services, IIOConfiguration configuration)
     {
         return services
             .AddSingleton<IIOConfiguration>(configuration)

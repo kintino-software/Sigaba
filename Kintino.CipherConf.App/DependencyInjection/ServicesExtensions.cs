@@ -1,15 +1,25 @@
-﻿using Kintino.CipherConf.App.Implementations;
-using Kintino.CipherConf.App.Services;
+﻿using Kintino.CipherConf.App.Services;
+using Kintino.CipherConf.Crypto.DependencyInjection;
+using Kintino.CipherConf.Documents.DependencyInjection;
+using Kintino.CipherConf.IO.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kintino.CipherConf.App.DependencyInjection;
 
 public static class ServicesExtensions
 {
-    public static IServiceCollection AddECApp(this IServiceCollection services)
+    public static IServiceCollection AddApp(this IServiceCollection services, AppConfiguration configuration)
     {
-        return services
+        // modules
+        services
+            .AddECCrypto()
+            .AddECFileSystem(configuration)
+            .AddECDocuments();
+
+        services
             .AddSingleton<IFacade, Facade>()
             .AddSingleton<IEncryptConfigApp, EncryptConfigApp>();
+
+        return services;
     }
 }
