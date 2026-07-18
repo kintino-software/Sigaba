@@ -6,13 +6,6 @@ namespace Kintino.CipherConf.App.Services;
 
 internal class Facade(IAsymmetricCipher asymmetricCipher, IRandomKeyGenerator randomKeyGenerator) : IFacade
 {
-    PlainKey IFacade.DecryptKeyFromContext(IContext context)
-    {
-        var encryptedData = new EncryptedData(context.Key.Bytes);
-        var plainData = asymmetricCipher.Decrypt(encryptedData, context.PrivateKey);
-        return new PlainKey(plainData);
-    }
-
     (PublicKey, PrivateKey, EncryptedKey) IFacade.CreateContextKeys()
     {
         var (publicKey, privateKey) = asymmetricCipher.CreateNewKeyPair();
@@ -20,4 +13,12 @@ internal class Facade(IAsymmetricCipher asymmetricCipher, IRandomKeyGenerator ra
         var encryptedData = asymmetricCipher.Encrypt(new PlainData(plainKey.Bytes), publicKey);
         return (publicKey, privateKey, new EncryptedKey(encryptedData));
     }
+
+    PlainKey IFacade.DecryptKeyFromContext(IContext context)
+    {
+        var encryptedData = new EncryptedData(context.Key.Bytes);
+        var plainData = asymmetricCipher.Decrypt(encryptedData, context.PrivateKey);
+        return new PlainKey(plainData);
+    }
+
 }

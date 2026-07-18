@@ -1,16 +1,27 @@
 ﻿using Kintino.CipherConf.Crypto;
+using Kintino.CipherConf.Documents.TestHelpers;
 using Kintino.CipherConf.Primitives;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace Kintino.CipherConf.Documents.Services.Json;
 
-public class JsonDocumentCipherTest
+public class JsonDocumentCipherTest : BaseTest
 {
-    private readonly IValueCipher valueCipher = Substitute.For<IValueCipher>();
-    private readonly ISymmetricCipher symmetricCipher = Substitute.For<ISymmetricCipher>();
+    private readonly IValueCipher valueCipher;
     private readonly INonceGenerator nonceGenerator = Substitute.For<INonceGenerator>();
     private readonly PlainKey key = new(new([1, 2, 3]));
+    private readonly Nonce nonce = new(new([4, 5, 6]));
+
+    public JsonDocumentCipherTest()
+    {
+        nonceGenerator.NewNonce().Returns(nonce);
+
+        // we use the concrete ValueCipher implementation for testing, because:
+        // 1: mocking it would be cumbersome due to the number of edge cases and behaviors we would need to replicate
+        // 2: it must work really tightly with json document cipher and we want to check its behaviour with complex json documents
+        valueCipher = new ValueCipher(SymmetricCipher, nonceGenerator);
+    }
 
     private IDocumentCipher CreateService()
     {

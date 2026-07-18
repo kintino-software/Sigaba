@@ -10,7 +10,7 @@ public class Init : BaseTest
 
         Fs.File.Exists(Fs.Path.Combine(RootPath, "public.key")).Should().BeTrue();
         Fs.File.Exists(Fs.Path.Combine(RootPath, "private.key")).Should().BeTrue();
-        Fs.File.Exists(Fs.Path.Combine(RootPath, "ec.settings.json")).Should().BeTrue();
+        Fs.File.Exists(Fs.Path.Combine(RootPath, "encryptconfig.json")).Should().BeTrue();
     }
 
     [Theory]
@@ -24,6 +24,6 @@ public class Init : BaseTest
 
         Fs.File.Exists(Fs.Path.Combine(RootPath, "foobar", "public.key")).Should().BeTrue();
         Fs.File.Exists(Fs.Path.Combine(RootPath, "foobar", "private.key")).Should().BeTrue();
-        Fs.File.Exists(Fs.Path.Combine(RootPath, "foobar", "ec.settings.json")).Should().BeTrue();
+        Fs.File.Exists(Fs.Path.Combine(RootPath, "foobar", "encryptconfig.json")).Should().BeTrue();
     }
 }

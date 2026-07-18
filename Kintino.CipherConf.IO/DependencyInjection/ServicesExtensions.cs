@@ -10,6 +10,7 @@ public static class ServicesExtensions
     {
         return services
             .AddSingleton<IIOConfiguration>(configuration)
+            .AddSingleton<IContextFactory, ContextFactory>()
             .AddSingleton<IContextRepository, ContextRepository>()
             .AddSingleton<IFileOperations, FileOperations>();
     }
