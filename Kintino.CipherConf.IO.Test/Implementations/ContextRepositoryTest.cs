@@ -2,7 +2,6 @@
 using Kintino.CipherConf.IO.Services;
 using Kintino.CipherConf.Models;
 using Kintino.CipherConf.Primitives;
-using Kintino.CipherConfig;
 
 namespace Kintino.CipherConf.IO.Implementations;
 
@@ -12,6 +11,9 @@ public class ContextRepositoryTest : BaseTest
     private readonly string configFileName = "config.conf";
     private readonly string privateKeyFileName = "private.priv";
     private readonly string publicKeyFileName = "public.pub";
+    private readonly IContext context = Substitute.For<IContext>();
+    private readonly PrivateKey privateKey = new(new([1, 2, 3]));
+    private readonly PublicKey publicKey = new(new([4, 5, 6]));
 
     private IContextRepository CreateService()
     {
@@ -26,7 +28,6 @@ public class ContextRepositoryTest : BaseTest
     [Fact]
     public async Task Should_create_context_with_initialization_data()
     {
-        var context = new FakeContext();
         var service = this.CreateService();
 
         await service.SaveContext(context, RootPath);
@@ -45,7 +46,6 @@ public class ContextRepositoryTest : BaseTest
     [InlineData("public.pub")]
     public async Task Should_throw_when_creating_context_and_files_already_exist(string fileName)
     {
-        var context = new FakeContext();
         this.Fs.AddFile(Fs.Path.Combine(RootPath, fileName), new MockFileData(string.Empty));
         var service = this.CreateService();
 
@@ -60,18 +60,18 @@ public class ContextRepositoryTest : BaseTest
     [Fact]
     public async Task Should_read_context_from_folder()
     {
-        serializer.DeserializePublicKey(default).ReturnsForAnyArgs(PublicKey.FakePublicKey());
-        serializer.DeserializePrivateKey(default).ReturnsForAnyArgs(PrivateKey.FakePrivateKey());
+        serializer.DeserializePublicKey(default).ReturnsForAnyArgs(publicKey);
+        serializer.DeserializePrivateKey(default).ReturnsForAnyArgs(privateKey);
         serializer.DeserializeToolSettings(default).ReturnsForAnyArgs(ToolSettings.FakeToolSettings());
 
         var service = this.CreateService();
-        var originalContext = new FakeContext();
+        var originalContext = context;
         await service.SaveContext(originalContext, RootPath);
 
-        var context = await service.GetContext(RootPath);
+        var result = await service.GetContext(RootPath);
 
-        context.Should().NotBeNull();
-        context.Should().BeOfType<IContext>();
+        result.Should().NotBeNull();
+        result.Should().BeOfType<IContext>();
         serializer.Received().DeserializePublicKey(Arg.Any<string>());
         serializer.Received().DeserializePrivateKey(Arg.Any<string>());
         serializer.Received().DeserializeToolSettings(Arg.Any<string>());
@@ -93,7 +93,6 @@ public class ContextRepositoryTest : BaseTest
     public async Task Should_return_true_when_context_exists()
     {
         var service = this.CreateService();
-        var context = new FakeContext();
         await service.SaveContext(context, RootPath);
 
         var result = await service.HasContext(RootPath);

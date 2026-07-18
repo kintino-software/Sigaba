@@ -1,4 +1,7 @@
-﻿using Kintino.CipherConf.Tooling;
+﻿using Kintino.CipherConf.App.Dependencies;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Text.Json;
 
@@ -20,7 +23,13 @@ public abstract class BaseTest
         Fs.Directory.SetCurrentDirectory(RootPath);
     }
 
-    protected App CreateApp() => new(Fs, TextEditor);
+    protected CliApp CreateApp() => new((services) =>
+    {
+        services.RemoveAll<ITextEditor>();
+        services.RemoveAll<IFileSystem>();
+        services.AddSingleton<ITextEditor>(TextEditor);
+        services.AddSingleton<IFileSystem>(Fs);
+    });
 
     protected async Task<string> GetPropertyFromJsonDocument(string filePath, string propertyName)
     {

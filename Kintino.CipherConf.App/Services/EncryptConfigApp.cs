@@ -1,7 +1,7 @@
 ﻿using Kintino.CipherConf.Crypto;
 using Kintino.CipherConf.Documents;
 using Kintino.CipherConf.IO;
-using Kintino.CipherConf.Tooling;
+using Kintino.CipherConf.App.Dependencies;
 
 namespace Kintino.CipherConf.App.Services;
 

@@ -1,11 +1,10 @@
-﻿using Kintino.CipherConf.App.Services;
+﻿using Kintino.CipherConf.App.Dependencies;
+using Kintino.CipherConf.App.Services;
 using Kintino.CipherConf.Crypto;
 using Kintino.CipherConf.Documents;
 using Kintino.CipherConf.IO;
 using Kintino.CipherConf.Models;
 using Kintino.CipherConf.Primitives;
-using Kintino.CipherConf.Tooling;
-using Kintino.CipherConfig;
 
 namespace Kintino.CipherConf.App.Implementations;
 
@@ -18,6 +17,7 @@ public class EncryptConfigAppTest
     private readonly IFileCipher FileCipher = Substitute.For<IFileCipher>();
     private readonly IContextRepository ContextRepository = Substitute.For<IContextRepository>();
     private readonly IFacade Facade = Substitute.For<IFacade>();
+    private readonly IContext context = Substitute.For<IContext>();
 
     private IEncryptConfigApp CreateService()
     {
@@ -65,7 +65,6 @@ public class EncryptConfigAppTest
     {
         this.ContextRepository.HasContext(default).ReturnsForAnyArgs(false);
         this.FileOperations.GetFilesFromDirectory(default, default).ReturnsForAnyArgs(["file1.txt", "file2.txt"]);
-        var context = new FakeContext();
 
         var service = CreateService();
 

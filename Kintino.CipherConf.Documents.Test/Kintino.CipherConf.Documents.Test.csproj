@@ -40,7 +40,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kintino.CipherConf.Documents\Kintino.CipherConf.Documents.csproj" />
-    <ProjectReference Include="..\Kintino.CipherConfig.Test.Helpers\Kintino.CipherConfig.Test.Helpers.csproj" />
   </ItemGroup>
 
   <ItemGroup>

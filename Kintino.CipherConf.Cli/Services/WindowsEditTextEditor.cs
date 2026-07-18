@@ -1,4 +1,4 @@
-﻿using Kintino.CipherConf.Tooling;
+﻿using Kintino.CipherConf.App.Dependencies;
 using System.Text;
 
 namespace Kintino.CipherConf.Cli.Services;
@@ -15,11 +15,9 @@ internal class WindowsEditTextEditor : ITextEditor
             .WithStandardErrorPipe(CliWrap.PipeTarget.ToStringBuilder(sb))
             .ExecuteAsync();
 
-
         if (!result.IsSuccess)
         {
             throw new InvalidOperationException(sb.ToString());
         }
-
     }
 }

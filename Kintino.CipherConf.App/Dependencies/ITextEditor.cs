@@ -1,4 +1,4 @@
-﻿namespace Kintino.CipherConf.Tooling;
+﻿namespace Kintino.CipherConf.App.Dependencies;
 
 /// <summary>
 /// Abstraction for a text editor that can be used to edit files. 

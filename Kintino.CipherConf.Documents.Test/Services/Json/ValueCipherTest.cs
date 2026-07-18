@@ -1,5 +1,5 @@
-﻿using Kintino.CipherConf.Primitives;
-using Kintino.CipherConfig;
+﻿using Kintino.CipherConf.Crypto;
+using Kintino.CipherConf.Primitives;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -7,9 +7,9 @@ namespace Kintino.CipherConf.Documents.Services.Json;
 
 public class ValueCipherTest
 {
-    private readonly PlainKey key = PlainKey.FakePlainKey();
-    private readonly FakeSymmetricCipher symmetricCipher = new();
-    private readonly FakeNonceGenerator nonceGenerator = new();
+    private readonly PlainKey key = new(new([1, 2, 3]));
+    private readonly ISymmetricCipher symmetricCipher = Substitute.For<ISymmetricCipher>();
+    private readonly INonceGenerator nonceGenerator = Substitute.For<INonceGenerator>();
 
     private IValueCipher CreateService()
     {

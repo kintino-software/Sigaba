@@ -1,16 +1,20 @@
 ﻿using Kintino.CipherConf.Primitives;
-using Kintino.CipherConfig;
 using System.Text.Json;
 
 namespace Kintino.CipherConf.Documents.Models;
 
 public class CipherPackTest
 {
+    private static Nonce CreateNonce() => new(new PlainData([1, 2, 3]));
+    private static EncryptedData CreateEncryptedData() => new([1, 2, 3]);
+
+    //
+
     [Fact]
     public void Should_return_string_representation()
     {
-        var nonce = Nonce.FakeNonce();
-        var data = EncryptedData.FakeEncryptedData();
+        var nonce = CreateNonce();
+        var data = CreateEncryptedData();
         var version = 22;
         var type = JsonValueKind.Number;
         var cipherPack = new CipherPack(data, nonce, type, version);
@@ -23,9 +27,9 @@ public class CipherPackTest
     [Fact]
     public void Should_split_all_parts()
     {
-        var expectedNonce = Nonce.FakeNonce();
+        var expectedNonce = CreateNonce();
         var expectedVersion = 22;
-        var expectedData = EncryptedData.FakeEncryptedData();
+        var expectedData = CreateEncryptedData();
         var expectedType = JsonValueKind.String;
         var cipherPack = new CipherPack(expectedData, expectedNonce, expectedType, expectedVersion);
         var merged = cipherPack.Pack();

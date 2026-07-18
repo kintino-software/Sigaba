@@ -1,5 +1,5 @@
-﻿using Kintino.CipherConf.Primitives;
-using Kintino.CipherConfig;
+﻿using Kintino.CipherConf.Crypto;
+using Kintino.CipherConf.Primitives;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -8,8 +8,9 @@ namespace Kintino.CipherConf.Documents.Services.Json;
 public class JsonDocumentCipherTest
 {
     private readonly IValueCipher valueCipher;
-    private readonly FakeSymmetricCipher symmetricCipher = new();
-    private readonly FakeNonceGenerator nonceGenerator = new();
+    private readonly ISymmetricCipher symmetricCipher = Substitute.For<ISymmetricCipher>();
+    private readonly INonceGenerator nonceGenerator = Substitute.For<INonceGenerator>();
+    private readonly PlainKey key = new(new([1, 2, 3]));
 
     public JsonDocumentCipherTest()
     {
@@ -48,7 +49,7 @@ public class JsonDocumentCipherTest
 
         //
 
-        var result = service.Encrypt(PlainKey.FakePlainKey(), json, null);
+        var result = service.Encrypt(key, json, null);
 
         //
 
@@ -70,7 +71,7 @@ public class JsonDocumentCipherTest
 
         //
 
-        var result = service.Encrypt(PlainKey.FakePlainKey(), plain, p => p == "email");
+        var result = service.Encrypt(key, plain, p => p == "email");
 
         //
         var rootNode = JsonNode.Parse(result);
@@ -90,11 +91,11 @@ public class JsonDocumentCipherTest
         }
         """;
         var service = CreateService();
-        var encrypted = service.Encrypt(PlainKey.FakePlainKey(), original, null);
+        var encrypted = service.Encrypt(key, original, null);
 
         //
 
-        var result = service.Decrypt(PlainKey.FakePlainKey(), encrypted);
+        var result = service.Decrypt(key, encrypted);
 
         //
 
@@ -136,13 +137,12 @@ public class JsonDocumentCipherTest
             }
         }
         """;
-        var plainKey = PlainKey.FakePlainKey();
         var service = CreateService();
 
         //
 
-        var cipher = service.Encrypt(plainKey, original, p => p == "password" || p == "tags");
-        var plain = service.Decrypt(plainKey, cipher);
+        var cipher = service.Encrypt(key, original, p => p == "password" || p == "tags");
+        var plain = service.Decrypt(key, cipher);
 
         //
 

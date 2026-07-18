@@ -1,5 +1,5 @@
 ﻿
-using Kintino.CipherConf.Tooling;
+using Kintino.CipherConf.App.Dependencies;
 
 namespace Kintino.CipherConf.Cli.TestHelpers;
 

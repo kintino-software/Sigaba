@@ -8,13 +8,18 @@ namespace Kintino.CipherConf.App.DependencyInjection;
 
 public static class ServicesExtensions
 {
-    public static IServiceCollection AddApp(this IServiceCollection services, AppConfiguration configuration)
+    public static IServiceCollection AddApp(this IServiceCollection services, AppConfiguration configuration, DependencyFactory dependencyFactory)
     {
         // modules
         services
             .AddCryptoModule()
             .AddIOModule(configuration)
             .AddDocumentsModule();
+
+        // dependencies
+        services
+            .AddSingleton(sp => dependencyFactory.TextEditorFactory(sp))
+            .AddSingleton(sp => dependencyFactory.FileSystemFactory(sp));
 
         // internal
         services
