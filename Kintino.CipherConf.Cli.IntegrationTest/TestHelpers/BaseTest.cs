@@ -1,4 +1,5 @@
-﻿using System.IO.Abstractions.TestingHelpers;
+﻿using Kintino.CipherConf.Tooling;
+using System.IO.Abstractions.TestingHelpers;
 using System.Text.Json;
 
 namespace Kintino.CipherConf.Cli.TestHelpers;

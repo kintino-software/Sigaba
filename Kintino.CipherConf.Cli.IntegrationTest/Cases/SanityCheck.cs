@@ -1,4 +1,4 @@
-﻿namespace EC.Cli.Cases;
+﻿namespace Kintino.CipherConf.Cli.Cases;
 
 public class SanityCheck : BaseTest
 {

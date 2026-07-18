@@ -20,7 +20,7 @@ public class App
     {
         CommandApp = SpectreConsoleHelper.CreateCommandApp(services =>
         {
-            services.AddECCli(fs, textEditor);
+            services.AddCli(fs, textEditor);
         });
         CommandApp.Configure(config =>
         {

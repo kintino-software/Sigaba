@@ -1,7 +1,4 @@
 ﻿using Kintino.CipherConf.App.DependencyInjection;
-using Kintino.CipherConf.Crypto.DependencyInjection;
-using Kintino.CipherConf.Documents.DependencyInjection;
-using Kintino.CipherConf.IO.DependencyInjection;
 using Kintino.CipherConf.Tooling;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -12,7 +9,7 @@ namespace Kintino.CipherConf.Cli.DependencyInjection;
 
 internal static class ServicesExtensions
 {
-    public static void AddECCli(this IServiceCollection services, IFileSystem fs, ITextEditor textEditor)
+    public static void AddCli(this IServiceCollection services, IFileSystem fs, ITextEditor textEditor)
     {
 
         // in case any other assembly has already registered the following services, we want to override it with our own instance
@@ -21,10 +18,7 @@ internal static class ServicesExtensions
 
         // solution services
         services.AddSingleton<ITextEditor>(textEditor);
-        services.AddApp();
-        services.AddECCrypto();
-        services.AddECDocuments();
-        services.AddECFileSystem(new()
+        services.AddApp(new()
         {
             PrivateKeyFileName = "private.key",
             PublicKeyFileName = "public.key",

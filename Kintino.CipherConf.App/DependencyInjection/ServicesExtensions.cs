@@ -12,10 +12,11 @@ public static class ServicesExtensions
     {
         // modules
         services
-            .AddECCrypto()
-            .AddECFileSystem(configuration)
-            .AddECDocuments();
+            .AddCryptoModule()
+            .AddIOModule(configuration)
+            .AddDocumentsModule();
 
+        // internal
         services
             .AddSingleton<IFacade, Facade>()
             .AddSingleton<IEncryptConfigApp, EncryptConfigApp>();

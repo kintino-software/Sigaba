@@ -5,7 +5,7 @@ namespace Kintino.CipherConf.Crypto.DependencyInjection;
 
 public static class ServicesExtensions
 {
-    public static IServiceCollection AddECCrypto(this IServiceCollection services)
+    public static IServiceCollection AddCryptoModule(this IServiceCollection services)
     {
         return services
             .AddSingleton<IAsymmetricCipher, AsymmetricCipher>()
