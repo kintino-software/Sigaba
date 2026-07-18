@@ -4,8 +4,9 @@ namespace Kintino.CipherConf.IO.Implementations;
 
 public class FileOperationsTest : BaseTest
 {
+    private readonly IFileFilter fileFilter = Substitute.For<IFileFilter>();
+
     private IFileOperations CreateService() => new FileOperations(Fs);
-    private IFileFilter fileFilter = Substitute.For<IFileFilter>();
 
     // CopyWithOverwrite
 
@@ -41,6 +42,7 @@ public class FileOperationsTest : BaseTest
         this.Fs.AddFile("file1.txt", new MockFileData("Content 1"));
         this.Fs.AddFile("file2.log", new MockFileData("Content 2"));
         this.Fs.AddFile("file3.txt", new MockFileData("Content 3"));
+        fileFilter.Match(default).ReturnsForAnyArgs(ci => ci.Arg<string>().EndsWith(".txt"));
         var service = CreateService();
 
         var files = await service.GetFilesFromDirectory(".", fileFilter);

@@ -7,18 +7,10 @@ namespace Kintino.CipherConf.Documents.Services.Json;
 
 public class JsonDocumentCipherTest
 {
-    private readonly IValueCipher valueCipher;
+    private readonly IValueCipher valueCipher = Substitute.For<IValueCipher>();
     private readonly ISymmetricCipher symmetricCipher = Substitute.For<ISymmetricCipher>();
     private readonly INonceGenerator nonceGenerator = Substitute.For<INonceGenerator>();
     private readonly PlainKey key = new(new([1, 2, 3]));
-
-    public JsonDocumentCipherTest()
-    {
-        // integrating with the real ValueCipher implementation because:
-        // 1. value cipher and document cipher must work really close together
-        // 2. mocking value cipher with json edge cases is too complex and error-prone
-        valueCipher = new ValueCipher(symmetricCipher, nonceGenerator);
-    }
 
     private IDocumentCipher CreateService()
     {

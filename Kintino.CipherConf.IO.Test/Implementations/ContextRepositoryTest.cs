@@ -1,5 +1,4 @@
-﻿using Kintino.CipherConf.IO.Primitives;
-using Kintino.CipherConf.IO.Services;
+﻿using Kintino.CipherConf.IO.Models;
 using Kintino.CipherConf.Models;
 using Kintino.CipherConf.Primitives;
 
@@ -7,37 +6,43 @@ namespace Kintino.CipherConf.IO.Implementations;
 
 public class ContextRepositoryTest : BaseTest
 {
-    private readonly IDataSerializer serializer = Substitute.For<IDataSerializer>();
     private readonly string configFileName = "config.conf";
     private readonly string privateKeyFileName = "private.priv";
     private readonly string publicKeyFileName = "public.pub";
-    private readonly IContext context = Substitute.For<IContext>();
-    private readonly PrivateKey privateKey = new(new([1, 2, 3]));
-    private readonly PublicKey publicKey = new(new([4, 5, 6]));
 
     private IContextRepository CreateService()
     {
         this.Configuration.PrivateKeyFileName.Returns(this.privateKeyFileName);
         this.Configuration.PublicKeyFileName.Returns(this.publicKeyFileName);
         this.Configuration.ToolSettingsFileName.Returns(this.configFileName);
-        return new ContextRepository(this.Fs, this.Configuration, this.serializer);
+        return new ContextRepository(this.Fs, this.Configuration);
+    }
+
+    private static ConcreteContext CreateContext()
+    {
+        return new ConcreteContext
+        {
+            PrivateKey = new PrivateKey(new([1, 2, 3])),
+            PublicKey = new PublicKey(new([4, 5, 6])),
+            FieldFilter = new RegexFilter(".*"),
+            FileFilter = new RegexFilter(".*"),
+            Key = new EncryptedKey(new([7, 8, 9]))
+        };
     }
 
     // CreateContext
 
     [Fact]
-    public async Task Should_create_context_with_initialization_data()
+    public async Task Should_save_context()
     {
         var service = this.CreateService();
+        var context = CreateContext();
 
         await service.SaveContext(context, RootPath);
 
         Fs.GetFile(Fs.Path.Combine(RootPath, this.configFileName)).Should().NotBeNull();
         Fs.GetFile(Fs.Path.Combine(RootPath, this.privateKeyFileName)).Should().NotBeNull();
         Fs.GetFile(Fs.Path.Combine(RootPath, this.publicKeyFileName)).Should().NotBeNull();
-        serializer.Received(1).SerializeToolSettings(Arg.Any<ToolSettings>());
-        serializer.Received(1).SerializePublicKey(Arg.Any<PublicKey>());
-        serializer.Received(1).SerializePrivateKey(Arg.Any<PrivateKey>());
     }
 
     [Theory]
@@ -47,8 +52,8 @@ public class ContextRepositoryTest : BaseTest
     public async Task Should_throw_when_creating_context_and_files_already_exist(string fileName)
     {
         this.Fs.AddFile(Fs.Path.Combine(RootPath, fileName), new MockFileData(string.Empty));
+        var context = CreateContext();
         var service = this.CreateService();
-
 
         var action = async () => await service.SaveContext(context, RootPath);
 
@@ -60,21 +65,14 @@ public class ContextRepositoryTest : BaseTest
     [Fact]
     public async Task Should_read_context_from_folder()
     {
-        serializer.DeserializePublicKey(default).ReturnsForAnyArgs(publicKey);
-        serializer.DeserializePrivateKey(default).ReturnsForAnyArgs(privateKey);
-        serializer.DeserializeToolSettings(default).ReturnsForAnyArgs(ToolSettings.FakeToolSettings());
-
         var service = this.CreateService();
-        var originalContext = context;
+        var originalContext = CreateContext();
         await service.SaveContext(originalContext, RootPath);
 
         var result = await service.GetContext(RootPath);
 
         result.Should().NotBeNull();
-        result.Should().BeOfType<IContext>();
-        serializer.Received().DeserializePublicKey(Arg.Any<string>());
-        serializer.Received().DeserializePrivateKey(Arg.Any<string>());
-        serializer.Received().DeserializeToolSettings(Arg.Any<string>());
+        result.Should().BeAssignableTo<IContext>();
     }
 
     [Fact]
@@ -93,6 +91,7 @@ public class ContextRepositoryTest : BaseTest
     public async Task Should_return_true_when_context_exists()
     {
         var service = this.CreateService();
+        var context = CreateContext();
         await service.SaveContext(context, RootPath);
 
         var result = await service.HasContext(RootPath);

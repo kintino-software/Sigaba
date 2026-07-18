@@ -1,16 +1,11 @@
 <Solution>
-  <Folder Name="/Api/" />
-  <Folder Name="/Api/Abstractions/">
+  <Folder Name="/App/" />
+  <Folder Name="/App/Abstractions/">
     <Project Path="Kintino.CipherConf.Abstractions/Kintino.CipherConf.Abstractions.csproj" Id="95254681-ab9b-4d9c-8851-a1e82e66a800" />
   </Folder>
-  <Folder Name="/Api/App/">
+  <Folder Name="/App/App/">
     <Project Path="Kintino.CipherConf.App.Test/Kintino.CipherConf.App.Test.csproj" Id="74e1df41-31e4-40e9-bfe9-17fb8ea497d1" />
     <Project Path="Kintino.CipherConf.App/Kintino.CipherConf.App.csproj" Id="605781c5-76f2-46a4-b11e-5173cf641776" />
-  </Folder>
-  <Folder Name="/Api/Cli/">
-    <Project Path="Kintino.CipherConf.Cli.IntegrationTest/Kintino.CipherConf.Cli.IntegrationTest.csproj" Id="1e021457-f8ac-4c1d-929c-66cfb48db55f" />
-    <Project Path="Kintino.CipherConf.Cli.Test/Kintino.CipherConf.Cli.Test.csproj" />
-    <Project Path="Kintino.CipherConf.Cli/Kintino.CipherConf.Cli.csproj" />
   </Folder>
   <Folder Name="/Modules/" />
   <Folder Name="/Modules/Crypto/">
@@ -24,6 +19,12 @@
   <Folder Name="/Modules/IO/">
     <Project Path="Kintino.CipherConf.IO.Test/Kintino.CipherConf.IO.Test.csproj" />
     <Project Path="Kintino.CipherConf.IO/Kintino.CipherConf.IO.csproj" />
+  </Folder>
+  <Folder Name="/UI/" />
+  <Folder Name="/UI/Cli/">
+    <Project Path="Kintino.CipherConf.Cli.IntegrationTest/Kintino.CipherConf.Cli.IntegrationTest.csproj" Id="1e021457-f8ac-4c1d-929c-66cfb48db55f" />
+    <Project Path="Kintino.CipherConf.Cli.Test/Kintino.CipherConf.Cli.Test.csproj" />
+    <Project Path="Kintino.CipherConf.Cli/Kintino.CipherConf.Cli.csproj" />
   </Folder>
   <Folder Name="/_Solution items/">
     <File Path=".github/workflows/cd.yml" />

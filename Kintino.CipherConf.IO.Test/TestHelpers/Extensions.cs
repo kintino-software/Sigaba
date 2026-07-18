@@ -1,4 +1,4 @@
-﻿using Kintino.CipherConf.IO.Primitives;
+﻿using Kintino.CipherConf.IO.Models;
 
 namespace Kintino.CipherConf.IO.TestHelpers;
 

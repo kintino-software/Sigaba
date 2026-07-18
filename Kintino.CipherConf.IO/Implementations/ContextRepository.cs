@@ -1,16 +1,10 @@
 ﻿using Kintino.CipherConf.IO.Dependencies;
-using Kintino.CipherConf.IO.Primitives;
-using Kintino.CipherConf.IO.Services;
 using Kintino.CipherConf.Models;
-using Kintino.CipherConf.Primitives;
 using System.IO.Abstractions;
 
 namespace Kintino.CipherConf.IO.Implementations;
 
-internal class ContextRepository(
-    IFileSystem fs,
-    IIOConfiguration config,
-    IDataSerializer serializer) : IContextRepository
+internal class ContextRepository(IFileSystem fs, IIOConfiguration config) : IContextRepository
 {
     async ValueTask IContextRepository.SaveContext(IContext context, string folderPath)
     {
@@ -18,20 +12,17 @@ internal class ContextRepository(
         {
             throw new InvalidOperationException($"Project already initialized in folder '{folderPath}'.");
         }
-
-        var publicKeyContent = serializer.SerializePublicKey(context.PublicKey);
-        var privateKeyContent = serializer.SerializePrivateKey(context.PrivateKey);
-        var settingsContent = serializer.SerializeToolSettings(new ToolSettings
+        if (context is not ConcreteContext concreteContext)
         {
-            PropertyRegex = "", // TEMP
-            FileRegex = "", // TEMP
-            Key = context.Key.Bytes.ToBase64String(),
-        });
+            throw new InvalidOperationException($"Context must be of type '{nameof(ConcreteContext)}'.");
+        }
+        var serialization = concreteContext.Serialize();
         try
         {
-            fs.File.WriteAllText(privateKeyFilePath, privateKeyContent);
-            fs.File.WriteAllText(publicKeyFilePath, publicKeyContent);
-            fs.File.WriteAllText(configFilePath, settingsContent);
+
+            fs.File.WriteAllText(privateKeyFilePath, serialization.PrivateKeyStr);
+            fs.File.WriteAllText(publicKeyFilePath, serialization.PublicKeyStr);
+            fs.File.WriteAllText(configFilePath, serialization.SettingsStr);
         }
         catch
         {
@@ -47,22 +38,11 @@ internal class ContextRepository(
         {
             throw new InvalidOperationException($"Project not initialized in folder '{folderPath}'.");
         }
-        var publicKeyContent = await fs.File.ReadAllTextAsync(publicKeyFilePath);
-        var privateKeyContent = await fs.File.ReadAllTextAsync(privateKeyFilePath);
-        var settingsContent = await fs.File.ReadAllTextAsync(configFilePath);
+        var publicKeyStr = await fs.File.ReadAllTextAsync(publicKeyFilePath);
+        var privateKeyStr = await fs.File.ReadAllTextAsync(privateKeyFilePath);
+        var settingsStr = await fs.File.ReadAllTextAsync(configFilePath);
 
-        var publicKey = serializer.DeserializePublicKey(publicKeyContent);
-        var privateKey = serializer.DeserializePrivateKey(privateKeyContent);
-        var toolSettings = serializer.DeserializeToolSettings(settingsContent);
-
-        return new ConcreteContext()
-        {
-            PublicKey = publicKey,
-            PrivateKey = privateKey,
-            FieldFilter = new RegexFieldFilter(toolSettings.PropertyRegex),
-            FileFilter = new RegexFileFilter(toolSettings.FileRegex),
-            Key = new EncryptedKey(new EncryptedData(toolSettings.Key.FromBase64String()))
-        };
+        return ConcreteContext.Deserialize(privateKeyStr, publicKeyStr, settingsStr);
     }
 
     ValueTask<bool> IContextRepository.HasContext(string folderPath)
