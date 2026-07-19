@@ -26,14 +26,17 @@ internal class JsonDocumentCipher(IValueCipher valueCipher) : IDocumentCipher
     string IDocumentCipher.Decrypt(PlainKey key, string jsonDocument)
     {
         var rootNode = ParseOrThrow(jsonDocument);
-        var entriesToDecrypt = JsonTraverser.Traverse(rootNode)
-            .Where(n => ShouldDecrypt(n.Node, valueCipher))
-            .ToArray();
+        var entriesToDecrypt = JsonTraverser.Traverse(rootNode).ToArray();
 
         foreach (var entry in entriesToDecrypt)
         {
             var plainNode = valueCipher.CreateDecryptedValue(entry.Node, key);
-            entry.Node.ReplaceWith(plainNode);
+            // as value cipher can return the same node instance, we need to check if the node is different before replacing it
+            // condition avoids replacing the node with itself, which would cause an exception
+            if (plainNode != entry.Node)
+            {
+                entry.Node.ReplaceWith(plainNode);
+            }
         }
         return rootNode.ToJsonString(options);
     }
@@ -43,11 +46,6 @@ internal class JsonDocumentCipher(IValueCipher valueCipher) : IDocumentCipher
     private static bool ShouldEncrypt(string? key, Predicate<string>? propertyNameFilter)
     {
         return key != null && (propertyNameFilter == null || propertyNameFilter(key));
-    }
-
-    private static bool ShouldDecrypt(JsonNode node, IValueCipher valueCipher)
-    {
-        return valueCipher.IsEncrypted(node);
     }
 
     private static JsonNode ParseOrThrow(string jsonDocument)

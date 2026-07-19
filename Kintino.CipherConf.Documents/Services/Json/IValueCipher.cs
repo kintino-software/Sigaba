@@ -15,22 +15,15 @@ public interface IValueCipher
     /// <summary>
     /// Creates a new JsonValue that is the decrypted version of the provided jsonNode using the specified key.
     /// </summary>
-    /// <param name="originalEncryptedJsonValue">The JsonValue to decrypt.</param>
+    /// <param name="encryptedNode">The json node to decrypt.</param>
     /// <param name="key">The key to use for decryption.</param>
     /// <returns>A new JsonValue that is the decrypted version of the provided jsonNode.</returns>
-    JsonNode? CreateDecryptedValue(JsonNode originalEncryptedJsonValue, PlainKey key);
+    JsonNode? CreateDecryptedValue(JsonNode encryptedNode, PlainKey key);
     /// <summary>
     /// Creates a new JsonValue that is the encrypted version of the provided jsonValue using the specified key.
     /// </summary>
-    /// <param name="originalPlainJsonValue">The JsonValue to encrypt.</param>
+    /// <param name="plainNode">The json node to encrypt.</param>
     /// <param name="key">The key to use for encryption.</param>
     /// <returns>A new JsonValue that is the encrypted version of the provided jsonValue.</returns>
-    JsonNode? CreateEncryptedValue(JsonNode originalPlainJsonValue, PlainKey key);
-    /// <summary>
-    /// Determines whether the specified JsonValue is encrypted.
-    /// Implementations should create ways to identify if a JsonValue is encrypted, such as checking for specific markers or patterns in the value.
-    /// </summary>
-    /// <param name="jsonValue">The JsonValue to check.</param>
-    /// <returns>True if the JsonValue is encrypted; otherwise, false.</returns>
-    bool IsEncrypted(JsonNode? jsonValue);
+    JsonNode? CreateEncryptedValue(JsonNode plainNode, PlainKey key);
 }

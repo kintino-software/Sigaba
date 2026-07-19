@@ -16,57 +16,33 @@ internal class ValueCipher(ISymmetricCipher symmetricCipher, INonceGenerator non
         Encoder = System.Text.Encodings.Web.JavaScriptEncoder.Default,
     };
 
-    JsonNode? IValueCipher.CreateEncryptedValue(JsonNode? originalPlainJsonValue, PlainKey key)
+    JsonNode? IValueCipher.CreateEncryptedValue(JsonNode? plainNode, PlainKey key)
     {
         var nonce = nonceGenerator.NewNonce();
-        var type = originalPlainJsonValue?.GetValueKind() ?? JsonValueKind.Null;
-        var plainJsonString = originalPlainJsonValue?.ToJsonString(serializerOptions) ?? JsonStringForNullValue; // jsonNodes with null values are null, so we need to handle that case by serializing string "null" explicitly
-        var cipherBytes = Encrypt(plainJsonString, key, nonce);
-        var pack = new CipherPack(cipherBytes, nonce, type, Version).Pack();
-        return JsonValue.Create(EncWrap(pack));
+        var jsonStr = plainNode?.ToJsonString(serializerOptions) ?? JsonStringForNullValue;
+        var bytes = jsonStr.ToUTF8Bytes();
+        var encryptedData = symmetricCipher.Encrypt(key, new PlainData(bytes), nonce);
+        var encryptedFieldValue = new EncryptedFieldValue(encryptedData, nonce, Version);
+        var pack = encryptedFieldValue.Pack();
+        return JsonValue.Create(pack);
     }
 
-    JsonNode? IValueCipher.CreateDecryptedValue(JsonNode? originalEncryptedJsonValue, PlainKey key)
+    JsonNode? IValueCipher.CreateDecryptedValue(JsonNode? encryptedNode, PlainKey key)
     {
-        if (originalEncryptedJsonValue == null)
-            return null;
-        var jsonPack = originalEncryptedJsonValue.GetValue<string>();
-        var pack = CipherPack.Unpack(EncUnwrap(jsonPack));
-        AssertCorrectVersion(pack.Version);
-        var jsonNode = Decrypt(pack.EncryptedData, key, pack.Nonce);
-        AssertCorrectType(pack.ValueKind, jsonNode);
-        return jsonNode;
-    }
-
-    bool IValueCipher.IsEncrypted(JsonNode? jsonValue)
-    {
-        if (jsonValue == null || jsonValue.GetValueKind() != JsonValueKind.String)
+        if (encryptedNode is not JsonValue jsonValue ||
+            !jsonValue.TryGetValue<string>(out var pack) ||
+            !EncryptedFieldValue.TryUnpack(pack, out var encryptedField))
         {
-            return false;
+            return encryptedNode; // node is not an encrypted field, we return it as is
         }
+        AssertCorrectVersion(encryptedField.Version);
 
-        var str = jsonValue.GetValue<string>();
-        return str.StartsWith("ENC(") && str.EndsWith(')');
+        var bytes = symmetricCipher.Decrypt(key, encryptedField.EncryptedData, encryptedField.Nonce);
+        var jsonStr = bytes.Bytes.ToUTF8String();
+        return JsonNode.Parse(jsonStr);
     }
-
-
 
     // helper methods
-
-    private EncryptedData Encrypt(JsonNode? jsonNode, PlainKey key, Nonce nonce)
-    {
-        var plainJsonString = jsonNode?.ToJsonString(serializerOptions) ?? JsonStringForNullValue;
-        var plainBytes = new PlainData(plainJsonString.ToUTF8Bytes());
-        return symmetricCipher.Encrypt(key, plainBytes, nonce);
-    }
-
-    private JsonNode? Decrypt(EncryptedData encryptedData, PlainKey key, Nonce nonce)
-    {
-        var plainBytes = symmetricCipher.Decrypt(key, encryptedData, nonce);
-        var jsonStr = plainBytes.Bytes.ToUTF8String();
-        var plainNode = JsonNode.Parse(JsonSerializer.Deserialize<string>(jsonStr)!);
-        return plainNode;
-    }
 
     private static void AssertCorrectVersion(int version)
     {
@@ -74,30 +50,6 @@ internal class ValueCipher(ISymmetricCipher symmetricCipher, INonceGenerator non
         {
             throw new InvalidOperationException($"Unsupported version: {version}");
         }
-    }
-
-    private static void AssertCorrectType(JsonValueKind type, JsonNode? jsonNode)
-    {
-        var actualType = jsonNode?.GetValueKind() ?? JsonValueKind.Null;
-        if (actualType != type)
-        {
-            throw new InvalidOperationException($"Type mismatch: expected {type}, but got {actualType}");
-        }
-    }
-
-    private static string EncWrap(string str)
-    {
-        return $"ENC({str})";
-    }
-
-    private static string EncUnwrap(string str)
-    {
-        if (!str.StartsWith("ENC(") || !str.EndsWith(')'))
-        {
-            throw new ArgumentException("Invalid wrapped encrypted value format", nameof(str));
-        }
-        var result = str[4..^1]; // Extract the wrapped part
-        return result;
     }
 
 }

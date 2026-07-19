@@ -28,6 +28,7 @@ public class ValueCipherTest : BaseTest
         var actual = service.CreateEncryptedValue(plainNode, key);
 
         actual.GetValue<string>().Should().NotBe("value");
+        SymmetricCipher.Received(1).Encrypt(key, Arg.Any<PlainData>(), Arg.Any<Nonce>());
     }
 
     // CreateDecryptedValue
@@ -47,6 +48,7 @@ public class ValueCipherTest : BaseTest
 
         actual.GetValueKind().Should().Be(JsonValueKind.String);
         actual.GetValue<string>().Should().Be(expectedValue);
+        SymmetricCipher.Received(1).Decrypt(key, Arg.Any<EncryptedData>(), Arg.Any<Nonce>());
     }
 
     [Theory]
@@ -64,6 +66,7 @@ public class ValueCipherTest : BaseTest
 
         actual.GetValueKind().Should().Be(JsonValueKind.Number);
         actual.GetValue<int>().Should().Be(expectedValue);
+        SymmetricCipher.Received(1).Decrypt(key, Arg.Any<EncryptedData>(), Arg.Any<Nonce>());
     }
 
     [Theory]
@@ -79,6 +82,7 @@ public class ValueCipherTest : BaseTest
 
         actual.GetValueKind().Should().Be(expectedValue ? JsonValueKind.True : JsonValueKind.False);
         actual.GetValue<bool>().Should().Be(expectedValue);
+        SymmetricCipher.Received(1).Decrypt(key, Arg.Any<EncryptedData>(), Arg.Any<Nonce>());
     }
 
     [Fact]
@@ -90,6 +94,7 @@ public class ValueCipherTest : BaseTest
         var actual = service.CreateDecryptedValue(encrypted, key);
 
         actual.Should().BeNull();
+        SymmetricCipher.Received(1).Decrypt(key, Arg.Any<EncryptedData>(), Arg.Any<Nonce>());
     }
 
     [Fact]
@@ -103,6 +108,7 @@ public class ValueCipherTest : BaseTest
 
         actual.GetValueKind().Should().Be(JsonValueKind.Array);
         actual.AsArray().Select(n => n.GetValue<int>()).Should().BeEquivalentTo([1, 2, 3]);
+        SymmetricCipher.Received(1).Decrypt(key, Arg.Any<EncryptedData>(), Arg.Any<Nonce>());
     }
 
     [Fact]
@@ -121,6 +127,7 @@ public class ValueCipherTest : BaseTest
             { "b", 2 },
             { "c", 3 }
         });
+        SymmetricCipher.Received(1).Decrypt(key, Arg.Any<EncryptedData>(), Arg.Any<Nonce>());
     }
 
 }
