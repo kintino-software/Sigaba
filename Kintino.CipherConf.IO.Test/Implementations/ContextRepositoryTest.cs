@@ -1,5 +1,4 @@
-﻿using Kintino.CipherConf.IO.Models;
-using Kintino.CipherConf.Models;
+﻿using Kintino.CipherConf.IO.Services;
 using Kintino.CipherConf.Primitives;
 
 namespace Kintino.CipherConf.IO.Implementations;
@@ -9,24 +8,25 @@ public class ContextRepositoryTest : BaseTest
     private readonly string configFileName = "config.conf";
     private readonly string privateKeyFileName = "private.priv";
     private readonly string publicKeyFileName = "public.pub";
+    private readonly IContextSerializer contextSerializer = Substitute.For<IContextSerializer>();
 
     private IContextRepository CreateService()
     {
         this.Configuration.PrivateKeyFileName.Returns(this.privateKeyFileName);
         this.Configuration.PublicKeyFileName.Returns(this.publicKeyFileName);
         this.Configuration.ToolSettingsFileName.Returns(this.configFileName);
-        return new ContextRepository(this.Fs, this.Configuration);
+        return new ContextRepository(this.Fs, this.Configuration, this.contextSerializer);
     }
 
-    private static ConcreteContext CreateContext()
+    private static Context CreateContext()
     {
-        return new ConcreteContext
+        return new Context
         {
-            SerializablePrivateKey = new SerializablePrivateKey(new PrivateKey(new([1, 2, 3]))),
-            SerializablePublicKey = new SerializablePublicKey(new PublicKey(new([4, 5, 6]))),
-            SerializableFieldFilter = new SerializableFieldFilter(".*"),
-            SerializableFileFilter = new SerializableFileFilter(".*", ".*"),
-            SerializableKey = new SerializableKey(new EncryptedKey(new([7, 8, 9])))
+            PrivateKey = new PrivateKey(new([1, 2, 3])),
+            PublicKey = new PublicKey(new([4, 5, 6])),
+            FieldFilterImpl = new FieldFilter(".*"),
+            FileFilterImpl = new FileFilter(".*", ".*"),
+            Key = new EncryptedKey(new([7, 8, 9]))
         };
     }
 
@@ -35,14 +35,16 @@ public class ContextRepositoryTest : BaseTest
     [Fact]
     public async Task Should_save_context()
     {
-        var service = this.CreateService();
         var context = CreateContext();
+        var service = this.CreateService();
 
         await service.SaveContext(context, RootPath);
 
-        Fs.GetFile(Fs.Path.Combine(RootPath, this.configFileName)).Should().NotBeNull();
-        Fs.GetFile(Fs.Path.Combine(RootPath, this.privateKeyFileName)).Should().NotBeNull();
-        Fs.GetFile(Fs.Path.Combine(RootPath, this.publicKeyFileName)).Should().NotBeNull();
+        await contextSerializer.Received(1).SerializeToFileSystem(
+            context,
+            RootCombine(this.configFileName),
+            RootCombine(this.privateKeyFileName),
+            RootCombine(this.publicKeyFileName));
     }
 
     [Theory]
@@ -66,13 +68,20 @@ public class ContextRepositoryTest : BaseTest
     public async Task Should_read_context_from_folder()
     {
         var service = this.CreateService();
-        var originalContext = CreateContext();
-        await service.SaveContext(originalContext, RootPath);
+        var context = CreateContext();
+        Fs.AddEmptyFile(RootCombine(this.configFileName));
+        Fs.AddEmptyFile(RootCombine(this.privateKeyFileName));
+        Fs.AddEmptyFile(RootCombine(this.publicKeyFileName));
+        contextSerializer.DeserializeFromFileSystem(default, default, default).ReturnsForAnyArgs(context);
+
 
         var result = await service.GetContext(RootPath);
 
-        result.Should().NotBeNull();
-        result.Should().BeAssignableTo<IContext>();
+        result.Should().Be(context);
+        await contextSerializer.Received(1).DeserializeFromFileSystem(
+            RootCombine(this.configFileName),
+            RootCombine(this.privateKeyFileName),
+            RootCombine(this.publicKeyFileName));
     }
 
     [Fact]
@@ -90,9 +99,10 @@ public class ContextRepositoryTest : BaseTest
     [Fact]
     public async Task Should_return_true_when_context_exists()
     {
+        Fs.AddEmptyFile(RootCombine(this.configFileName));
+        Fs.AddEmptyFile(RootCombine(this.privateKeyFileName));
+        Fs.AddEmptyFile(RootCombine(this.publicKeyFileName));
         var service = this.CreateService();
-        var context = CreateContext();
-        await service.SaveContext(context, RootPath);
 
         var result = await service.HasContext(RootPath);
 

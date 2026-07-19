@@ -11,7 +11,7 @@ public class ContextFactoryTest
 
         var actual = service.CreateDefault(new PublicKey(new([1, 2, 3])), new PrivateKey(new([1, 2, 3])), new EncryptedKey(new([1, 2, 3])));
 
-        actual.Should().NotBeNull();
+        actual.Should().NotBeNull().And.BeOfType<Context>();
     }
 }
 

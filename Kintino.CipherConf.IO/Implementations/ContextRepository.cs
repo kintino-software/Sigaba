@@ -1,28 +1,29 @@
 ﻿using Kintino.CipherConf.IO.Dependencies;
+using Kintino.CipherConf.IO.Services;
 using Kintino.CipherConf.Models;
 using System.IO.Abstractions;
 
 namespace Kintino.CipherConf.IO.Implementations;
 
-internal class ContextRepository(IFileSystem fs, IIOConfiguration config) : IContextRepository
+internal class ContextRepository(IFileSystem fs, IIOConfiguration config, IContextSerializer contextSerializer) : IContextRepository
 {
+    // IContextRepository implementation
+
     async ValueTask IContextRepository.SaveContext(IContext context, string folderPath)
     {
         if (TryGetFiles(folderPath, out var privateKeyFilePath, out var publicKeyFilePath, out var configFilePath))
-        {
             throw new InvalidOperationException($"Project already initialized in folder '{folderPath}'.");
-        }
-        if (context is not ConcreteContext concreteContext)
-        {
-            throw new InvalidOperationException($"Context must be of type '{nameof(ConcreteContext)}'.");
-        }
-        var serialization = concreteContext.Serialize();
+        if (context is not Context concreteContext)
+            throw new InvalidOperationException("Cannot save invalid context.");
+
         try
         {
+            await contextSerializer.SerializeToFileSystem(
+                context: concreteContext,
+                settingsFilePath: configFilePath,
+                privateKeyFilePath: privateKeyFilePath,
+                publicKeyFilePath: publicKeyFilePath);
 
-            fs.File.WriteAllText(privateKeyFilePath, serialization.PrivateKeyStr);
-            fs.File.WriteAllText(publicKeyFilePath, serialization.PublicKeyStr);
-            fs.File.WriteAllText(configFilePath, serialization.SettingsStr);
         }
         catch
         {
@@ -38,11 +39,11 @@ internal class ContextRepository(IFileSystem fs, IIOConfiguration config) : ICon
         {
             throw new InvalidOperationException($"Project not initialized in folder '{folderPath}'.");
         }
-        var publicKeyStr = await fs.File.ReadAllTextAsync(publicKeyFilePath);
-        var privateKeyStr = await fs.File.ReadAllTextAsync(privateKeyFilePath);
-        var settingsStr = await fs.File.ReadAllTextAsync(configFilePath);
 
-        return ConcreteContext.Deserialize(privateKeyStr, publicKeyStr, settingsStr);
+        return await contextSerializer.DeserializeFromFileSystem(
+            settingsFilePath: configFilePath,
+            privateKeyFilePath: privateKeyFilePath,
+            publicKeyFilePath: publicKeyFilePath);
     }
 
     ValueTask<bool> IContextRepository.HasContext(string folderPath)

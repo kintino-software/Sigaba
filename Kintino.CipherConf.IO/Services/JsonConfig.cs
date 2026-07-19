@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace Kintino.CipherConf.IO.Models;
+namespace Kintino.CipherConf.IO.Services;
 
 internal static class JsonConfig
 {
