@@ -2,10 +2,16 @@
 
 internal interface ISerializable;
 
-internal interface ISerializable<T> : ISerializable where T : ISerializable
+internal interface IJsonSerializable<T> : ISerializable where T : ISerializable
 {
-    string Serialize();
-    static abstract T Deserialize(string str);
+    string SerializeToJsonString();
+    static abstract T DeserializeFromJsonString(string str);
+}
+
+internal interface IPlainTextSerializable<T> : ISerializable where T : ISerializable
+{
+    string SerializeToPlainTextString();
+    static abstract T DeserializeFromPlainTextString(string str);
 }
 
 

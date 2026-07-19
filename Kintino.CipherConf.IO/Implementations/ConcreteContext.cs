@@ -1,59 +1,63 @@
 ﻿using Kintino.CipherConf.IO.Models;
 using Kintino.CipherConf.Models;
 using Kintino.CipherConf.Primitives;
+using System.Text.Json.Nodes;
 
 namespace Kintino.CipherConf.IO.Implementations;
 
+internal record SerializationResult(string PrivateKeyStr, string PublicKeyStr, string SettingsStr);
+
 internal class ConcreteContext : IContext
 {
-    internal record SerializationResult(string PrivateKeyStr, string PublicKeyStr, string SettingsStr);
+    // IContext implementation
 
-    public required PrivateKey PrivateKey { get; init; }
-    public required PublicKey PublicKey { get; init; }
-    public required IFieldFilter FieldFilter { get; init; }
-    public required IFileFilter FileFilter { get; init; }
-    public required EncryptedKey Key { get; init; }
+    public PrivateKey PrivateKey { get => SerializablePrivateKey.PrivateKey; }
+    public PublicKey PublicKey { get => SerializablePublicKey.PublicKey; }
+    public IFieldFilter FieldFilter { get => SerializableFieldFilter; }
+    public IFileFilter FileFilter { get => SerializableFileFilter; }
+    public EncryptedKey Key { get => SerializableKey.EncryptedKey; }
+
+    // 
+
+    public required SerializableFieldFilter SerializableFieldFilter { get; init; }
+    public required SerializableFileFilter SerializableFileFilter { get; init; }
+    public required SerializableKey SerializableKey { get; init; }
+    public required SerializablePrivateKey SerializablePrivateKey { get; init; }
+    public required SerializablePublicKey SerializablePublicKey { get; init; }
+
 
     public SerializationResult Serialize()
     {
-        if (this.FieldFilter is not RegexFilter regexFieldFilter)
+        var root = new JsonObject()
         {
-            throw new InvalidOperationException($"FieldFilter must be of type {nameof(RegexFilter)}");
-        }
-        if (this.FileFilter is not RegexFilter regexFileFilter)
-        {
-            throw new InvalidOperationException($"FileFilter must be of type {nameof(RegexFilter)}");
-        }
+            ["fieldRegex"] = SerializableFieldFilter.SerializeToJsonString(),
+            ["fileRegex"] = SerializableFileFilter.SerializeToJsonString(),
+            ["key"] = SerializableKey.SerializeToJsonString()
+        };
 
-        var privateKeyStr = new SerializablePrivateKey(this.PrivateKey).Serialize();
-        var publicKeyStr = new SerializablePublicKey(this.PublicKey).Serialize();
-        var toolsSettingsStr = new ToolSettings()
-        {
-            PropertyRegex = regexFieldFilter.Serialize(),
-            FileRegex = regexFileFilter.Serialize(),
-            Key = this.Key.Bytes.ToBase64String(),
-        }.Serialize();
-
-        return new SerializationResult(privateKeyStr, publicKeyStr, toolsSettingsStr);
+        return new SerializationResult(
+            PrivateKeyStr: SerializablePrivateKey.SerializeToJsonString(),
+            PublicKeyStr: SerializablePublicKey.SerializeToJsonString(),
+            SettingsStr: root.ToJsonString(JsonConfig.SerializerOptions));
     }
 
     public static ConcreteContext Deserialize(string privateKeyStr, string publicKeyStr, string settingsStr)
     {
-        var privateKey = SerializablePrivateKey.Deserialize(privateKeyStr).PrivateKey;
-        var publicKey = SerializablePublicKey.Deserialize(publicKeyStr).PublicKey;
-        var toolSettings = ToolSettings.Deserialize(settingsStr);
-        var fieldFilter = RegexFilter.Deserialize(toolSettings.PropertyRegex);
-        var fileFilter = RegexFilter.Deserialize(toolSettings.FileRegex);
-        var key = new EncryptedKey(new EncryptedData(toolSettings.Key.FromBase64String()));
+        var settings = JsonNode.Parse(settingsStr)
+            ?? throw new ArgumentException("Settings string is not a valid JSON object.", nameof(settingsStr));
+        var fieldFilter = SerializableFieldFilter.DeserializeFromJsonString(settings["fieldRegex"]?.ToString() ?? string.Empty);
+        var fileFilter = SerializableFileFilter.DeserializeFromJsonString(settings["fileRegex"]?.ToString() ?? string.Empty);
+        var key = SerializableKey.DeserializeFromJsonString(settings["key"]?.ToString() ?? string.Empty);
 
         return new ConcreteContext
         {
-            PrivateKey = privateKey,
-            PublicKey = publicKey,
-            FieldFilter = fieldFilter,
-            FileFilter = fileFilter,
-            Key = key
+            SerializablePrivateKey = SerializablePrivateKey.DeserializeFromJsonString(privateKeyStr),
+            SerializablePublicKey = SerializablePublicKey.DeserializeFromJsonString(publicKeyStr),
+            SerializableFieldFilter = fieldFilter,
+            SerializableFileFilter = fileFilter,
+            SerializableKey = key
         };
+
     }
 }
 

@@ -22,11 +22,11 @@ public class ContextRepositoryTest : BaseTest
     {
         return new ConcreteContext
         {
-            PrivateKey = new PrivateKey(new([1, 2, 3])),
-            PublicKey = new PublicKey(new([4, 5, 6])),
-            FieldFilter = new RegexFilter(".*"),
-            FileFilter = new RegexFilter(".*"),
-            Key = new EncryptedKey(new([7, 8, 9]))
+            SerializablePrivateKey = new SerializablePrivateKey(new PrivateKey(new([1, 2, 3]))),
+            SerializablePublicKey = new SerializablePublicKey(new PublicKey(new([4, 5, 6]))),
+            SerializableFieldFilter = new SerializableFieldFilter(".*"),
+            SerializableFileFilter = new SerializableFileFilter(".*", ".*"),
+            SerializableKey = new SerializableKey(new EncryptedKey(new([7, 8, 9])))
         };
     }
 

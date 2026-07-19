@@ -13,4 +13,9 @@ public abstract class BaseTest
         RootPath = OperatingSystem.IsWindows() ? @"C:\" : "/";
     }
 
+    protected string RootCombine(params string[] paths)
+    {
+        return this.Fs.Path.Combine([RootPath, .. paths]);
+    }
+
 }

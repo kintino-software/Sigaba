@@ -10,11 +10,11 @@ internal class ContextFactory : IContextFactory
     {
         return new ConcreteContext()
         {
-            FieldFilter = new RegexFilter(@"_secret$"),
-            FileFilter = new RegexFilter(@"appsettings\.?.*\.json"),
-            PrivateKey = privateKey,
-            PublicKey = publicKey,
-            Key = encryptedKey
+            SerializableFieldFilter = new SerializableFieldFilter(@"_secret$"),
+            SerializableFileFilter = new SerializableFileFilter(includePattern: @"appsettings\.?.*\.json", excludePattern: null),
+            SerializablePrivateKey = new SerializablePrivateKey(privateKey),
+            SerializablePublicKey = new SerializablePublicKey(publicKey),
+            SerializableKey = new SerializableKey(encryptedKey)
         };
     }
 }

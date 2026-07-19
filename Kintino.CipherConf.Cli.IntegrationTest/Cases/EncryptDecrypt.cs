@@ -25,7 +25,11 @@ public class EncryptDecrypt : BaseTest
         await InitProject();
         var app = CreateApp();
 
+        //
+
         await app.RunAsync("encrypt");
+
+        //
 
         (await GetPropertyFromJsonDocument(settingsFilePath, "public-field")).Should().Be("public-value");
         (await GetPropertyFromJsonDocument(settingsFilePath, "private-field_secret")).Should().NotBe("private-value");
@@ -48,7 +52,11 @@ public class EncryptDecrypt : BaseTest
         var app = CreateApp();
         await app.RunAsync("encrypt");
 
+        //
+
         await app.RunAsync("decrypt");
+
+        //
 
         (await GetPropertyFromJsonDocument(settingsFilePath, "public-field")).Should().Be("public-value");
         (await GetPropertyFromJsonDocument(settingsFilePath, "private-field_secret")).Should().Be("private-value");
