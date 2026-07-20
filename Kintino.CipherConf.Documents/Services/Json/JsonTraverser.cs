@@ -2,6 +2,14 @@
 
 namespace Kintino.CipherConf.Documents.Services.Json;
 
+internal record JsonEntry(string? Key, int? Index, JsonNode Node)
+{
+    public override string ToString()
+    {
+        return $"Key: {Key}, Index: {Index}, Node: {Node}";
+    }
+}
+
 internal static class JsonTraverser
 {
     public static IEnumerable<JsonEntry> Traverse(JsonNode? node, string? key = null, int? index = null)

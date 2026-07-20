@@ -1,5 +1,4 @@
-﻿using Spectre.Console;
-using Spectre.Console.Cli;
+﻿using Spectre.Console.Cli;
 using System.IO.Abstractions;
 
 namespace Kintino.CipherConf.Cli.Adaptors.SpectreConsole;
@@ -9,16 +8,8 @@ internal abstract class CommandWithGlobalSettings<TGlobalSettings> : AsyncComman
 
     protected static async Task<int> TryRunAsync(Func<ValueTask> operation)
     {
-        try
-        {
-            await operation();
-            return 0;
-        }
-        catch (Exception ex)
-        {
-            AnsiConsole.WriteException(ex, ExceptionFormats.ShortenEverything);
-            return 1;
-        }
+        await operation();
+        return 0;
     }
 
     protected static string GetProjectTargetDir(TGlobalSettings globalOptions, IFileSystem fs)

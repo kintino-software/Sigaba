@@ -14,8 +14,7 @@ public class EncryptedFieldTest
     {
         var nonce = CreateNonce();
         var data = CreateEncryptedData();
-        var version = 22;
-        var cipherPack = new EncryptedFieldValue(data, nonce, version);
+        var cipherPack = new CipherPack(data, nonce);
 
         var result = cipherPack.Pack();
 
@@ -25,10 +24,10 @@ public class EncryptedFieldTest
     [Fact]
     public void Should_unpack_data_from_string()
     {
-        var expected = new EncryptedFieldValue(CreateEncryptedData(), CreateNonce(), 2);
+        var expected = new CipherPack(CreateEncryptedData(), CreateNonce());
         var pack = expected.Pack();
 
-        var success = EncryptedFieldValue.TryUnpack(pack, out var actual);
+        var success = CipherPack.TryUnpack(pack, out var actual);
 
         success.Should().BeTrue();
         actual.Should().BeEquivalentTo(expected);
@@ -39,7 +38,7 @@ public class EncryptedFieldTest
     {
         var nonEncryptedValue = "This is not an encrypted value";
 
-        var success = EncryptedFieldValue.TryUnpack(nonEncryptedValue, out var actual);
+        var success = CipherPack.TryUnpack(nonEncryptedValue, out var actual);
 
         success.Should().BeFalse();
         actual.Should().BeNull();

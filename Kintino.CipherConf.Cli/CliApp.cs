@@ -19,21 +19,23 @@ public class CliApp
 {
     public CommandApp CommandApp { get; }
 
-    public CliApp(Action<IServiceCollection>? servicesOverride = null)
+    public CliApp(Action<IServiceCollection>? servicesOverride = null, Action<IConfigurator>? configuratorOverride = null)
     {
         CommandApp = SpectreConsoleHelper.CreateCommandApp(services =>
         {
             ConfigureServices(services);
             servicesOverride?.Invoke(services);
         });
-        CommandApp.Configure(ConfigureCommandApp);
+        CommandApp.Configure(config =>
+        {
+            ConfigureCommandApp(config);
+            configuratorOverride?.Invoke(config);
+        });
     }
 
-    public async Task RunAsync(params string[] args)
+    public Task<int> RunAsync(params string[] args)
     {
-        var exitCode = await CommandApp.RunAsync(args);
-        if (exitCode != 0)
-            throw new ApplicationException("Application exited with a non-zero exit code: " + exitCode);
+        return CommandApp.RunAsync(args);
     }
 
     // configuration
