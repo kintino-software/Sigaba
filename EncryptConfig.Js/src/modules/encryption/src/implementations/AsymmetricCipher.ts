@@ -1,17 +1,26 @@
-import { type EncryptedData, type IAsymmetricEncryption, type PlainData, type PrivateKey, type PublicKey } from "@abstractions";
+import type {
+	EncryptedData,
+	IAsymmetricEncryption,
+	PlainData,
+	PrivateKey,
+	PublicKey,
+} from "../../../../app/abstractions";
+import { Rsa } from "../services/Rsa";
 
+export class AsymmetricCipher implements IAsymmetricEncryption {
+	generateKeys(): { publicKey: PublicKey; privateKey: PrivateKey } {
+		const { publicKey, privateKey } = Rsa.generateKeys();
+		return {
+			publicKey: Buffer.from(publicKey),
+			privateKey: Buffer.from(privateKey),
+		};
+	}
 
-export class AsymmetricCipher implements IAsymmetricEncryption{
-    generateKeys(): [publicKey: PublicKey, privateKey: PrivateKey] {
-        throw new Error("Method not implemented.");
-    }
-    
-    encrypt(plainData: PlainData, publicKey: PublicKey): Uint8Array {
-        throw new Error("Method not implemented.");
-    }
-    
-    decrypt(encryptedData: EncryptedData, privateKey: PrivateKey): Uint8Array {
-        throw new Error("Method not implemented.");
-    }
+	encrypt(plainData: PlainData, publicKey: PublicKey): EncryptedData {
+		return Rsa.encrypt(plainData, publicKey.toHex());
+	}
 
+	decrypt(encryptedData: EncryptedData, privateKey: PrivateKey): PlainData {
+		return Rsa.decrypt(encryptedData, privateKey.toHex());
+	}
 }

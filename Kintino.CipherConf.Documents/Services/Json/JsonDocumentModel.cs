@@ -32,15 +32,17 @@ internal class JsonDocumentModel : IDocumentModel
             .Select(entry => new JsonDocumentNode
             {
                 Key = entry.Key!,
-                Content = entry.Node.ToString(),
+                Content = entry.Node.ToJsonString(JsonConfiguration.SerializerOptions),
                 UnderlyingNode = entry.Node
             });
     }
 
     public void UpdateNodeContent(IDocumentNode node, string newContent)
     {
-        if (node is not JsonDocumentNode jsonDocumentNode)
+        if (node is not JsonDocumentNode jsonNode)
             throw new InvalidOperationException("Invalid node type");
-        jsonDocumentNode.UnderlyingNode.ReplaceWith(newContent);
+        var newNode = JsonNode.Parse(newContent)
+            ?? throw new InvalidOperationException("Invalid JSON content");
+        jsonNode.UnderlyingNode.ReplaceWith(newNode);
     }
 }

@@ -30,6 +30,7 @@ public class JsonDocumentModelTest
         model.RootNode["arrayKey"].AsArray().Should().HaveCount(3);
         model.RootNode["objectKey"]["nestedKey"].GetValue<string>().Should().Be("nestedValue");
         model.RootNode["nullKey"].Should().BeNull(); // nodes of null data kind is represented as null
+
     }
 
     [Theory]
@@ -89,15 +90,15 @@ public class JsonDocumentModelTest
         """;
         var model = new JsonDocumentModel();
         model.Deserialize(json);
-        JsonDocumentNode[] expected = new[]
-        {
+        JsonDocumentNode[] expected =
+        [
             new JsonDocumentNode { Key = "textKey", Content = "\"text\"", UnderlyingNode = model.RootNode["textKey"] },
             new JsonDocumentNode { Key = "numberKey", Content = "123", UnderlyingNode = model.RootNode["numberKey"] },
             new JsonDocumentNode { Key = "booleanKey", Content = "true", UnderlyingNode = model.RootNode["booleanKey"] },
-            new JsonDocumentNode { Key = "arrayKey", Content = "[1,2,3]", UnderlyingNode = model.RootNode["arrayKey"] },
+            new JsonDocumentNode { Key = "arrayKey", Content = "[1, 2, 3]", UnderlyingNode = model.RootNode["arrayKey"] },
             new JsonDocumentNode { Key = "objectKey", Content = "{\"nestedKey\":\"nestedValue\"}", UnderlyingNode = model.RootNode["objectKey"] },
             new JsonDocumentNode { Key = "nullKey", Content = "null", UnderlyingNode = model.RootNode["nullKey"] }
-        };
+        ];
 
         var nodes = model.GetNodes().ToArray();
 

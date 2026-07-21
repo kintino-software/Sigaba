@@ -27,7 +27,7 @@ const decrypt = (encryptedData: Uint8Array, privateKey: string): Uint8Array => {
 	return decryptedData;
 };
 
-export const RSA = {
+export const Rsa = {
 	generateKeys,
 	encrypt,
 	decrypt,
