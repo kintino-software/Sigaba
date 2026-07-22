@@ -31,5 +31,6 @@
     <File Path=".github/workflows/ci.yml" />
     <File Path=".gitignore" />
     <File Path=".runsettings" />
+    <File Path="readme.md" />
   </Folder>
 </Solution>

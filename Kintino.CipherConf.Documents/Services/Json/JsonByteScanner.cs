@@ -3,20 +3,18 @@ using System.Text.Json;
 
 namespace Kintino.CipherConf.Documents.Services.Json;
 
-public record Jsonkey(string Key);
-public record JsonRawValue(string Value);
-public record ValueLocation(string Key, int StartIndex, int Length);
+internal record ScannerResult(FieldKey Key, FieldRawValue RawValue, int StartIndex, int Length);
 
 internal class JsonByteScanner
 {
     private static JsonReaderOptions readerOptions = new() { CommentHandling = JsonCommentHandling.Allow, AllowTrailingCommas = true };
     private readonly byte[] originalBytes;
-    public IReadOnlyCollection<ValueLocation> ValueLocations { get; }
+    public IReadOnlyCollection<ScannerResult> Results { get; }
 
-    private JsonByteScanner(byte[] originalBytes, IReadOnlyCollection<ValueLocation> replacements)
+    private JsonByteScanner(byte[] originalBytes, IReadOnlyCollection<ScannerResult> replacements)
     {
         this.originalBytes = originalBytes;
-        this.ValueLocations = replacements;
+        this.Results = replacements;
     }
 
     public static JsonByteScanner Create(string jsonDocument)
@@ -26,32 +24,34 @@ internal class JsonByteScanner
         return new JsonByteScanner(originalBytes, replacements);
     }
 
-    public string Transform(Func<Jsonkey, JsonRawValue, JsonRawValue> transform)
+    public string Replace(Func<ScannerResult, FieldRawValue> transform, Func<FieldKey, bool> predicate)
     {
-        if (ValueLocations.Count == 0)
+        if (Results.Count == 0)
             return Encoding.UTF8.GetString(originalBytes);
 
         var output = new List<byte>(originalBytes.Length);
         var cursor = 0;
 
         // Process in order — forward pass, no index shifting issues
-        foreach (var r in ValueLocations.OrderBy(r => r.StartIndex))
+        foreach (var r in Results.OrderBy(r => r.StartIndex))
         {
-            var originalValue = Encoding.UTF8.GetString(originalBytes[r.StartIndex..(r.StartIndex + r.Length)]);
-            var newValue = transform(new Jsonkey(r.Key), new JsonRawValue(originalValue));
-            output.AddRange(originalBytes[cursor..r.StartIndex]); // copy unchanged chunk
-            output.AddRange(Encoding.UTF8.GetBytes(newValue.Value));           // insert new value
-            cursor = r.StartIndex + r.Length;        // skip old value
+            if (predicate(new FieldKey(r.Key)))
+            {
+                var newValue = transform(r);
+                output.AddRange(originalBytes[cursor..r.StartIndex]);       // copy unchanged chunk
+                output.AddRange(Encoding.UTF8.GetBytes(newValue.Value));    // insert new value
+                cursor = r.StartIndex + r.Length;                           // skip old value
+            }
         }
 
-        output.AddRange(originalBytes[cursor..]);            // copy remainder
+        output.AddRange(originalBytes[cursor..]); // copy remainder
 
         return Encoding.UTF8.GetString([.. output]);
     }
 
-    private static List<ValueLocation> CollectLocations(ReadOnlySpan<byte> utf8Bytes)
+    private static List<ScannerResult> CollectLocations(ReadOnlySpan<byte> utf8Bytes)
     {
-        var replacements = new List<ValueLocation>();
+        var locations = new List<ScannerResult>();
         var reader = new Utf8JsonReader(utf8Bytes, readerOptions);
 
         string? currentKey = null;
@@ -104,17 +104,18 @@ internal class JsonByteScanner
 
                     var tokenEnd = (int)reader.BytesConsumed;
 
-                    replacements.Add(new ValueLocation(
-                        currentKey,
-                        tokenStart,
-                        tokenEnd - tokenStart)
+                    locations.Add(new ScannerResult(
+                        Key: currentKey,
+                        RawValue: Encoding.UTF8.GetString(utf8Bytes[tokenStart..tokenEnd]),
+                        StartIndex: tokenStart,
+                        Length: tokenEnd - tokenStart)
                     );
                     currentKey = null;
                     break;
             }
         }
 
-        return replacements;
+        return locations;
     }
 
 

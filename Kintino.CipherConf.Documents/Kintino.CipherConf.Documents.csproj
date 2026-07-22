@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <Using Include="Kintino.CipherConf.Documents.Adaptors" />
+    <Using Include="Kintino.CipherConf.Documents.Primitives" />
   </ItemGroup>
 
   <ItemGroup>
