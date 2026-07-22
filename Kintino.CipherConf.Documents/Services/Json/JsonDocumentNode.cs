@@ -2,4 +2,4 @@
 
 namespace Kintino.CipherConf.Documents.Services.Json;
 
-internal record JsonDocumentNode(string Key, string Content) : IDocumentNode;
+internal record JsonDocumentNode<TValue>(string Key, string RawContent, TValue Content) : IDocumentNode<TValue>;

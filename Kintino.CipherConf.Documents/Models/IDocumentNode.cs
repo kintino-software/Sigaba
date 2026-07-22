@@ -1,7 +1,9 @@
 ﻿namespace Kintino.CipherConf.Documents.Models;
 
-internal interface IDocumentNode
+internal interface IDocumentNode<TValue>
 {
     public string Key { get; }
-    public string Content { get; }
+    public TValue Content { get; }
+    public string RawContent { get; }
+
 }
