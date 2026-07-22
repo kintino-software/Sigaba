@@ -1,153 +1,115 @@
-﻿namespace Kintino.CipherConf.Documents.Services.Json;
+﻿using System.Text.Json;
+
+namespace Kintino.CipherConf.Documents.Services.Json;
 
 public class JsonDocumentModelTest
 {
-    // Deserialize
+    private readonly JsonDocumentModel model = new();
+
+    private void AssertJsonIsValid(string json)
+    {
+        using var doc = JsonDocument.Parse(
+            json,
+            new JsonDocumentOptions
+            {
+                AllowTrailingCommas = true,
+                CommentHandling = JsonCommentHandling.Skip
+            });
+    }
+
+    // Transform
 
     [Fact]
-    public void Should_deserialize_any_value_kind()
+    public void Should_keep_original_content_and_formatting()
     {
-        var json = """
+        var originalJson = """
         {
             "textKey": "text",
-            "numberKey": 123,
+                            "numberKey": 123,
             "booleanKey": true,
+            // comment 1
             "arrayKey": [1, 2, 3],
             "objectKey": {
-                "nestedKey": "nestedValue"
+                    // comment 2
+                    "nestedKey": "nestedValue"
             },
             "nullKey": null
         }
         """;
-        var model = new JsonDocumentModel();
 
-        model.Deserialize(json);
+        var result = model.Transform(originalJson, n => n.Content);
 
-        model.RootNode.Should().NotBeNull();
-        model.RootNode["textKey"].GetValue<string>().Should().Be("text");
-        model.RootNode["numberKey"].GetValue<int>().Should().Be(123);
-        model.RootNode["booleanKey"].GetValue<bool>().Should().BeTrue();
-        model.RootNode["arrayKey"].AsArray().Should().HaveCount(3);
-        model.RootNode["objectKey"]["nestedKey"].GetValue<string>().Should().Be("nestedValue");
-        model.RootNode["nullKey"].Should().BeNull(); // nodes of null data kind is represented as null
-
+        result.Should().Be(originalJson);
+        AssertJsonIsValid(result);
     }
+
 
     [Theory]
-    [InlineData("{key:\"value\"}")]
-    [InlineData("")]
-    [InlineData(null)]
-    public void Should_throw_exception_when_deserializing_invalid_json(string invalidJson)
-    {
-        var model = new JsonDocumentModel();
-
-        Action act = () => model.Deserialize(invalidJson);
-
-        act.Should().Throw<InvalidOperationException>();
-    }
-
-    // Serialize
-
-    [Fact]
-    public void Should_serialize_json_document()
+    [InlineData("newText")] // string (escaped, as it will be interpolated into the raw test json)
+    [InlineData("1")] // number
+    [InlineData("true")] // boolean
+    [InlineData("false")] // boolean
+    [InlineData("null")] // null
+    [InlineData("[1, 2, 3]")] // number array
+    [InlineData(@"[""a"", ""b"", ""c""]")] // string array
+    [InlineData(@"{""nestedKey"": ""nestedValue""}")] // object
+    public void Should_return_string_with_transformed_values(string newValue)
     {
         var json = """
         {
-            "textKey": "text",
-            "numberKey": 123,
-            "booleanKey": true,
-            "arrayKey": [1, 2, 3],
-            "objectKey": {
-                "nestedKey": "nestedValue"
-            },
-            "nullKey": null
+            // comment
+            "targetParent": {
+                "target": "original value"
+            }
+        }
+        """;
+        var expected = $$"""
+        {
+            // comment
+            "targetParent": {
+                "target": {{newValue}}
+            }
         }
         """;
         var model = new JsonDocumentModel();
-        model.Deserialize(json);
 
-        var result = model.Serialize();
+        var result = model.Transform(json, n => n.Key == "targetParent.target" ? newValue : n.Content);
 
-        result.Should().Be(json);
+        result.Should().Be(expected);
+        AssertJsonIsValid(result);
     }
 
-    // GetNodes
+    [Fact]
+    public void Should_pass_raw_value_to_transform_function()
+    {
+        var originalJson = """
+        {
+            "target": "value"
+        }
+        """;
+
+        int called = 0;
+        var result = model.Transform(originalJson, node =>
+        {
+            node.Content.Should().Be("\"value\"");
+            called++;
+            return node.Content;
+        });
+        called.Should().Be(1);
+    }
 
     [Fact]
-    public void Should_get_nodes()
+    public void Should_throw_exception_when_deserializing_invalid_json()
     {
         var json = """
         {
-            "textKey": "text",
-            "numberKey": 123,
-            "booleanKey": true,
-            "arrayKey": [1, 2, 3],
-            "objectKey": {
-                "nestedKey": "nestedValue"
-            },
-            "nullKey": null
+            key: "value"
         }
         """;
-        var model = new JsonDocumentModel();
-        model.Deserialize(json);
-        JsonDocumentNode[] expected =
-        [
-            new JsonDocumentNode { Key = "textKey", Content = "\"text\"", UnderlyingNode = model.RootNode["textKey"] },
-            new JsonDocumentNode { Key = "numberKey", Content = "123", UnderlyingNode = model.RootNode["numberKey"] },
-            new JsonDocumentNode { Key = "booleanKey", Content = "true", UnderlyingNode = model.RootNode["booleanKey"] },
-            new JsonDocumentNode { Key = "arrayKey", Content = "[1, 2, 3]", UnderlyingNode = model.RootNode["arrayKey"] },
-            new JsonDocumentNode { Key = "objectKey", Content = "{\"nestedKey\":\"nestedValue\"}", UnderlyingNode = model.RootNode["objectKey"] },
-            new JsonDocumentNode { Key = "nullKey", Content = "null", UnderlyingNode = model.RootNode["nullKey"] }
-        ];
 
-        var nodes = model.GetNodes().ToArray();
+        var action = () => model.Transform(json, node => node.Content);
 
-        nodes.Should().BeEquivalentTo(expected);
+        action.Should().Throw<JsonException>();
     }
-
-    // UpdateNodeContent
-
-    [Fact]
-    public void Should_update_node_content()
-    {
-        var json = """
-        {
-            "textKey": "text",
-            "numberKey": 1,
-            "booleanKey": false,
-            "arrayKey": [1, 2, 3],
-            "objectKey": {
-                "nestedKey": "nestedValue"
-            },
-            "nullKey": "it will be null"
-        }
-        """;
-        var expected = """
-        {
-            "textKey": "newText",
-            "numberKey": 2,
-            "booleanKey": false,
-            "arrayKey": [4, 5],
-            "objectKey": {
-                "nestedKey": "new nestedValue"
-            },
-            "nullKey": null
-        }
-        """;
-        var model = new JsonDocumentModel();
-        model.Deserialize(json);
-        var nodes = model.GetNodes();
-
-        model.UpdateNodeContent(nodes.First(n => n.Key == "textKey"), "\"newText\"");
-        model.UpdateNodeContent(nodes.First(n => n.Key == "numberKey"), "2");
-        model.UpdateNodeContent(nodes.First(n => n.Key == "booleanKey"), "false");
-        model.UpdateNodeContent(nodes.First(n => n.Key == "arrayKey"), "[4, 5]");
-        model.UpdateNodeContent(nodes.First(n => n.Key == "objectKey"), "{\"nestedKey\":\"new nestedValue\"}");
-        model.UpdateNodeContent(nodes.First(n => n.Key == "nullKey"), "null");
-
-        var result = model.Serialize();
-        result.Should().BeEquivalentTo(expected);
-    }
-
 
 }

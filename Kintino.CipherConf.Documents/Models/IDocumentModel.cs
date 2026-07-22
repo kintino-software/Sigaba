@@ -2,8 +2,8 @@
 
 internal interface IDocumentModel
 {
-    void Deserialize(string content);
-    IEnumerable<IDocumentNode> GetNodes();
-    void UpdateNodeContent(IDocumentNode node, string newContent);
-    string Serialize();
+    static abstract DocumentType DocumentType { get; }
+    string Transform(
+        string documentContent,
+        Func<IDocumentNode, string> transform);
 }
