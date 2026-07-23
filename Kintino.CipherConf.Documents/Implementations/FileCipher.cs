@@ -9,12 +9,14 @@ namespace Kintino.CipherConf.Documents.Implementations;
 
 internal class FileCipher(
     IFileSystem fs,
-    INonceGenerator nonceGenerator) : IFileCipher
+    IRandomKeyGenerator randomKeyGenerator,
+    INonceGenerator nonceGenerator,
+    ISymmetricCipher symmetricCipher,
+    IAsymmetricCipher asymmetricCipher) : IFileCipher
 {
     async ValueTask IFileCipher.CipherFile(
         string filePath,
-        PlainKey plainKey,
-        ISymmetricCipher symmetricCipher,
+        PublicKey publicKey,
         IFieldFilter fieldFilter)
     {
         var document = await PrepareDocumentAsync(filePath);
@@ -28,15 +30,18 @@ internal class FileCipher(
                 continue;
             var rawValue = document.GetFieldRawValue(field);
             var nonce = nonceGenerator.NewNonce();
+            var plainKey = randomKeyGenerator.GenerateNewKey();
             var encryptedData = symmetricCipher.Encrypt(plainKey, new PlainData(rawValue.ToUTF8Bytes()), nonce);
-            var pack = FieldPacker.Pack(encryptedData, nonce);
+            var encryptedKey = asymmetricCipher.Encrypt(plainKey, publicKey);
+
+            var pack = FieldPacker.Pack(encryptedData, nonce, new EncryptedKey(encryptedKey));
             document.SetFieldValue(field, pack);
         }
 
         await SaveChangedDocumentAsync(document, filePath);
     }
 
-    async ValueTask IFileCipher.DecipherFile(string filePath, PlainKey plainKey, ISymmetricCipher symmetricCipher)
+    async ValueTask IFileCipher.DecipherFile(string filePath, PrivateKey privateKey)
     {
         var document = await PrepareDocumentAsync(filePath);
 
@@ -49,8 +54,9 @@ internal class FileCipher(
                 continue;
             }
 
-            var (encryptedData, nonce) = FieldPacker.Unpack(value);
-            var plainData = symmetricCipher.Decrypt(plainKey, encryptedData, nonce);
+            var (encryptedData, nonce, encryptedKey) = FieldPacker.Unpack(value);
+            var plainKey = asymmetricCipher.Decrypt(encryptedKey, privateKey);
+            var plainData = symmetricCipher.Decrypt(new PlainKey(plainKey), encryptedData, nonce);
             var rawValue = plainData.Bytes.FromUtf8Bytes();
             document.SetFieldRawValue(field, rawValue);
         }

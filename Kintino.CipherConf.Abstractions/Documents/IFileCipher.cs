@@ -1,5 +1,4 @@
-﻿using Kintino.CipherConf.Crypto;
-using Kintino.CipherConf.Models;
+﻿using Kintino.CipherConf.Models;
 using Kintino.CipherConf.Primitives;
 
 namespace Kintino.CipherConf.Documents;
@@ -14,10 +13,9 @@ public interface IFileCipher
     /// Encrypts the specified file using the provided symmetric cipher and key, and optionally filters properties to encrypt based on a regex pattern.
     /// </summary>
     /// <param name="filePath">The path of the file to encrypt.</param>
-    /// <param name="plainKey">The plain key to use for encryption.</param>
-    /// <param name="symmetricCipher">The symmetric cipher to use for encryption.</param>
+    /// <param name="publicKey">The public key to use for encryption.</param>
     /// <param name="fieldFilter">A filter to select which properties to encrypt.</param>
-    ValueTask CipherFile(string filePath, PlainKey plainKey, ISymmetricCipher symmetricCipher, IFieldFilter fieldFilter);
+    ValueTask CipherFile(string filePath, PublicKey publicKey, IFieldFilter fieldFilter);
     /// <summary>
     /// Decrypts the specified file using the provided symmetric cipher and key. The implementation should know which properties were encrypted and handle them accordingly.
     /// </summary>
@@ -26,8 +24,7 @@ public interface IFileCipher
     /// The implementation should handle the decryption of the encrypted properties and leave the unencrypted properties intact.
     /// </remarks>
     /// <param name="filePath">The path of the file to decrypt.</param>
-    /// <param name="plainKey">The plain key to use for decryption.</param>
-    /// <param name="symmetricCipher">The symmetric cipher to use for decryption.</param>
+    /// <param name="privateKey">The private key to use for decryption.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    ValueTask DecipherFile(string filePath, PlainKey plainKey, ISymmetricCipher symmetricCipher);
+    ValueTask DecipherFile(string filePath, PrivateKey privateKey);
 }

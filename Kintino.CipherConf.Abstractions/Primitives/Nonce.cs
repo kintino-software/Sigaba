@@ -7,4 +7,5 @@ public record Nonce
     {
         Bytes = plainData.Bytes;
     }
+    public static implicit operator PlainData(Nonce nonce) => new(nonce.Bytes);
 }

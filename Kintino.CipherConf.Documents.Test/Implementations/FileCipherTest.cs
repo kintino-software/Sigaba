@@ -9,16 +9,21 @@ namespace Kintino.CipherConf.Documents.Implementations;
 public class FileCipherTest : BaseTest
 {
     private readonly MockFileSystem fs = new();
+    private readonly FakeSymmetricCipher symmetricCipher = new();
+    private readonly FakeAsymmetricCipher asymmetricCipher = new();
     private readonly INonceGenerator nonceGenerator = Substitute.For<INonceGenerator>();
+    private readonly IRandomKeyGenerator randomKeyGenerator = Substitute.For<IRandomKeyGenerator>();
     private readonly IFieldFilter fieldFilter = Substitute.For<IFieldFilter>();
     private readonly Nonce nonce = new(new([1, 2, 3, 4]));
-    private readonly PlainKey key = new(new([5, 6, 7, 8]));
+
+
 
     private IFileCipher CreateService()
     {
-        fieldFilter.Match(default).ReturnsForAnyArgs(ci => ci.Arg<string>().Contains("_secret"));
         nonceGenerator.NewNonce().Returns(nonce);
-        return new FileCipher(fs, nonceGenerator);
+        randomKeyGenerator.GenerateNewKey().Returns(new PlainKey(new([5, 6, 7, 8])));
+        fieldFilter.Match(default).ReturnsForAnyArgs(ci => ci.Arg<string>().Contains("_secret"));
+        return new FileCipher(fs, randomKeyGenerator, nonceGenerator, symmetricCipher, asymmetricCipher);
     }
 
     // CipherFile
@@ -41,7 +46,7 @@ public class FileCipherTest : BaseTest
         """;
         fs.AddFile("test.json", new MockFileData(jsonDocument));
 
-        await service.CipherFile("test.json", key, this.SymmetricCipher, fieldFilter);
+        await service.CipherFile("test.json", asymmetricCipher.CorrectPublicKey, fieldFilter);
         var result = fs.GetFile("test.json").TextContents;
 
         result.Should().NotBe(jsonDocument);
@@ -67,8 +72,8 @@ public class FileCipherTest : BaseTest
         """;
         fs.AddFile("test.json", new MockFileData(originalJson));
 
-        await service.CipherFile("test.json", key, this.SymmetricCipher, fieldFilter);
-        await service.DecipherFile("test.json", key, this.SymmetricCipher);
+        await service.CipherFile("test.json", asymmetricCipher.CorrectPublicKey, fieldFilter);
+        await service.DecipherFile("test.json", asymmetricCipher.CorrectPrivateKey);
         var result = fs.GetFile("test.json").TextContents;
 
         result.Should().Be(originalJson);
@@ -95,8 +100,8 @@ public class FileCipherTest : BaseTest
         """;
         fs.AddFile("test.json", new MockFileData(originalJson));
 
-        await service.CipherFile("test.json", key, this.SymmetricCipher, fieldFilter);
-        await service.DecipherFile("test.json", key, this.SymmetricCipher);
+        await service.CipherFile("test.json", asymmetricCipher.CorrectPublicKey, fieldFilter);
+        await service.DecipherFile("test.json", asymmetricCipher.CorrectPrivateKey);
         var result = fs.GetFile("test.json").TextContents;
 
         result.Should().Be(originalJson);

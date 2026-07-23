@@ -11,11 +11,11 @@ public interface IContext
     /// <summary>
     /// Gets the private key associated with the context.
     /// </summary>
-    PrivateKey PrivateKey { get; }
+    PrivateKey? PrivateKey { get; }
     /// <summary>
     /// Gets the public key associated with the context.
     /// </summary>
-    PublicKey PublicKey { get; }
+    PublicKey? PublicKey { get; }
     /// <summary>
     /// Gets the predicate used to match properties.
     /// </summary>
@@ -24,8 +24,4 @@ public interface IContext
     /// Gets the predicate used to match files.
     /// </summary>
     IFileFilter FileFilter { get; }
-    /// <summary>
-    /// Gets the cryptographic key associated with the context.
-    /// </summary>
-    EncryptedKey Key { get; }
 }

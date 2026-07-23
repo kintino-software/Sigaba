@@ -5,8 +5,6 @@ namespace Kintino.CipherConf.Documents.TestHelpers;
 
 public abstract class BaseTest
 {
-    protected FakeSymmetricCipher SymmetricCipher { get; } = new();
-
     protected static void AssertJsonDocumentIsValid(
         string jsonDocument,
         bool allowTrailingCommas = true,

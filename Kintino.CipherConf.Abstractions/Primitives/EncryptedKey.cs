@@ -7,5 +7,6 @@ public record EncryptedKey
     {
         Bytes = encryptedData.Bytes;
     }
+    public static implicit operator EncryptedData(EncryptedKey encryptedKey) => new(encryptedKey.Bytes);
 }
 

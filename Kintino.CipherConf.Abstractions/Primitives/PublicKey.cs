@@ -7,4 +7,5 @@ public record PublicKey
     {
         Bytes = plainData.Bytes;
     }
+    public static implicit operator PlainData(PublicKey publicKey) => new(publicKey.Bytes);
 }

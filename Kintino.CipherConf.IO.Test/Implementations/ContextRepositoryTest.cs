@@ -25,8 +25,7 @@ public class ContextRepositoryTest : BaseTest
             PrivateKey = new PrivateKey(new([1, 2, 3])),
             PublicKey = new PublicKey(new([4, 5, 6])),
             FieldFilterImpl = new FieldFilter(".*"),
-            FileFilterImpl = new FileFilter(".*", ".*"),
-            Key = new EncryptedKey(new([7, 8, 9]))
+            FileFilterImpl = new FileFilter(".*", ".*")
         };
     }
 

@@ -14,21 +14,20 @@ public class EncryptConfigAppTest
     private readonly IFileOperations FileOperations = Substitute.For<IFileOperations>();
     private readonly ITextEditor TextEditor = Substitute.For<ITextEditor>();
     private readonly ISymmetricCipher SymmetricCipher = Substitute.For<ISymmetricCipher>();
+    private readonly IAsymmetricCipher AsymmetricCipher = Substitute.For<IAsymmetricCipher>();
     private readonly IContextFactory ContextFactory = Substitute.For<IContextFactory>();
     private readonly IFileCipher FileCipher = Substitute.For<IFileCipher>();
     private readonly IContextRepository ContextRepository = Substitute.For<IContextRepository>();
-    private readonly IFacade Facade = Substitute.For<IFacade>();
 
     private IEncryptConfigApp CreateService()
     {
         return new EncryptConfigApp(
             this.FileOperations,
             this.TextEditor,
-            this.SymmetricCipher,
+            this.AsymmetricCipher,
             this.ContextFactory,
             this.ContextRepository,
-            this.FileCipher,
-            this.Facade);
+            this.FileCipher);
     }
 
     // Init
@@ -42,8 +41,8 @@ public class EncryptConfigAppTest
         await service.Init("folder");
 
         await this.ContextRepository.Received().HasContext("folder");
-        this.Facade.Received().CreateContextKeys();
-        this.ContextFactory.Received().CreateDefault(Arg.Any<PublicKey>(), Arg.Any<PrivateKey>(), Arg.Any<EncryptedKey>());
+
+        this.ContextFactory.Received().CreateDefault(Arg.Any<PublicKey>(), Arg.Any<PrivateKey>());
         await this.ContextRepository.Received().SaveContext(Arg.Any<IContext>(), "folder");
     }
 
@@ -77,14 +76,12 @@ public class EncryptConfigAppTest
 
         await this.FileCipher.Received().CipherFile(
             "file1.txt",
-            Arg.Any<PlainKey>(),
-            this.SymmetricCipher,
+            context.PublicKey,
             context.FieldFilter);
 
         await this.FileCipher.Received().CipherFile(
             "file2.txt",
-            Arg.Any<PlainKey>(),
-            this.SymmetricCipher,
+            context.PublicKey,
             context.FieldFilter);
     }
 

@@ -23,7 +23,6 @@ public static class ServicesExtensions
 
         // internal
         services
-            .AddSingleton<IFacade, Facade>()
             .AddSingleton<IEncryptConfigApp, EncryptConfigApp>();
 
         return services;

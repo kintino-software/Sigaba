@@ -6,6 +6,7 @@ public class FieldPackerTest
 {
     private static Nonce CreateNonce() => new(new PlainData([1, 2, 3]));
     private static EncryptedData CreateEncryptedData() => new([4, 5, 6]);
+    private static EncryptedKey CreateEncryptedKey() => new(new([7, 8, 9]));
 
     // Pack
 
@@ -14,8 +15,9 @@ public class FieldPackerTest
     {
         var nonce = CreateNonce();
         var data = CreateEncryptedData();
+        var key = CreateEncryptedKey();
 
-        var result = FieldPacker.Pack(data, nonce);
+        var result = FieldPacker.Pack(data, nonce, key);
 
         result.Should().MatchRegex(@"^ENC\([A-Za-z0-9+/=]+\)$");
     }
@@ -27,13 +29,15 @@ public class FieldPackerTest
     {
         var originalData = CreateEncryptedData();
         var originalNonce = CreateNonce();
+        var originalKey = CreateEncryptedKey();
 
-        var pack = FieldPacker.Pack(originalData, originalNonce);
+        var pack = FieldPacker.Pack(originalData, originalNonce, originalKey);
 
-        var (actualData, actualNonce) = FieldPacker.Unpack(pack);
+        var (actualData, actualNonce, actualKey) = FieldPacker.Unpack(pack);
 
         actualData.Should().BeEquivalentTo(originalData);
         actualNonce.Should().BeEquivalentTo(originalNonce);
+        actualKey.Should().BeEquivalentTo(originalKey);
     }
 
     // IsEncryptedFieldValue
