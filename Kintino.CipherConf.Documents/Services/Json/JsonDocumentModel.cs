@@ -1,28 +1,91 @@
 ﻿using Kintino.CipherConf.Documents.Models;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 namespace Kintino.CipherConf.Documents.Services.Json;
 
 internal class JsonDocumentModel : IDocumentModel
 {
-    private record Replacement(int Start, int OriginalLength, byte[] NewValueBytes);
+    JsonByteScanner? byteScanner = null;
+    private readonly List<JsonFieldReplacement> replacements = [];
 
-    public static DocumentType DocumentType { get; } = DocumentType.Json;
+    // IDocumentModel implementation
 
-    public string Transform<TNewValue>(string documentContent, Func<FieldKey, FieldRawValue, TNewValue> transform, Func<FieldKey, bool> predicate)
+    void IDocumentModel.Parse(string documentContent)
     {
-        var scanner = JsonByteScanner.Create(documentContent);
-        return scanner.Replace((field) =>
+        replacements.Clear();
+        byteScanner = JsonByteScanner.Create(documentContent);
+    }
+
+    IEnumerable<string> IDocumentModel.GetFieldNames()
+    {
+        var scanner = GetScannerOrThrow();
+        return scanner.KeyToFieldDataMap.Keys;
+    }
+
+    void IDocumentModel.SetFieldValue<T>(string key, [MaybeNull] T value)
+    {
+        if (value is null)
         {
-            var newValue = transform(field.Key, field.RawValue);
-            var rawValue = JsonSerializer.Serialize(newValue);
-            return new FieldRawValue(rawValue);
-        }, predicate);
+            // Json values can be null or undefined, while C# values treat as the same thing.
+            // So we must pass "null" string as a raw value to represent null values in the JSON document.
+            replacements.Add(new(key, "null"));
+            return;
+        }
+        var rawValue = JsonSerializer.Serialize(value);
+        replacements.Add(new(key, rawValue));
     }
 
-    public string TransformRaw(string documentContent, Func<FieldKey, FieldRawValue, FieldRawValue> transformRaw, Func<FieldKey, bool> predicate)
+    void IDocumentModel.SetFieldRawValue(string key, string rawValue)
     {
-        return Transform<FieldRawValue>(documentContent, transformRaw, predicate);
+        replacements.Add(new(key, rawValue));
     }
 
+    string IDocumentModel.GetFieldRawValue(string key)
+    {
+        var scanner = GetScannerOrThrow();
+        return scanner.GetRawValue(key)
+            ?? throw new KeyNotFoundException($"Field '{key}' not found in the document.");
+    }
+
+    [return: MaybeNull]
+    bool IDocumentModel.TryGetValue<T>(string key, [MaybeNull] out T value)
+    {
+        var scanner = GetScannerOrThrow();
+        var rawValue = scanner.GetRawValue(key);
+
+        if (rawValue is null)
+        {
+            // value not found, return false and set value to default
+            value = default;
+            return default;
+        }
+
+        try
+        {
+            // try to deserialize to the requested type. Deserialization may fail if the type is incompatible with the JSON value.
+            value = JsonSerializer.Deserialize<T>(rawValue);
+        }
+        catch (JsonException)
+        {
+            value = default;
+            return false;
+        }
+        return true;
+    }
+
+    string IDocumentModel.Serialize()
+    {
+        var scanner = GetScannerOrThrow();
+        return scanner.Replace([.. replacements]);
+    }
+
+    // helpers
+
+    private JsonByteScanner GetScannerOrThrow()
+    {
+        if (byteScanner is null)
+            throw new InvalidOperationException("Document has not been parsed yet.");
+        return byteScanner;
+    }
 }

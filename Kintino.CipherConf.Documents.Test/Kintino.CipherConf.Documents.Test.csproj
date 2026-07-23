@@ -6,7 +6,7 @@
     <Nullable>disable</Nullable>
     <IsPackable>false</IsPackable>
     <RootNamespace>Kintino.CipherConf.Documents</RootNamespace>
-    <NoWarn>CA1859</NoWarn>
+    <NoWarn>CA1859;CA1861</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -35,29 +35,35 @@ public class EncryptDecrypt : BaseTest
 
         //
 
-        (await GetPropertyFromJsonDocument(settingsFilePath, "field1")).Should().Be("public-value");
-        (await GetPropertyFromJsonDocument(settingsFilePath, "field2_secret")).Should().NotBe("private-value");
-        (await GetPropertyFromJsonDocument(settingsFilePath, "field3_secret")).Should().NotBe("1");
-        (await GetPropertyFromJsonDocument(settingsFilePath, "field4_secret")).Should().NotBe("true");
-        (await GetPropertyFromJsonDocument(settingsFilePath, "field5_secret")).Should().NotBe("null");
-        (await GetPropertyFromJsonDocument(settingsFilePath, "field6_secret")).Should().NotBe("""["a", "b", "c"]""");
+        Fs.InspectJson(settingsFilePath)
+            .ShouldHavePropertyWithValue("field1", "\"public-value\"")
+            .ShouldHavePropertyWithValueThatIsNot("field2_secret", "\"private-value\"")
+            .ShouldHavePropertyWithValueThatIsNot("field3_secret", "1")
+            .ShouldHavePropertyWithValueThatIsNot("field4_secret", "true")
+            .ShouldHavePropertyWithValueThatIsNot("field5_secret", "null")
+            .ShouldHavePropertyWithValueThatIsNot("field6_secret", """["a", "b", "c"]""");
     }
 
     [Fact]
     public async Task DecryptFlow()
     {
         var settingsFilePath = Fs.Path.Combine(RootPath, "appsettings.json");
+        var originalContent = """
+        {
+            "field1": "public-value",
+            "field2_secret": "private-value",
+            "field3_secret": 1,
+            "field4_secret": true,
+            "field5_secret": null,
+            "field6_secret": [
+                "a", 
+                "b", 
+                "c"
+            ]
+        }
+        """;
 
-        Fs.AddFile(
-            settingsFilePath,
-            new MockFileData("""
-                {
-                    "field1": "public-value",
-                    "field2_secret": "private-value",
-                    "field3_secret": 1,
-                    "field4_secret": true
-                }
-            """));
+        Fs.AddFile(settingsFilePath, new MockFileData(originalContent));
         await InitProject();
         var app = CreateApp();
         await app.RunAsync("encrypt");
@@ -68,11 +74,13 @@ public class EncryptDecrypt : BaseTest
 
         //
 
-        (await GetPropertyFromJsonDocument(settingsFilePath, "field1")).Should().Be("public-value");
-        (await GetPropertyFromJsonDocument(settingsFilePath, "field2_secret")).Should().Be("private-value");
-        (await GetPropertyFromJsonDocument(settingsFilePath, "field3_secret")).Should().Be("1");
-        (await GetPropertyFromJsonDocument(settingsFilePath, "field4_secret")).Should().Be("true");
-        (await GetPropertyFromJsonDocument(settingsFilePath, "field5_secret")).Should().Be("null");
-        (await GetPropertyFromJsonDocument(settingsFilePath, "field6_secret")).Should().Be("""["a", "b", "c"]""");
+        Fs.GetFile(settingsFilePath).TextContents.Should().Be(originalContent);
+        Fs.InspectJson(settingsFilePath)
+            .ShouldHavePropertyWithValue("field1", "\"public-value\"")
+            .ShouldHavePropertyWithValue("field2_secret", "\"private-value\"")
+            .ShouldHavePropertyWithValue("field3_secret", "1")
+            .ShouldHavePropertyWithValue("field4_secret", "true")
+            .ShouldHavePropertyWithValue("field5_secret", "null")
+            .ShouldHavePropertyWithValue("field6_secret", """["a", "b", "c"]""");
     }
 }

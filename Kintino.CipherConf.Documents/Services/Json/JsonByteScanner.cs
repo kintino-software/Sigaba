@@ -3,18 +3,20 @@ using System.Text.Json;
 
 namespace Kintino.CipherConf.Documents.Services.Json;
 
-internal record ScannerResult(FieldKey Key, FieldRawValue RawValue, int StartIndex, int Length);
+internal record JsonFieldData(string Key, int StartIndex, int Length);
+
+internal record JsonFieldReplacement(string Key, string NewValue);
 
 internal class JsonByteScanner
 {
     private static JsonReaderOptions readerOptions = new() { CommentHandling = JsonCommentHandling.Allow, AllowTrailingCommas = true };
     private readonly byte[] originalBytes;
-    public IReadOnlyCollection<ScannerResult> Results { get; }
+    public IReadOnlyDictionary<string, JsonFieldData> KeyToFieldDataMap { get; }
 
-    private JsonByteScanner(byte[] originalBytes, IReadOnlyCollection<ScannerResult> replacements)
+    private JsonByteScanner(byte[] originalBytes, IReadOnlyDictionary<string, JsonFieldData> keyToFieldDataMap)
     {
         this.originalBytes = originalBytes;
-        this.Results = replacements;
+        this.KeyToFieldDataMap = keyToFieldDataMap;
     }
 
     public static JsonByteScanner Create(string jsonDocument)
@@ -24,23 +26,33 @@ internal class JsonByteScanner
         return new JsonByteScanner(originalBytes, replacements);
     }
 
-    public string Replace(Func<ScannerResult, FieldRawValue> transform, Func<FieldKey, bool> predicate)
+    public string? GetRawValue(string key)
     {
-        if (Results.Count == 0)
+        if (KeyToFieldDataMap.TryGetValue(key, out var fieldData))
+        {
+            return Encoding.UTF8.GetString(originalBytes[fieldData.StartIndex..(fieldData.StartIndex + fieldData.Length)]);
+        }
+        return null;
+    }
+
+    public string Replace(params JsonFieldReplacement[] replacements)
+    {
+        if (KeyToFieldDataMap.Count == 0)
             return Encoding.UTF8.GetString(originalBytes);
+
+        var replacementMap = replacements.ToDictionary(r => r.Key, r => r.NewValue);
 
         var output = new List<byte>(originalBytes.Length);
         var cursor = 0;
 
         // Process in order — forward pass, no index shifting issues
-        foreach (var r in Results.OrderBy(r => r.StartIndex))
+        foreach (var r in KeyToFieldDataMap.Values.OrderBy(v => v.StartIndex))
         {
-            if (predicate(new FieldKey(r.Key)))
+            if (replacementMap.TryGetValue(r.Key, out var newValue))
             {
-                var newValue = transform(r);
-                output.AddRange(originalBytes[cursor..r.StartIndex]);       // copy unchanged chunk
-                output.AddRange(Encoding.UTF8.GetBytes(newValue.Value));    // insert new value
-                cursor = r.StartIndex + r.Length;                           // skip old value
+                output.AddRange(originalBytes[cursor..r.StartIndex]);   // copy unchanged chunk
+                output.AddRange(Encoding.UTF8.GetBytes(newValue));      // insert new value
+                cursor = r.StartIndex + r.Length;                       // skip old value
             }
         }
 
@@ -49,10 +61,10 @@ internal class JsonByteScanner
         return Encoding.UTF8.GetString([.. output]);
     }
 
-    private static List<ScannerResult> CollectLocations(ReadOnlySpan<byte> utf8Bytes)
+    private static Dictionary<string, JsonFieldData> CollectLocations(ReadOnlySpan<byte> utf8Bytes)
     {
-        var locations = new List<ScannerResult>();
         var reader = new Utf8JsonReader(utf8Bytes, readerOptions);
+        var result = new Dictionary<string, JsonFieldData>();
 
         string? currentKey = null;
         var keyStack = new Stack<string?>();
@@ -104,18 +116,17 @@ internal class JsonByteScanner
 
                     var tokenEnd = (int)reader.BytesConsumed;
 
-                    locations.Add(new ScannerResult(
+                    result[currentKey] = new JsonFieldData(
                         Key: currentKey,
-                        RawValue: Encoding.UTF8.GetString(utf8Bytes[tokenStart..tokenEnd]),
                         StartIndex: tokenStart,
-                        Length: tokenEnd - tokenStart)
+                        Length: (tokenEnd - tokenStart)
                     );
                     currentKey = null;
                     break;
             }
         }
 
-        return locations;
+        return result;
     }
 
 

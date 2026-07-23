@@ -24,6 +24,11 @@ internal static class Extensions
             return Encoding.UTF8.GetString(data);
         }
 
+        public string FromUtf8Bytes()
+        {
+            return Encoding.UTF8.GetString(data);
+        }
+
         public string ToBase64String()
         {
             return Convert.ToBase64String(data);

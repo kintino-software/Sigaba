@@ -1,8 +1,14 @@
-﻿namespace Kintino.CipherConf.Documents.Models;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Kintino.CipherConf.Documents.Models;
 
 internal interface IDocumentModel
 {
-    static abstract DocumentType DocumentType { get; }
-    string Transform<TNewValue>(string documentContent, Func<FieldKey, FieldRawValue, TNewValue> transform, Func<FieldKey, bool> predicate);
-    string TransformRaw(string documentContent, Func<FieldKey, FieldRawValue, FieldRawValue> transformRaw, Func<FieldKey, bool> predicate);
+    void Parse(string documentContent);
+    IEnumerable<string> GetFieldNames();
+    void SetFieldValue<T>(string key, [MaybeNull] T value);
+    void SetFieldRawValue(string key, string rawValue);
+    string GetFieldRawValue(string key);
+    bool TryGetValue<T>(string key, [MaybeNull] out T value);
+    string Serialize();
 }

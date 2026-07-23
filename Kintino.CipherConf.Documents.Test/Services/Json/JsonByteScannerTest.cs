@@ -11,18 +11,18 @@ public class JsonByteScannerTest
 
         var service = JsonByteScanner.Create(originalJson);
 
-        service.Results.Should().BeEquivalentTo(
-        [
-            new ScannerResult("textKey", "\"text\"", 13, 6),
-            new ScannerResult("number", "49", 31, 2),
-            new ScannerResult("array", "[1, 2, 3]", 44, 9),
-            new ScannerResult("objectKey.nestedKey", "\"nestedValue\"", 83, 13),
-            new ScannerResult("nullKey", "null", 111, 4),
-        ]);
+        service.KeyToFieldDataMap.Should().BeEquivalentTo(new Dictionary<string, JsonFieldData>()
+        {
+            ["textKey"] = new JsonFieldData("textKey", 13, 6),
+            ["number"] = new JsonFieldData("number", 31, 2),
+            ["array"] = new JsonFieldData("array", 44, 9),
+            ["objectKey.nestedKey"] = new JsonFieldData("objectKey.nestedKey", 83, 13),
+            ["nullKey"] = new JsonFieldData("nullKey", 111, 4),
+        });
     }
 
     [Fact]
-    public void Should_provide_correct_values_to_transform_function()
+    public void Should_get_raw_values()
     {
         var originalJson = """
         {
@@ -33,30 +33,34 @@ public class JsonByteScannerTest
             "objectKey": { "nestedKey": "nestedValue" }
         }
         """;
-        ScannerResult[] expected = new ScannerResult[]
-        {
-            new("text", "\"value\"", 15, 7),
-            new("number", "49", 39, 2),
-            new("array", "[1, 2, 3]", 57, 9),
-            new("nullKey", "null", 84, 4),
-            new("objectKey.nestedKey", "\"nestedValue\"", 123, 13),
-        };
         var service = JsonByteScanner.Create(originalJson);
 
-        List<ScannerResult> parametersDictionary = new List<ScannerResult>();
-        service.Replace(
-            (location) =>
-            {
-                parametersDictionary.Add(location);
-                return location.RawValue;
-            },
-            (_) => true);
-
-        parametersDictionary.Should().BeEquivalentTo(expected);
+        service.GetRawValue("text").Should().Be(@"""value""");
+        service.GetRawValue("number").Should().Be("49");
+        service.GetRawValue("array").Should().Be("[1, 2, 3]");
+        service.GetRawValue("nullKey").Should().Be("null");
+        service.GetRawValue("objectKey.nestedKey").Should().Be(@"""nestedValue""");
     }
 
     [Fact]
-    public void Should_replace_all_values()
+    public void Should_return_null_when_getting_inexistent_key_value()
+    {
+        var originalJson = """
+        {
+            "text": "value",
+            "number": 49,
+            "array": [1, 2, 3],
+            "nullKey": null,
+            "objectKey": { "nestedKey": "nestedValue" }
+        }
+        """;
+        var service = JsonByteScanner.Create(originalJson);
+
+        service.GetRawValue("inexistentKey").Should().BeNull();
+    }
+
+    [Fact]
+    public void Should_replace_raw_values()
     {
         var original = """
         {
@@ -69,48 +73,24 @@ public class JsonByteScannerTest
         """;
         var expected = """
         {
-            "text": "foobar",
+            "text": null,
             "number": "foobar",
             "array": "foobar",
             "nullKey": "foobar",
-            "object": { "nestedKey": "foobar" },
+            "object": { "nestedKey": ["foo", "bar"] },
         }
         """;
         var service = JsonByteScanner.Create(original);
 
-        var result = service.Replace((location) => "\"foobar\"", (_) => true);
+        var result = service.Replace(
+            new JsonFieldReplacement("text", "null"),
+            new JsonFieldReplacement("array", @"""foobar"""),
+            new JsonFieldReplacement("number", @"""foobar"""),
+            new JsonFieldReplacement("nullKey", @"""foobar"""),
+            new JsonFieldReplacement("object.nestedKey", @"[""foo"", ""bar""]"));
 
         result.Should().Be(expected);
     }
-
-    [Fact]
-    public void Should_replace_filtered_values()
-    {
-        var original = """
-        {
-            "text": "value",
-            "number": 49,
-            "array": [1, 2, 3],
-            "nullKey": null,
-            "object": { "nestedKey": "nestedValue" },
-        }
-        """;
-        var expected = """
-        {
-            "text": "value",
-            "number": 49,
-            "array": [1, 2, 3],
-            "nullKey": "foobar",
-            "object": { "nestedKey": "nestedValue" },
-        }
-        """;
-        var service = JsonByteScanner.Create(original);
-
-        var result = service.Replace((location) => "\"foobar\"", (key) => key == "nullKey");
-
-        result.Should().Be(expected);
-    }
-
 
 }
 
