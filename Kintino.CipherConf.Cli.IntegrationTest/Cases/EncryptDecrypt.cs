@@ -75,12 +75,5 @@ public class EncryptDecrypt : BaseTest
         //
 
         Fs.GetFile(settingsFilePath).TextContents.Should().Be(originalContent);
-        Fs.InspectJson(settingsFilePath)
-            .ShouldHavePropertyWithValue("field1", "\"public-value\"")
-            .ShouldHavePropertyWithValue("field2_secret", "\"private-value\"")
-            .ShouldHavePropertyWithValue("field3_secret", "1")
-            .ShouldHavePropertyWithValue("field4_secret", "true")
-            .ShouldHavePropertyWithValue("field5_secret", "null")
-            .ShouldHavePropertyWithValue("field6_secret", """["a", "b", "c"]""");
     }
 }

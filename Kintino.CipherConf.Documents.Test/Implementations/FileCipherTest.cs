@@ -74,5 +74,33 @@ public class FileCipherTest : BaseTest
         result.Should().Be(originalJson);
     }
 
+    [Fact]
+    public async Task Should_recover_original_format_when_deciphering_json_documents()
+    {
+        var service = CreateService();
+        var originalJson = """
+        {
+            "name_secret": [
+                "John",
+                "Doe"
+            ],
+            "age": 30,
+            "address": {
+                "street_secret": "123 Main St",
+                "city": "Anytown",
+                "state": "CA",
+                "zip": "12345"
+            }
+        }
+        """;
+        fs.AddFile("test.json", new MockFileData(originalJson));
+
+        await service.CipherFile("test.json", key, this.SymmetricCipher, fieldFilter);
+        await service.DecipherFile("test.json", key, this.SymmetricCipher);
+        var result = fs.GetFile("test.json").TextContents;
+
+        result.Should().Be(originalJson);
+    }
+
 }
 
