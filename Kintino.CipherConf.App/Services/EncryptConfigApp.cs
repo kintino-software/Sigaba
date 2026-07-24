@@ -7,7 +7,6 @@ namespace Kintino.CipherConf.App.Services;
 
 public class EncryptConfigApp(
     IFileOperations fileOperations,
-    ITextEditor textEditor,
     IAsymmetricCipher asymmetricCipher,
     IContextFactory contextFactory,
     IContextRepository contextRepository,
@@ -55,7 +54,7 @@ public class EncryptConfigApp(
         }
     }
 
-    async ValueTask IEncryptConfigApp.EditFile(string targetFolder, string editingFilePath)
+    async ValueTask IEncryptConfigApp.EditFile(ITextEditor textEditor, string targetFolder, string editingFilePath)
     {
         var context = await contextRepository.GetContext(targetFolder)
             ?? throw new InvalidOperationException("Could not retrieve context. Try to initialize the folder first.");

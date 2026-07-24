@@ -8,9 +8,9 @@ public class Init : BaseTest
         var app = CreateApp();
         await app.RunAsync("init");
 
-        Fs.File.Exists(Fs.Path.Combine(RootPath, "public.key")).Should().BeTrue();
-        Fs.File.Exists(Fs.Path.Combine(RootPath, "private.key")).Should().BeTrue();
-        Fs.File.Exists(Fs.Path.Combine(RootPath, "encryptconfig.json")).Should().BeTrue();
+        Fs.File.Exists(Fs.Path.Combine(RootPath, PublicKeyFileName)).Should().BeTrue();
+        Fs.File.Exists(Fs.Path.Combine(RootPath, PrivateKeyFileName)).Should().BeTrue();
+        Fs.File.Exists(Fs.Path.Combine(RootPath, ConfigFileName)).Should().BeTrue();
     }
 
     [Theory]
@@ -22,8 +22,8 @@ public class Init : BaseTest
         var app = CreateApp();
         await app.RunAsync("init", projectArg, "foobar");
 
-        Fs.File.Exists(Fs.Path.Combine(RootPath, "foobar", "public.key")).Should().BeTrue();
-        Fs.File.Exists(Fs.Path.Combine(RootPath, "foobar", "private.key")).Should().BeTrue();
-        Fs.File.Exists(Fs.Path.Combine(RootPath, "foobar", "encryptconfig.json")).Should().BeTrue();
+        Fs.File.Exists(Fs.Path.Combine(RootPath, "foobar", PublicKeyFileName)).Should().BeTrue();
+        Fs.File.Exists(Fs.Path.Combine(RootPath, "foobar", PrivateKeyFileName)).Should().BeTrue();
+        Fs.File.Exists(Fs.Path.Combine(RootPath, "foobar", ConfigFileName)).Should().BeTrue();
     }
 }

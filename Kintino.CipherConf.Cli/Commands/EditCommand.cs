@@ -1,4 +1,5 @@
-﻿using Kintino.CipherConf.App.Services;
+﻿using Kintino.CipherConf.App.Dependencies;
+using Kintino.CipherConf.App.Services;
 using Kintino.CipherConf.Cli.Adaptors.SpectreConsole;
 using Spectre.Console.Cli;
 using System.ComponentModel;
@@ -6,7 +7,7 @@ using System.IO.Abstractions;
 
 namespace Kintino.CipherConf.Cli.Commands;
 
-internal class EditCommand(IEncryptConfigApp app, IFileSystem fs) : CommandWithGlobalSettings<EditCommand.EditCommandSettings>
+internal class EditCommand(IEncryptConfigApp app, IFileSystem fs, ITextEditor textEditor) : CommandWithGlobalSettings<EditCommand.EditCommandSettings>
 {
     public class EditCommandSettings : GlobalSettings
     {
@@ -20,6 +21,6 @@ internal class EditCommand(IEncryptConfigApp app, IFileSystem fs) : CommandWithG
         var projectFolder = GetProjectTargetDir(settings, fs);
         var cwd = fs.Directory.GetCurrentDirectory();
         var filePath = fs.Path.Combine(cwd, settings.File);
-        return TryRunAsync(() => app.EditFile(cwd, filePath));
+        return TryRunAsync(() => app.EditFile(textEditor, cwd, filePath));
     }
 }

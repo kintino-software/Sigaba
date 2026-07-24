@@ -6,10 +6,10 @@ public static class Extensions
 {
     extension(IFileSystem fs)
     {
-        public JsonDoc InspectJson(string filePath)
+        public JsonTester InspectJson(string filePath)
         {
             var jsonContent = fs.File.ReadAllText(filePath);
-            return JsonDoc.Parse(jsonContent);
+            return JsonTester.Parse(jsonContent);
         }
     }
 }

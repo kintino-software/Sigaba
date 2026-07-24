@@ -18,9 +18,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kintino.CipherConf.Abstractions\Kintino.CipherConf.Abstractions.csproj" />
-    <ProjectReference Include="..\Kintino.CipherConf.Crypto\Kintino.CipherConf.Crypto.csproj" />
-    <ProjectReference Include="..\Kintino.CipherConf.Documents\Kintino.CipherConf.Documents.csproj" />
-    <ProjectReference Include="..\Kintino.CipherConf.IO\Kintino.CipherConf.IO.csproj" />
   </ItemGroup>
 
 </Project>

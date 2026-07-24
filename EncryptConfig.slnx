@@ -7,6 +7,9 @@
     <Project Path="Kintino.CipherConf.App.Test/Kintino.CipherConf.App.Test.csproj" Id="74e1df41-31e4-40e9-bfe9-17fb8ea497d1" />
     <Project Path="Kintino.CipherConf.App/Kintino.CipherConf.App.csproj" Id="605781c5-76f2-46a4-b11e-5173cf641776" />
   </Folder>
+  <Folder Name="/App/DependencyInjection/">
+    <Project Path="Kintino.CipherConf.DependencyInjection/Kintino.CipherConf.DependencyInjection.csproj" Id="3b8ed2c0-4811-40b0-88d0-d7b14666a4fa" />
+  </Folder>
   <Folder Name="/Modules/" />
   <Folder Name="/Modules/Crypto/">
     <Project Path="Kintino.CipherConf.Crypto.Test/Kintino.CipherConf.Crypto.Test.csproj" Id="9471fed4-8468-455c-b0f2-904e462ff43d" />

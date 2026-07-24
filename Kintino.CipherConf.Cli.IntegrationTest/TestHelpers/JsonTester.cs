@@ -2,21 +2,21 @@
 
 namespace Kintino.CipherConf.Cli.TestHelpers;
 
-public class JsonDoc
+public class JsonTester
 {
     private readonly JsonDocument document;
-    private JsonDoc(JsonDocument document)
+
+    private JsonTester(JsonDocument document) => this.document = document;
+
+    public static JsonTester Parse(string jsonString)
     {
-        this.document = document;
+        var document = JsonDocument.Parse(
+            jsonString,
+            new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip });
+        return new JsonTester(document);
     }
 
-    public static JsonDoc Parse(string json)
-    {
-        var document = JsonDocument.Parse(json, new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip });
-        return new JsonDoc(document);
-    }
-
-    public JsonDoc ShouldHavePropertyWithValue(string propertyName, string expectedValueAsString)
+    public JsonTester ShouldHavePropertyWithValue(string propertyName, string expectedValueAsString)
     {
         if (!TryGetValue(propertyName, out var value))
         {
@@ -29,7 +29,7 @@ public class JsonDoc
         return this;
     }
 
-    public JsonDoc ShouldHavePropertyWithValueThatIsNot(string propertyName, string expectedValueAsString)
+    public JsonTester ShouldHavePropertyWithValueThatIsNot(string propertyName, string expectedValueAsString)
     {
         if (!TryGetValue(propertyName, out var value))
         {

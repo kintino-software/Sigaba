@@ -1,22 +1,17 @@
 ﻿using Kintino.CipherConf.App.Dependencies;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Spectre.Console.Cli;
-using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 
 namespace Kintino.CipherConf.Cli.TestHelpers;
 
 public abstract class BaseTest
 {
+    public const string ConfigFileName = "config.json";
+    public const string PrivateKeyFileName = "private.key";
+    public const string PublicKeyFileName = "public.key";
+
+    protected static string RootPath { get; } = OperatingSystem.IsWindows() ? @"C:\" : "/";
     protected MockFileSystem Fs { get; } = new();
     protected ITextEditor TextEditor { get; } = Substitute.For<ITextEditor>();
-    protected static string RootPath { get; }
-
-    static BaseTest()
-    {
-        RootPath = OperatingSystem.IsWindows() ? @"C:\" : "/";
-    }
 
     protected BaseTest()
     {
@@ -25,18 +20,13 @@ public abstract class BaseTest
 
     protected CliApp CreateApp()
     {
-        return new CliApp(
-            (services) =>
-            {
-                services.RemoveAll<ITextEditor>();
-                services.RemoveAll<IFileSystem>();
-                services.AddSingleton<ITextEditor>(TextEditor);
-                services.AddSingleton<IFileSystem>(Fs);
-            },
-            (configuratior) =>
-            {
-                configuratior.PropagateExceptions();
-            });
+        return new CliApp(config =>
+        {
+            config.FileSystem = Fs;
+            config.ToolSettingsFileName = ConfigFileName;
+            config.PrivateKeyFileName = PrivateKeyFileName;
+            config.PublicKeyFileName = PublicKeyFileName;
+        });
     }
 
 }

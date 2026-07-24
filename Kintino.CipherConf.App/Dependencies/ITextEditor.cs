@@ -11,6 +11,7 @@ public interface ITextEditor
     /// Edits the specified file.
     /// </summary>
     /// <param name="filePath">The path of the file to edit.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    ValueTask EditFile(string filePath);
+    /// <returns>A task that represents the asynchronous operation. 
+    /// The task should be completed when the editor is closed, saving or not the file changes.</returns>
+    Task EditFile(string filePath);
 }

@@ -5,7 +5,6 @@ namespace Kintino.CipherConf.Cli.Adaptors.SpectreConsole;
 
 internal abstract class CommandWithGlobalSettings<TGlobalSettings> : AsyncCommand<TGlobalSettings> where TGlobalSettings : GlobalSettings
 {
-
     protected static async Task<int> TryRunAsync(Func<ValueTask> operation)
     {
         await operation();

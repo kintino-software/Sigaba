@@ -5,7 +5,7 @@ namespace Kintino.CipherConf.Cli.Services;
 
 internal class WindowsEditTextEditor : ITextEditor
 {
-    public async ValueTask EditFile(string filePath)
+    public async Task EditFile(string filePath)
     {
         var sb = new StringBuilder();
         var result = await CliWrap.Cli.Wrap("edit")

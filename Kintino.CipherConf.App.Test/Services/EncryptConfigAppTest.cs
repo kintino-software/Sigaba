@@ -1,5 +1,4 @@
 ﻿using Kintino.CipherConf.App.Dependencies;
-using Kintino.CipherConf.App.Services;
 using Kintino.CipherConf.App.TestHelpers;
 using Kintino.CipherConf.Crypto;
 using Kintino.CipherConf.Documents;
@@ -7,7 +6,7 @@ using Kintino.CipherConf.IO;
 using Kintino.CipherConf.Models;
 using Kintino.CipherConf.Primitives;
 
-namespace Kintino.CipherConf.App.Implementations;
+namespace Kintino.CipherConf.App.Services;
 
 public class EncryptConfigAppTest
 {
@@ -23,7 +22,6 @@ public class EncryptConfigAppTest
     {
         return new EncryptConfigApp(
             this.FileOperations,
-            this.TextEditor,
             this.AsymmetricCipher,
             this.ContextFactory,
             this.ContextRepository,
@@ -84,16 +82,6 @@ public class EncryptConfigAppTest
             context.PublicKey,
             context.FieldFilter);
     }
-
-    // DecipherFiles
-
-
-
-    // EditFile
-
-
-
-
 
 }
 
