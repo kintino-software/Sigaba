@@ -1,30 +1,31 @@
 ﻿using Kintino.CipherConf.Crypto;
-using Kintino.CipherConf.Documents.Adaptors;
 using Kintino.CipherConf.Primitives;
 
 namespace Kintino.CipherConf.Documents.TestHelpers;
 
 public class FakeSymmetricCipher : ISymmetricCipher
 {
+    public int Version { get; } = 1;
+    public PlainKey Key { get; } = new([1, 2, 3]);
+    public Nonce Nonce { get; } = new([4, 5, 6]);
+
     public virtual PlainData Decrypt(PlainKey cipherKey, EncryptedData encryptedData, Nonce nonce)
     {
-        var base64 = encryptedData.Bytes.ToUTF8String();
-        var splits = base64.Split('.');
-        if (splits.Length != 3)
-            throw new InvalidOperationException("Invalid encrypted data format.");
-        var savedNonce = new Nonce(new(splits[0].FromBase64String()));
-        if (!savedNonce.Bytes.SequenceEqual(nonce.Bytes)) throw new Exception("Wrong nonce!");
+        if (!cipherKey.Bytes.SequenceEqual(Key.Bytes))
+            throw new Exception("Wrong key!");
+        if (!nonce.Bytes.SequenceEqual(Nonce.Bytes))
+            throw new Exception("Wrong nonce!");
+        return new PlainData([.. encryptedData.Bytes.Reverse()]);
 
-        var savedKey = new PlainKey(new(splits[2].FromBase64String()));
-        if (!savedKey.Bytes.SequenceEqual(cipherKey.Bytes)) throw new Exception("Wrong key!");
 
-        var savedPlainData = new PlainData(splits[1].FromBase64String());
-        return savedPlainData;
     }
 
     public virtual EncryptedData Encrypt(PlainKey plainKey, PlainData plainData, Nonce nonce)
     {
-        var base64 = $"{nonce.Bytes.ToBase64String()}.{plainData.Bytes.ToBase64String()}.{plainKey.Bytes.ToBase64String()}";
-        return new EncryptedData(base64.ToUTF8Bytes());
+        return new EncryptedData([.. plainData.Bytes.Reverse()]);
     }
+
+    public PlainKey GenerateNewKey() => Key;
+
+    public Nonce GenerateNewNonce() => Nonce;
 }

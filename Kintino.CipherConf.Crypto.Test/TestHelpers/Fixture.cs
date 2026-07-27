@@ -4,7 +4,7 @@ namespace Kintino.CipherConf.Crypto.TestHelpers;
 
 public abstract class BaseTest
 {
-    public byte[] GetRandomBytes(int length = 32)
+    protected byte[] GetRandomBytes(int length = 32)
     {
         var randomBytes = new byte[length];
         using var rng = RandomNumberGenerator.Create();

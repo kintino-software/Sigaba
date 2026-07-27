@@ -6,8 +6,11 @@ namespace Kintino.CipherConf.Documents.Services.Json;
 
 internal class JsonDocumentModel : IDocumentModel
 {
+    public const string MetadataFieldName = "__metadata__";
     JsonByteScanner? byteScanner = null;
     private readonly List<JsonFieldReplacement> replacements = [];
+
+    public DocumentMetadata Metadata { get; private set; } = new();
 
     // IDocumentModel implementation
 
@@ -87,5 +90,20 @@ internal class JsonDocumentModel : IDocumentModel
         if (byteScanner is null)
             throw new InvalidOperationException("Document has not been parsed yet.");
         return byteScanner;
+    }
+
+    private static DocumentMetadata GetMetadata(JsonByteScanner scanner)
+    {
+        var metadataRaw = scanner.GetRawValue(MetadataFieldName);
+        if (metadataRaw is null)
+            return new DocumentMetadata();
+        var metadata = JsonSerializer.Deserialize<DocumentMetadata>(metadataRaw);
+        return metadata ?? new DocumentMetadata();
+    }
+
+    private static void SetMetadata(JsonByteScanner scanner, DocumentMetadata metadata)
+    {
+        var metadataRaw = JsonSerializer.Serialize(metadata);
+        scanner.Replace(new JsonFieldReplacement(MetadataFieldName, metadataRaw));
     }
 }

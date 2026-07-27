@@ -22,8 +22,8 @@ public class ContextRepositoryTest : BaseTest
     {
         return new Context
         {
-            PrivateKey = new PrivateKey(new([1, 2, 3])),
-            PublicKey = new PublicKey(new([4, 5, 6])),
+            PrivateKey = new PrivateKey([1, 2, 3]),
+            PublicKey = new PublicKey([4, 5, 6]),
             FieldFilterImpl = new FieldFilter(".*"),
             FileFilterImpl = new FileFilter(".*", ".*")
         };

@@ -2,6 +2,8 @@
 
 public class JsonByteScannerTest
 {
+    // Create
+
     [Fact]
     public void Should_get_correct_locations_of_values_with_corresponding_key()
     {
@@ -11,15 +13,17 @@ public class JsonByteScannerTest
 
         var service = JsonByteScanner.Create(originalJson);
 
-        service.KeyToFieldDataMap.Should().BeEquivalentTo(new Dictionary<string, JsonFieldData>()
+        service.KeyToFieldDataMap.Should().BeEquivalentTo(new Dictionary<string, JsonValueCoordinate>()
         {
-            ["textKey"] = new JsonFieldData("textKey", 13, 6),
-            ["number"] = new JsonFieldData("number", 31, 2),
-            ["array"] = new JsonFieldData("array", 44, 9),
-            ["objectKey.nestedKey"] = new JsonFieldData("objectKey.nestedKey", 83, 13),
-            ["nullKey"] = new JsonFieldData("nullKey", 111, 4),
+            ["textKey"] = new JsonValueCoordinate("textKey", 13, 6),
+            ["number"] = new JsonValueCoordinate("number", 31, 2),
+            ["array"] = new JsonValueCoordinate("array", 44, 9),
+            ["objectKey.nestedKey"] = new JsonValueCoordinate("objectKey.nestedKey", 83, 13),
+            ["nullKey"] = new JsonValueCoordinate("nullKey", 111, 4),
         });
     }
+
+    // GetRawValue
 
     [Fact]
     public void Should_get_raw_values()
@@ -58,6 +62,8 @@ public class JsonByteScannerTest
 
         service.GetRawValue("inexistentKey").Should().BeNull();
     }
+
+    // Replace
 
     [Fact]
     public void Should_replace_raw_values()

@@ -1,19 +1,28 @@
-﻿using Kintino.CipherConf.Primitives;
+﻿using Kintino.CipherConf.Documents.Models;
+using Kintino.CipherConf.Primitives;
 using System.Text.Json;
 
 namespace Kintino.CipherConf.Documents.Services;
 
 internal class FieldPacker
 {
-    private record SerializationObj(string Nonce64, string EncryptedData64, string EncryptedKey64);
+    private record SerializationObj(int Scv, int Acv, int Kidx, string Nonce, string Data);
 
-    public static string Pack(EncryptedData encryptedData, Nonce nonce, EncryptedKey encryptedKey)
+    public static string Pack(EncryptedFieldPack package)
     {
+        package.Deconstruct(
+            out var symmetricCipherVersion,
+            out var asymmetricCipherVersion,
+            out var keyIndex,
+            out var encryptedData, out var nonce);
+
         // data to serialization object
         var serializationPath = new SerializationObj(
-            Nonce64: nonce.Bytes.ToBase64String(),
-            EncryptedData64: encryptedData.Bytes.ToBase64String(),
-            EncryptedKey64: encryptedKey.Bytes.ToBase64String());
+            Scv: symmetricCipherVersion,
+            Acv: asymmetricCipherVersion,
+            Kidx: keyIndex,
+            Nonce: nonce.Bytes.ToBase64String(),
+            Data: encryptedData.Bytes.ToBase64String());
 
         // serialize to json and base64
         var json = JsonSerializer.Serialize(serializationPath)
@@ -25,7 +34,7 @@ internal class FieldPacker
         return Wrap(json64);
     }
 
-    public static (EncryptedData, Nonce, EncryptedKey) Unpack(string package)
+    public static EncryptedFieldPack Unpack(string package)
     {
         // unwrap
         var pack = Unwrap(package);
@@ -37,10 +46,13 @@ internal class FieldPacker
             ?? throw new InvalidOperationException("Deserialization failed");
 
         // serialization object -> result
-        return (
-            new EncryptedData(serializationPack.EncryptedData64.FromBase64String()),
-            new Nonce(new PlainData(serializationPack.Nonce64.FromBase64String())),
-            new EncryptedKey(new EncryptedData(serializationPack.EncryptedKey64.FromBase64String())));
+        return new EncryptedFieldPack(
+            SymmetricCipherVersion: serializationPack.Scv,
+            AsymmetricCipherVersion: serializationPack.Acv,
+            KeyIndex: serializationPack.Kidx,
+            EncryptedData: new EncryptedData(serializationPack.Data.FromBase64String()),
+            Nonce: new Nonce(new PlainData(serializationPack.Nonce.FromBase64String())))
+        ;
     }
 
     public static bool IsEncryptedFieldValue(string str)

@@ -9,7 +9,7 @@ public class ContextFactoryTest
     {
         var service = new ContextFactory();
 
-        var actual = service.CreateDefault(new PublicKey(new([1, 2, 3])), new PrivateKey(new([1, 2, 3])));
+        var actual = service.CreateDefault(new PublicKey([1, 2, 3]), new PrivateKey([1, 2, 3]));
 
         actual.Should().NotBeNull().And.BeOfType<Context>();
     }

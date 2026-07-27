@@ -26,7 +26,6 @@
   <Folder Name="/UI/" />
   <Folder Name="/UI/Cli/">
     <Project Path="Kintino.CipherConf.Cli.IntegrationTest/Kintino.CipherConf.Cli.IntegrationTest.csproj" Id="1e021457-f8ac-4c1d-929c-66cfb48db55f" />
-    <Project Path="Kintino.CipherConf.Cli.Test/Kintino.CipherConf.Cli.Test.csproj" />
     <Project Path="Kintino.CipherConf.Cli/Kintino.CipherConf.Cli.csproj" />
   </Folder>
   <Folder Name="/_Solution items/">

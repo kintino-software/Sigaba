@@ -3,17 +3,21 @@ using System.Text.Json;
 
 namespace Kintino.CipherConf.Documents.Services.Json;
 
-internal record JsonFieldData(string Key, int StartIndex, int Length);
+// Maps a json key to a coordinate (start - end) of it's value in a raw byte array.
+internal record JsonValueCoordinate(string Key, int StartIndex, int Length);
 
+// Represents a replacement of a json field value with a new value.
 internal record JsonFieldReplacement(string Key, string NewValue);
 
+// Reads a json documet byte by byte and collects the coordinates of each field value in the document.
+// It also allows replacing field values with new values without parsing the entire document.
 internal class JsonByteScanner
 {
     private static JsonReaderOptions readerOptions = new() { CommentHandling = JsonCommentHandling.Allow, AllowTrailingCommas = true };
     private readonly byte[] originalBytes;
-    public IReadOnlyDictionary<string, JsonFieldData> KeyToFieldDataMap { get; }
+    public IReadOnlyDictionary<string, JsonValueCoordinate> KeyToFieldDataMap { get; }
 
-    private JsonByteScanner(byte[] originalBytes, IReadOnlyDictionary<string, JsonFieldData> keyToFieldDataMap)
+    private JsonByteScanner(byte[] originalBytes, IReadOnlyDictionary<string, JsonValueCoordinate> keyToFieldDataMap)
     {
         this.originalBytes = originalBytes;
         this.KeyToFieldDataMap = keyToFieldDataMap;
@@ -37,23 +41,27 @@ internal class JsonByteScanner
 
     public string Replace(params JsonFieldReplacement[] replacements)
     {
+        // no changes, so return the original string
         if (KeyToFieldDataMap.Count == 0)
             return Encoding.UTF8.GetString(originalBytes);
 
+        // create a dictionary for quick lookup of replacements by key
         var replacementMap = replacements.ToDictionary(r => r.Key, r => r.NewValue);
 
+        // variable lenght byte collection as changes will likely change the length of the document
         var output = new List<byte>(originalBytes.Length);
         var cursor = 0;
 
         // Process in order — forward pass, no index shifting issues
-        foreach (var r in KeyToFieldDataMap.Values.OrderBy(v => v.StartIndex))
+        foreach (var coordinate in KeyToFieldDataMap.Values.OrderBy(v => v.StartIndex))
         {
-            if (replacementMap.TryGetValue(r.Key, out var newValue))
+            if (!replacementMap.TryGetValue(coordinate.Key, out var newValue))
             {
-                output.AddRange(originalBytes[cursor..r.StartIndex]);   // copy unchanged chunk
-                output.AddRange(Encoding.UTF8.GetBytes(newValue));      // insert new value
-                cursor = r.StartIndex + r.Length;                       // skip old value
+                continue;
             }
+            output.AddRange(originalBytes[cursor..coordinate.StartIndex]);  // write the original key and other elements to the output
+            output.AddRange(Encoding.UTF8.GetBytes(newValue));              // write new value to the output
+            cursor = coordinate.StartIndex + coordinate.Length;             // put the cursor after the original value for the next iteration
         }
 
         output.AddRange(originalBytes[cursor..]); // copy remainder
@@ -61,10 +69,10 @@ internal class JsonByteScanner
         return Encoding.UTF8.GetString([.. output]);
     }
 
-    private static Dictionary<string, JsonFieldData> CollectLocations(ReadOnlySpan<byte> utf8Bytes)
+    private static Dictionary<string, JsonValueCoordinate> CollectLocations(ReadOnlySpan<byte> utf8Bytes)
     {
         var reader = new Utf8JsonReader(utf8Bytes, readerOptions);
-        var result = new Dictionary<string, JsonFieldData>();
+        var result = new Dictionary<string, JsonValueCoordinate>();
 
         string? currentKey = null;
         var keyStack = new Stack<string?>();
@@ -116,7 +124,7 @@ internal class JsonByteScanner
 
                     var tokenEnd = (int)reader.BytesConsumed;
 
-                    result[currentKey] = new JsonFieldData(
+                    result[currentKey] = new JsonValueCoordinate(
                         Key: currentKey,
                         StartIndex: tokenStart,
                         Length: (tokenEnd - tokenStart)

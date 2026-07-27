@@ -7,13 +7,11 @@ namespace Kintino.CipherConf.Crypto;
 /// </summary>
 public interface IAsymmetricCipher
 {
-    /// <summary>
-    /// Creates a new pair of public and private keys for asymmetric encryption.
-    /// </summary>
-    /// <returns>A tuple containing the generated private key and public key.</returns>
+    int Version { get; }
+
     (PublicKey PublicKey, PrivateKey PrivateKey) CreateNewKeyPair();
 
-    EncryptedData Encrypt(PlainData plainData, PublicKey publicKey);
+    EncryptedKey Encrypt(PlainKey plainData, PublicKey publicKey);
 
-    PlainData Decrypt(EncryptedData encryptedData, PrivateKey privateKey);
+    PlainKey Decrypt(EncryptedKey encryptedData, PrivateKey privateKey);
 }
