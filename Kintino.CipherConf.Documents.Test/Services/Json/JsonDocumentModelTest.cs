@@ -21,27 +21,112 @@ public class JsonDocumentModelTest
     // Parse
 
     [Fact]
-    public void Should_keep_original_content_and_formatting()
+    public void Should_parse_content_with_comments_and_trailing_commas()
     {
         var originalJson = """
+        // comment
         {
+            // comment
             "textKey": "text",
-                            "numberKey": 123,
+            "numberKey": 123,
             "booleanKey": true,
-            // comment 1
             "arrayKey": [1, 2, 3],
             "objectKey": {
-                    // comment 2
-                    "nestedKey": "nestedValue"
+                "nestedKey": "nestedValue", // trailing comma
             },
-            "nullKey": null
+            "nullKey": null, // trailing comma
         }
         """;
+        AssertJsonIsValid(originalJson);
 
         var action = () => model.Parse(originalJson);
 
         action.Should().NotThrow();
+    }
 
+    // Serialize
+
+    [Fact]
+    public void Should_serialize_content()
+    {
+        var originalJson = """
+        // comment
+        {
+            // comment
+            "textKey": "text",
+            "numberKey": 123,
+            "booleanKey": true,
+            "arrayKey": [1, 2, 3],
+            "objectKey": {
+                "nestedKey": "nestedValue", // trailing comma
+            },
+            "nullKey": null, // trailing comma
+        }
+        """;
+        // current implementation reorders fields, removes comments and trailing commas, and adds a metadata field
+        var expectedJson = """
+        {
+            "textKey": "text",
+            "numberKey": 123,
+            "booleanKey": true,
+            "arrayKey": [
+                1,
+                2,
+                3
+            ],
+            "nullKey": null,
+            "objectKey": {
+                "nestedKey": "nestedValue"
+            },
+            "__metadata__": {
+                "base64Keys": {}
+            }
+        }
+        """;
+
+        model.Parse(originalJson);
+        var actualJson = model.Serialize();
+
+        actualJson.Should().Be(expectedJson);
+        AssertJsonIsValid(actualJson);
+    }
+
+    [Fact]
+    public void Should_serialize_with_updated_metadata_values()
+    {
+        var originalJson = """
+        {
+            "textKey": "text",
+            "numberKey": 123,
+            "__metadata__": {
+                "base64Keys": {
+                    "1": "aaa",
+                    "2": "bbb",
+        
+                }
+            }
+        }
+        """;
+        var expectedJson = """
+        {
+            "textKey": "text",
+            "numberKey": 123,
+            "__metadata__": {
+                "base64Keys": {
+                    "1": "aaa",
+                    "2": "bbb",
+                    "3": "ccc"
+                }
+            }
+        }
+        """;
+        model.Parse(originalJson);
+
+        model.Metadata.AddBase64Key("ccc", out _);
+        var actualJson = model.Serialize();
+
+        actualJson.Should().Be(expectedJson);
+        AssertJsonIsValid(actualJson);
     }
 
     // GetFieldNames
@@ -62,86 +147,6 @@ public class JsonDocumentModelTest
         model.Parse(json);
 
         model.GetFieldNames().Should().BeEquivalentTo(["field1", "field2", "targetParent.target"]);
-    }
-
-    // SetFieldValue
-
-    [Fact]
-    public void Should_set_field_value()
-    {
-        var json = """
-        {
-            "field1": "value1",
-            "field2": 42,
-            "field3": true,
-            "field4": [1, 2, 3],
-            "targetParent": {
-                "target": null
-            }
-        }
-        """;
-        var expected = """
-        {
-            "field1": 42,
-            "field2": true,
-            "field3": [1,2,3],
-            "field4": null,
-            "targetParent": {
-                "target": "foobar"
-            }
-        }
-        """;
-        model.Parse(json);
-
-        model.SetFieldValue("field1", 42);
-        model.SetFieldValue("field2", true);
-        model.SetFieldValue("field3", new int[] { 1, 2, 3 });
-        model.SetFieldValue<object>("field4", null);
-        model.SetFieldValue("targetParent.target", "foobar");
-        var result = model.Serialize();
-
-        AssertJsonIsValid(result);
-        result.Should().Be(expected);
-    }
-
-    // SetFieldRawValue
-
-    [Fact]
-    public void Should_set_field_raw_value()
-    {
-        var json = """
-        {
-            "field1": "value1",
-            "field2": 42,
-            "field3": true,
-            "field4": [1, 2, 3],
-            "targetParent": {
-                "target": null
-            }
-        }
-        """;
-        var expected = """
-        {
-            "field1": 42,
-            "field2": true,
-            "field3": [1,2,3],
-            "field4": null,
-            "targetParent": {
-                "target": "foobar"
-            }
-        }
-        """;
-        model.Parse(json);
-
-        model.SetFieldRawValue("field1", "42");
-        model.SetFieldRawValue("field2", "true");
-        model.SetFieldRawValue("field3", "[1,2,3]");
-        model.SetFieldRawValue("field4", "null");
-        model.SetFieldRawValue("targetParent.target", @"""foobar""");
-        var result = model.Serialize();
-
-        AssertJsonIsValid(result);
-        result.Should().Be(expected);
     }
 
     // GetFieldRawValue
@@ -180,6 +185,7 @@ public class JsonDocumentModelTest
             "field2": 42,
             "field3": true,
             "field4": [1, 2, 3],
+            "field5": null,
             "targetParent": {
                 "target": null
             }
@@ -194,40 +200,99 @@ public class JsonDocumentModelTest
         model.TryGetValue<bool>("field3", out var field3).Should().BeTrue();
         field3.Should().Be(true);
         model.TryGetValue<int[]>("field4", out var field4).Should().BeTrue();
-        field4.Should().BeEquivalentTo(new int[] { 1, 2, 3 });
+        field4.Should().BeEquivalentTo([1, 2, 3]);
         model.TryGetValue<object>("targetParent.target", out var target).Should().BeTrue();
         target.Should().BeNull();
     }
 
-    // Serialize
+    // SetFieldRawValue
 
     [Fact]
-    public void Should_serialize_document_keeping_format()
+    public void Should_set_field_raw_value()
     {
         var json = """
-            {
-            // comment 1
+        {
             "field1": "value1",
-                        "targetParent": {
+            "field2": 42,
+            "field3": true,
+            "field4": [1, 2, 3],
+            "targetParent": {
                 "target": null
-                // comment 2
             }
-                            }
+        }
         """;
-
         var expected = """
-            {
-            // comment 1
-            "field1": "foobar",
-                        "targetParent": {
-                "target": null
-                // comment 2
+        {
+            "field1": 42,
+            "field2": true,
+            "field3": [
+                1,
+                2,
+                3
+            ],
+            "field4": null,
+            "targetParent": {
+                "target": "foobar"
+            },
+            "__metadata__": {
+                "base64Keys": {}
             }
-                            }
+        }
         """;
         model.Parse(json);
-        model.SetFieldRawValue("field1", @"""foobar""");
 
+        model.SetFieldRawValue("field1", "42");
+        model.SetFieldRawValue("field2", "true");
+        model.SetFieldRawValue("field3", "[1,2,3]");
+        model.SetFieldRawValue("field4", "null");
+        model.SetFieldRawValue("targetParent.target", @"""foobar""");
+        var result = model.Serialize();
+
+        AssertJsonIsValid(result);
+        result.Should().Be(expected);
+    }
+
+    // SetFieldValue
+
+    [Fact]
+    public void Should_set_field_value()
+    {
+        var json = """
+        {
+            "field1": "value1",
+            "field2": 42,
+            "field3": true,
+            "field4": [1, 2, 3],
+            "targetParent": {
+                "target": null
+            }
+        }
+        """;
+        var expected = """
+        {
+            "field1": 42,
+            "field2": true,
+            "field3": [
+                1,
+                2,
+                3
+            ],
+            "field4": null,
+            "targetParent": {
+                "target": "foobar"
+            },
+            "__metadata__": {
+                "base64Keys": {}
+            }
+        }
+        """;
+        model.Parse(json);
+
+        model.SetFieldValue("field1", 42);
+        model.SetFieldValue("field2", true);
+        model.SetFieldValue("field3", new int[] { 1, 2, 3 });
+        model.SetFieldValue<object>("field4", null);
+        model.SetFieldValue("targetParent.target", "foobar");
         var result = model.Serialize();
 
         AssertJsonIsValid(result);

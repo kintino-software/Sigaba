@@ -1,109 +1,101 @@
 ﻿using Kintino.CipherConf.Documents.Models;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Kintino.CipherConf.Documents.Services.Json;
 
 internal class JsonDocumentModel : IDocumentModel
 {
-    public const string MetadataFieldName = "__metadata__";
-    JsonByteScanner? byteScanner = null;
-    private readonly List<JsonFieldReplacement> replacements = [];
+    public const string DocumentMetadataKey = "__metadata__";
+    private static readonly JsonSerializerOptions serializerOptions = new()
+    {
+        WriteIndented = true,
+        IndentSize = 4,
+        DefaultIgnoreCondition = JsonIgnoreCondition.Never,
+        AllowTrailingCommas = true,
+        AllowDuplicateProperties = false,
+        ReadCommentHandling = JsonCommentHandling.Skip,
+        PropertyNamingPolicy = null
+    };
+    private readonly JsonSerializerOptions metaDataSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    };
+    private RawObject? rootMeta = null;
+    public DocumentMetadata Metadata { get; private set; } = new([]);
 
-    public DocumentMetadata Metadata { get; private set; } = new();
-
-    // IDocumentModel implementation
+    // serialization
 
     void IDocumentModel.Parse(string documentContent)
     {
-        replacements.Clear();
-        byteScanner = JsonByteScanner.Create(documentContent);
-    }
+        rootMeta = JsonSerializer.Deserialize<RawObject>(documentContent, serializerOptions)
+            ?? throw new Exception("Could not parse document content");
 
-    IEnumerable<string> IDocumentModel.GetFieldNames()
-    {
-        var scanner = GetScannerOrThrow();
-        return scanner.KeyToFieldDataMap.Keys;
-    }
-
-    void IDocumentModel.SetFieldValue<T>(string key, [MaybeNull] T value)
-    {
-        if (value is null)
+        if (!rootMeta.TryGetChild<JsonDocumentMetadata>(DocumentMetadataKey, out var jsonMetadata, metaDataSerializerOptions))
         {
-            // Json values can be null or undefined, while C# values treat as the same thing.
-            // So we must pass "null" string as a raw value to represent null values in the JSON document.
-            replacements.Add(new(key, "null"));
-            return;
+            jsonMetadata = new();
         }
-        var rawValue = JsonSerializer.Serialize(value);
-        replacements.Add(new(key, rawValue));
-    }
-
-    void IDocumentModel.SetFieldRawValue(string key, string rawValue)
-    {
-        replacements.Add(new(key, rawValue));
-    }
-
-    string IDocumentModel.GetFieldRawValue(string key)
-    {
-        var scanner = GetScannerOrThrow();
-        return scanner.GetRawValue(key)
-            ?? throw new KeyNotFoundException($"Field '{key}' not found in the document.");
-    }
-
-    [return: MaybeNull]
-    bool IDocumentModel.TryGetValue<T>(string key, [MaybeNull] out T value)
-    {
-        var scanner = GetScannerOrThrow();
-        var rawValue = scanner.GetRawValue(key);
-
-        if (rawValue is null)
-        {
-            // value not found, return false and set value to default
-            value = default;
-            return default;
-        }
-
-        try
-        {
-            // try to deserialize to the requested type. Deserialization may fail if the type is incompatible with the JSON value.
-            value = JsonSerializer.Deserialize<T>(rawValue);
-        }
-        catch (JsonException)
-        {
-            value = default;
-            return false;
-        }
-        return true;
+        this.Metadata = jsonMetadata.ToDocumentMetadata();
     }
 
     string IDocumentModel.Serialize()
     {
-        var scanner = GetScannerOrThrow();
-        return scanner.Replace([.. replacements]);
+        var root = GetRoot();
+        root.SetChild(DocumentMetadataKey, JsonDocumentMetadata.FromDocumentMetadata(Metadata), metaDataSerializerOptions);
+        return JsonSerializer.Serialize(root, serializerOptions);
+    }
+
+    // query
+
+    IEnumerable<string> IDocumentModel.GetFieldNames() => GetRoot().GetFieldPaths();
+
+
+    string IDocumentModel.GetFieldRawValue(string key)
+    {
+        var field = GetRoot().GetFieldByPath(key)
+            ?? throw new KeyNotFoundException($"Key '{key}' not found in the document.");
+        return field.RawValue;
+    }
+
+    bool IDocumentModel.TryGetValue<T>(string key, [MaybeNull] out T value)
+    {
+        try
+        {
+            var rawValue = ((IDocumentModel)this).GetFieldRawValue(key);
+            value = rawValue == "null" ? default : JsonSerializer.Deserialize<T>(rawValue);
+            return true;
+        }
+        catch (KeyNotFoundException)
+        {
+            value = default;
+            return false;
+        }
+    }
+
+    // modification
+
+    void IDocumentModel.SetFieldValue<T>(string key, [MaybeNull] T value)
+    {
+        var rawValue = value is null ? "null" : JsonSerializer.Serialize(value);
+        ((IDocumentModel)this).SetFieldRawValue(key, rawValue);
+    }
+
+    void IDocumentModel.SetFieldRawValue(string key, string rawValue)
+    {
+        var field = GetRoot().GetFieldByPath(key)
+            ?? throw new KeyNotFoundException($"Key '{key}' not found in the document.");
+        field.SetRawValue(rawValue);
     }
 
     // helpers
 
-    private JsonByteScanner GetScannerOrThrow()
+    private RawObject GetRoot([CallerMemberName] string? callerName = null)
     {
-        if (byteScanner is null)
-            throw new InvalidOperationException("Document has not been parsed yet.");
-        return byteScanner;
+        if (rootMeta is null)
+            throw new InvalidOperationException($"Root meta object is null. Ensure that the document has been parsed and metadata has been set. Caller: {callerName}");
+        return rootMeta;
     }
 
-    private static DocumentMetadata GetMetadata(JsonByteScanner scanner)
-    {
-        var metadataRaw = scanner.GetRawValue(MetadataFieldName);
-        if (metadataRaw is null)
-            return new DocumentMetadata();
-        var metadata = JsonSerializer.Deserialize<DocumentMetadata>(metadataRaw);
-        return metadata ?? new DocumentMetadata();
-    }
-
-    private static void SetMetadata(JsonByteScanner scanner, DocumentMetadata metadata)
-    {
-        var metadataRaw = JsonSerializer.Serialize(metadata);
-        scanner.Replace(new JsonFieldReplacement(MetadataFieldName, metadataRaw));
-    }
 }
