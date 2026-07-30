@@ -2,7 +2,7 @@
 
 internal class DocumentMetadata(Dictionary<int, string> base64Keys)
 {
-    public IReadOnlyDictionary<int, string> Base64Keys => base64Keys;
+    public IReadOnlyDictionary<int, string> Base64EncryptedKeys => base64Keys;
 
     public void AddBase64Key(string key, out int index)
     {

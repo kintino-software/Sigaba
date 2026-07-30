@@ -49,8 +49,11 @@ internal class JsonDocumentModel : IDocumentModel
 
     // query
 
-    IEnumerable<string> IDocumentModel.GetFieldNames() => GetRoot().GetFieldPaths();
-
+    IEnumerable<string> IDocumentModel.GetFieldNames()
+    {
+        return GetRoot().GetFieldPaths()
+            .Where(f => f != DocumentMetadataKey); // exclude metadata field from any manipulation outside this boundary
+    }
 
     string IDocumentModel.GetFieldRawValue(string key)
     {
@@ -67,7 +70,7 @@ internal class JsonDocumentModel : IDocumentModel
             value = rawValue == "null" ? default : JsonSerializer.Deserialize<T>(rawValue);
             return true;
         }
-        catch (KeyNotFoundException)
+        catch
         {
             value = default;
             return false;

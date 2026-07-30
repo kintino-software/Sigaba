@@ -7,17 +7,17 @@ namespace Kintino.CipherConf.Documents;
 public class FileCipherTest : BaseTest
 {
     private readonly MockFileSystem fs = new();
-    private readonly FakeSymmetricCipher symmetricCipherV1 = new();
-    private readonly FakeAsymmetricCipher asymmetricCipherV1 = new();
+    private readonly FakeSymmetricCipher symmetricCipher = new();
+    private readonly FakeAsymmetricCipher asymmetricCipher = new();
     private readonly ICipherFactory cipherFactory = Substitute.For<ICipherFactory>();
     private readonly Predicate<string> fieldFilter = (f) => f.Contains("_secret");
 
     private IFileCipher CreateService()
     {
-        cipherFactory.GetLatestAsymmetricCipher().ReturnsForAnyArgs(asymmetricCipherV1);
-        cipherFactory.GetLatestSymmetricCipher().ReturnsForAnyArgs(symmetricCipherV1);
-        cipherFactory.GetAsymmetricCipher(1).Returns(asymmetricCipherV1);
-        cipherFactory.GetSymmetricCipher(1).Returns(symmetricCipherV1);
+        cipherFactory.GetLatestAsymmetricCipher().ReturnsForAnyArgs(asymmetricCipher);
+        cipherFactory.GetLatestSymmetricCipher().ReturnsForAnyArgs(symmetricCipher);
+        cipherFactory.GetAsymmetricCipher(default).ReturnsForAnyArgs(asymmetricCipher);
+        cipherFactory.GetSymmetricCipher(default).ReturnsForAnyArgs(symmetricCipher);
         return new FileCipher(fs, cipherFactory);
     }
 
@@ -29,22 +29,27 @@ public class FileCipherTest : BaseTest
         var service = CreateService();
         var jsonDocument = """
         {
-            "name_secret": "John Doe",
-            "age": 30,
-            "address": {
-                "street_secret": "123 Main St",
-                "city": "Anytown",
-                "state": "CA",
-                "zip": "12345"
+            "a_secret": "a value",
+            "b": 2,
+            "c": {
+                "d_secret": "d value",
+                "e": "e value",
             }
         }
         """;
         fs.AddFile("test.json", new MockFileData(jsonDocument));
 
-        await service.CipherFile("test.json", asymmetricCipherV1.CorrectPublicKey, fieldFilter);
-        var result = fs.GetFile("test.json").TextContents;
+        await service.CipherFile("test.json", asymmetricCipher.CorrectPublicKey, fieldFilter);
 
-        result.Should().NotBe(jsonDocument);
+        var evaluator = JsonEvaluator.FromFile(fs.GetFile("test.json"));
+        evaluator
+            .AssertValueIs("$.b", 2)
+            .AssertValueIs("$.c.e", "e value");
+        evaluator
+            .AssertValueIsNot("$.a_secret", "a value")
+            .AssertValueIsNot("$.c.d_secret", "d value");
+        evaluator
+            .AssertHasAnyValue("$['__metadata__']['keys']['1']");
     }
 
     // DecipherFile
@@ -65,13 +70,30 @@ public class FileCipherTest : BaseTest
             }
         }
         """;
+        var expectedJson = """
+        {
+            "name_secret": "John Doe",
+            "age": 30,
+            "address": {
+                "street_secret": "123 Main St",
+                "city": "Anytown",
+                "state": "CA",
+                "zip": "12345"
+            },
+            "__metadata__": {
+                "keys": {
+                    "1": "AwIB"
+                }
+            }
+        }
+        """;
         fs.AddFile("test.json", new MockFileData(originalJson));
 
-        await service.CipherFile("test.json", asymmetricCipherV1.CorrectPublicKey, fieldFilter);
-        await service.DecipherFile("test.json", asymmetricCipherV1.CorrectPrivateKey);
-        var result = fs.GetFile("test.json").TextContents;
+        await service.CipherFile("test.json", asymmetricCipher.CorrectPublicKey, fieldFilter);
+        await service.DecipherFile("test.json", asymmetricCipher.CorrectPrivateKey);
+        var actualJson = fs.GetFile("test.json").TextContents;
 
-        result.Should().Be(originalJson);
+        actualJson.Should().Be(expectedJson);
     }
 
     [Fact]
@@ -95,8 +117,8 @@ public class FileCipherTest : BaseTest
         """;
         fs.AddFile("test.json", new MockFileData(originalJson));
 
-        await service.CipherFile("test.json", asymmetricCipherV1.CorrectPublicKey, fieldFilter);
-        await service.DecipherFile("test.json", asymmetricCipherV1.CorrectPrivateKey);
+        await service.CipherFile("test.json", asymmetricCipher.CorrectPublicKey, fieldFilter);
+        await service.DecipherFile("test.json", asymmetricCipher.CorrectPrivateKey);
         var result = fs.GetFile("test.json").TextContents;
 
         result.Should().Be(originalJson);

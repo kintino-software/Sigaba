@@ -13,7 +13,7 @@ public class DocumentMetadataTest
         obj.AddBase64Key("key2", out int index2);
         index2.Should().Be(2);
 
-        obj.Base64Keys.Should().HaveCount(2);
+        obj.Base64EncryptedKeys.Should().HaveCount(2);
     }
 
     [Fact]

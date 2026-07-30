@@ -4,15 +4,15 @@ namespace Kintino.CipherConf.Documents.Services.Json;
 
 internal class JsonDocumentMetadata
 {
-    public Dictionary<int, string> Base64Keys { get; set; } = [];
+    public Dictionary<int, string> Keys { get; set; } = [];
 
-    public DocumentMetadata ToDocumentMetadata() => new(this.Base64Keys);
+    public DocumentMetadata ToDocumentMetadata() => new(this.Keys);
 
     public static JsonDocumentMetadata FromDocumentMetadata(DocumentMetadata metadata)
     {
         return new()
         {
-            Base64Keys = metadata.Base64Keys.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
+            Keys = metadata.Base64EncryptedKeys.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
         };
     }
 }
