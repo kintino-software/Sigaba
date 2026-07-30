@@ -1,16 +1,14 @@
 <Solution>
   <Folder Name="/App/" />
-  <Folder Name="/App/Abstractions/">
-    <Project Path="Kintino.CipherConf.Abstractions/Kintino.CipherConf.Abstractions.csproj" Id="95254681-ab9b-4d9c-8851-a1e82e66a800" />
-  </Folder>
   <Folder Name="/App/App/">
     <Project Path="Kintino.CipherConf.App.Test/Kintino.CipherConf.App.Test.csproj" Id="74e1df41-31e4-40e9-bfe9-17fb8ea497d1" />
     <Project Path="Kintino.CipherConf.App/Kintino.CipherConf.App.csproj" Id="605781c5-76f2-46a4-b11e-5173cf641776" />
   </Folder>
-  <Folder Name="/App/DependencyInjection/">
-    <Project Path="Kintino.CipherConf.DependencyInjection/Kintino.CipherConf.DependencyInjection.csproj" Id="3b8ed2c0-4811-40b0-88d0-d7b14666a4fa" />
-  </Folder>
   <Folder Name="/Modules/" />
+  <Folder Name="/Modules/Common/">
+    <Project Path="EncryptConfig.Common.Test/Kintino.CipherConf.Common.Test.csproj" Id="17a05f60-879b-4c74-9e2c-ddf824cb7c7d" />
+    <Project Path="EncryptConfig.Common/Kintino.CipherConf.Common.csproj" Id="c9e5ad63-aed2-49c4-85b9-5a474b24b356" />
+  </Folder>
   <Folder Name="/Modules/Crypto/">
     <Project Path="Kintino.CipherConf.Crypto.Test/Kintino.CipherConf.Crypto.Test.csproj" Id="9471fed4-8468-455c-b0f2-904e462ff43d" />
     <Project Path="Kintino.CipherConf.Crypto/Kintino.CipherConf.Crypto.csproj" Id="2c56c88f-6e3c-407c-b36f-1f7169fc7908" />
@@ -18,10 +16,6 @@
   <Folder Name="/Modules/Documents/">
     <Project Path="Kintino.CipherConf.Documents.Test/Kintino.CipherConf.Documents.Test.csproj" />
     <Project Path="Kintino.CipherConf.Documents/Kintino.CipherConf.Documents.csproj" />
-  </Folder>
-  <Folder Name="/Modules/IO/">
-    <Project Path="Kintino.CipherConf.IO.Test/Kintino.CipherConf.IO.Test.csproj" />
-    <Project Path="Kintino.CipherConf.IO/Kintino.CipherConf.IO.csproj" />
   </Folder>
   <Folder Name="/UI/" />
   <Folder Name="/UI/Cli/">

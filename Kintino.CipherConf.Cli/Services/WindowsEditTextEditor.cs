@@ -1,4 +1,4 @@
-﻿using Kintino.CipherConf.App.Dependencies;
+﻿using Kintino.CipherConf.App;
 using System.Text;
 
 namespace Kintino.CipherConf.Cli.Services;

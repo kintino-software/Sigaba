@@ -34,7 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kintino.CipherConf.DependencyInjection\Kintino.CipherConf.DependencyInjection.csproj" />
+    <ProjectReference Include="..\Kintino.CipherConf.App\Kintino.CipherConf.App.csproj" />
   </ItemGroup>
 
 </Project>

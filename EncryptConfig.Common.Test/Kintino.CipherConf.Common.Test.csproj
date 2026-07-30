@@ -5,11 +5,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <IsPackable>false</IsPackable>
-    <RootNamespace>Kintino.CipherConf.App</RootNamespace>
-    <NoWarn>CA1859;SYSLIB1045</NoWarn>
+    <RootNamespace>Kintino.CipherConf</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
+    <Using Include="Xunit" />
     <Using Include="AwesomeAssertions" />
     <Using Include="NSubstitute" />
   </ItemGroup>
@@ -24,7 +24,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.7.0" />
     <PackageReference Include="NSubstitute" Version="6.0.0" />
     <PackageReference Include="NSubstitute.Analyzers.CSharp" Version="1.0.17">
       <PrivateAssets>all</PrivateAssets>
@@ -38,15 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kintino.CipherConf.App\Kintino.CipherConf.App.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Using Include="Xunit" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="TestHelpers\" />
+    <ProjectReference Include="..\EncryptConfig.Common\Kintino.CipherConf.Common.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,4 @@
-﻿using Kintino.CipherConf.Crypto.Implementations;
+﻿using Kintino.CipherConf.Crypto.Services;
 using Kintino.CipherConf.Crypto.Services.Ciphers.V1;
 using Microsoft.Extensions.DependencyInjection;
 

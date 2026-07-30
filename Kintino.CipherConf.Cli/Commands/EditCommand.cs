@@ -1,5 +1,4 @@
-﻿using Kintino.CipherConf.App.Dependencies;
-using Kintino.CipherConf.App.Services;
+﻿using Kintino.CipherConf.App;
 using Kintino.CipherConf.Cli.Adaptors.SpectreConsole;
 using Spectre.Console.Cli;
 using System.ComponentModel;
@@ -21,6 +20,6 @@ internal class EditCommand(IEncryptConfigApp app, IFileSystem fs, ITextEditor te
         var projectFolder = GetProjectTargetDir(settings, fs);
         var cwd = fs.Directory.GetCurrentDirectory();
         var filePath = fs.Path.Combine(cwd, settings.File);
-        return TryRunAsync(() => app.EditFile(textEditor, cwd, filePath));
+        return TryRunAsync(() => app.EditFileAsync(textEditor, filePath));
     }
 }

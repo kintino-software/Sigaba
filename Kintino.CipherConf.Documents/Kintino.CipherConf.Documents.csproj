@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="Kintino.CipherConf.Documents.Adaptors" />
     <Using Include="Kintino.CipherConf.Documents.Primitives" />
   </ItemGroup>
 
@@ -23,7 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kintino.CipherConf.Abstractions\Kintino.CipherConf.Abstractions.csproj" />
+    <ProjectReference Include="..\EncryptConfig.Common\Kintino.CipherConf.Common.csproj" />
+    <ProjectReference Include="..\Kintino.CipherConf.Crypto\Kintino.CipherConf.Crypto.csproj" />
   </ItemGroup>
 
 
