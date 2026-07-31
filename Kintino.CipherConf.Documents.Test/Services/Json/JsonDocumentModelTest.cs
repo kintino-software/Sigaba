@@ -63,71 +63,14 @@ public class JsonDocumentModelTest
             "nullKey": null, // trailing comma
         }
         """;
-        // current implementation reorders fields, removes comments and trailing commas, and adds a metadata field
-        var expectedJson = """
-        {
-            "textKey": "text",
-            "numberKey": 123,
-            "booleanKey": true,
-            "arrayKey": [
-                1,
-                2,
-                3
-            ],
-            "nullKey": null,
-            "objectKey": {
-                "nestedKey": "nestedValue"
-            },
-            "__metadata__": {
-                "base64Keys": {}
-            }
-        }
-        """;
-
         model.Parse(originalJson);
+
         var actualJson = model.Serialize();
 
-        actualJson.Should().Be(expectedJson);
+        actualJson.Should().Be(originalJson);
         AssertJsonIsValid(actualJson);
     }
 
-    [Fact]
-    public void Should_serialize_with_updated_metadata_values()
-    {
-        var originalJson = """
-        {
-            "textKey": "text",
-            "numberKey": 123,
-            "__metadata__": {
-                "base64Keys": {
-                    "1": "aaa",
-                    "2": "bbb",
-        
-                }
-            }
-        }
-        """;
-        var expectedJson = """
-        {
-            "textKey": "text",
-            "numberKey": 123,
-            "__metadata__": {
-                "base64Keys": {
-                    "1": "aaa",
-                    "2": "bbb",
-                    "3": "ccc"
-                }
-            }
-        }
-        """;
-        model.Parse(originalJson);
-
-        model.Metadata.AddBase64Key("ccc", out _);
-        var actualJson = model.Serialize();
-
-        actualJson.Should().Be(expectedJson);
-        AssertJsonIsValid(actualJson);
-    }
 
     // GetFieldNames
 
@@ -225,17 +168,10 @@ public class JsonDocumentModelTest
         {
             "field1": 42,
             "field2": true,
-            "field3": [
-                1,
-                2,
-                3
-            ],
+            "field3": [1, 2, 3],
             "field4": null,
             "targetParent": {
                 "target": "foobar"
-            },
-            "__metadata__": {
-                "base64Keys": {}
             }
         }
         """;
@@ -243,7 +179,7 @@ public class JsonDocumentModelTest
 
         model.SetFieldRawValue("field1", "42");
         model.SetFieldRawValue("field2", "true");
-        model.SetFieldRawValue("field3", "[1,2,3]");
+        model.SetFieldRawValue("field3", "[1, 2, 3]");
         model.SetFieldRawValue("field4", "null");
         model.SetFieldRawValue("targetParent.target", @"""foobar""");
         var result = model.Serialize();
@@ -272,17 +208,10 @@ public class JsonDocumentModelTest
         {
             "field1": 42,
             "field2": true,
-            "field3": [
-                1,
-                2,
-                3
-            ],
+            "field3": [1,2,3],
             "field4": null,
             "targetParent": {
                 "target": "foobar"
-            },
-            "__metadata__": {
-                "base64Keys": {}
             }
         }
         """;

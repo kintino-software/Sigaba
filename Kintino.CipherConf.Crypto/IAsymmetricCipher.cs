@@ -7,8 +7,6 @@ namespace Kintino.CipherConf.Crypto;
 /// </summary>
 public interface IAsymmetricCipher
 {
-    int Version { get; }
-
     (PublicKey PublicKey, PrivateKey PrivateKey) CreateNewKeyPair();
 
     EncryptedKey Encrypt(PlainKey plainData, PublicKey publicKey);

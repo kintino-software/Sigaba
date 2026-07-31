@@ -10,13 +10,13 @@ namespace Kintino.CipherConf.Crypto.Services.Ciphers.V1;
 /// <br/>
 /// Key size is fixed at 32 bytes (256 bits) for this implementation.
 /// </summary>
-internal class SymmetricCipherV1 : ISymmetricCipher
+internal class SymmetricCipherV1 : IVersionedSymmetricCipher
 {
     public const int TagSizeInBytes = 16; // 128 bits
     public const int KeySizeInBytes = 32; // 256 bits
     public const int NonceSizeInBytes = 12; // 96 bits
 
-    int ISymmetricCipher.Version { get; } = 1;
+    byte IVersionedSymmetricCipher.Version { get; } = 1;
 
     PlainKey ISymmetricCipher.GenerateNewKey()
     {

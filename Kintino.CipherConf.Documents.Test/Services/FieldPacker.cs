@@ -5,15 +5,16 @@ namespace Kintino.CipherConf.Documents.Services;
 
 public class FieldPackerTest
 {
-    private static Nonce CreateNonce() => new(new PlainData([1, 2, 3]));
-    private static EncryptedData CreateEncryptedData() => new([4, 5, 6]);
+    private readonly Nonce nonce = new(new PlainData([1, 2, 3]));
+    private readonly EncryptedData encryptedData = new([4, 5, 6]);
+    private readonly EncryptedKey encryptedKey = new([7, 8, 9]);
 
     // Pack
 
     [Fact]
     public void Should_pack_data_into_string()
     {
-        var package = new EncryptedFieldPack(1, 2, 3, new EncryptedData([1, 2, 3]), new Nonce([4, 5, 6]));
+        var package = new EncryptedFieldPack(encryptedKey, encryptedData, nonce);
 
         var result = FieldPacker.Pack(package);
 
@@ -25,7 +26,7 @@ public class FieldPackerTest
     [Fact]
     public void Should_unpack_data_from_string()
     {
-        var original = new EncryptedFieldPack(1, 2, 3, new EncryptedData([1, 2, 3]), new Nonce([4, 5, 6]));
+        var original = new EncryptedFieldPack(encryptedKey, encryptedData, nonce);
         var pack = FieldPacker.Pack(original);
 
         var result = FieldPacker.Unpack(pack);

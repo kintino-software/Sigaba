@@ -3,8 +3,6 @@
 namespace Kintino.CipherConf.Documents.Models;
 
 internal record EncryptedFieldPack(
-    int SymmetricCipherVersion,
-    int AsymmetricCipherVersion,
-    int KeyIndex,
+    EncryptedKey EncryptedKey,
     EncryptedData EncryptedData,
     Nonce Nonce);

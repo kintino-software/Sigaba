@@ -7,7 +7,6 @@ namespace Kintino.CipherConf.Crypto;
 /// </summary>
 public interface ISymmetricCipher
 {
-    int Version { get; }
     PlainKey GenerateNewKey();
     Nonce GenerateNewNonce();
     EncryptedData Encrypt(PlainKey plainKey, PlainData plainData, Nonce nonce);

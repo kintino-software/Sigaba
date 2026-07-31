@@ -1,5 +1,4 @@
-﻿using Kintino.CipherConf.Crypto;
-using Kintino.CipherConf.Documents.TestHelpers;
+﻿using Kintino.CipherConf.Documents.TestHelpers;
 using System.IO.Abstractions.TestingHelpers;
 
 namespace Kintino.CipherConf.Documents;
@@ -9,16 +8,11 @@ public class FileCipherTest : BaseTest
     private readonly MockFileSystem fs = new();
     private readonly FakeSymmetricCipher symmetricCipher = new();
     private readonly FakeAsymmetricCipher asymmetricCipher = new();
-    private readonly ICipherFactory cipherFactory = Substitute.For<ICipherFactory>();
     private readonly Predicate<string> fieldFilter = (f) => f.Contains("_secret");
 
     private IFileCipher CreateService()
     {
-        cipherFactory.GetLatestAsymmetricCipher().ReturnsForAnyArgs(asymmetricCipher);
-        cipherFactory.GetLatestSymmetricCipher().ReturnsForAnyArgs(symmetricCipher);
-        cipherFactory.GetAsymmetricCipher(default).ReturnsForAnyArgs(asymmetricCipher);
-        cipherFactory.GetSymmetricCipher(default).ReturnsForAnyArgs(symmetricCipher);
-        return new FileCipher(fs, cipherFactory);
+        return new FileCipher(fs, symmetricCipher, asymmetricCipher);
     }
 
     // CipherFile
@@ -33,7 +27,7 @@ public class FileCipherTest : BaseTest
             "b": 2,
             "c": {
                 "d_secret": "d value",
-                "e": "e value",
+                "e": "e value"
             }
         }
         """;
@@ -48,8 +42,6 @@ public class FileCipherTest : BaseTest
         evaluator
             .AssertValueIsNot("$.a_secret", "a value")
             .AssertValueIsNot("$.c.d_secret", "d value");
-        evaluator
-            .AssertHasAnyValue("$['__metadata__']['keys']['1']");
     }
 
     // DecipherFile
@@ -70,30 +62,13 @@ public class FileCipherTest : BaseTest
             }
         }
         """;
-        var expectedJson = """
-        {
-            "name_secret": "John Doe",
-            "age": 30,
-            "address": {
-                "street_secret": "123 Main St",
-                "city": "Anytown",
-                "state": "CA",
-                "zip": "12345"
-            },
-            "__metadata__": {
-                "keys": {
-                    "1": "AwIB"
-                }
-            }
-        }
-        """;
         fs.AddFile("test.json", new MockFileData(originalJson));
 
         await service.CipherFile("test.json", asymmetricCipher.CorrectPublicKey, fieldFilter);
         await service.DecipherFile("test.json", asymmetricCipher.CorrectPrivateKey);
         var actualJson = fs.GetFile("test.json").TextContents;
 
-        actualJson.Should().Be(expectedJson);
+        actualJson.Should().Be(originalJson);
     }
 
     [Fact]
@@ -102,17 +77,18 @@ public class FileCipherTest : BaseTest
         var service = CreateService();
         var originalJson = """
         {
+            // comment
             "name_secret": [
-                "John",
+                    "John",
                 "Doe"
             ],
-            "age": 30,
+                    "age": 30,
             "address": {
                 "street_secret": "123 Main St",
-                "city": "Anytown",
-                "state": "CA",
+                                "city": "Anytown",
+                    "state": "CA",
                 "zip": "12345"
-            }
+            },
         }
         """;
         fs.AddFile("test.json", new MockFileData(originalJson));

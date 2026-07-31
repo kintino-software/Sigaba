@@ -5,9 +5,8 @@ namespace Kintino.CipherConf.Documents.TestHelpers;
 
 public class FakeSymmetricCipher : ISymmetricCipher
 {
-    public int Version { get; } = 1;
-    public PlainKey Key { get; } = new([1, 2, 3]);
-    public Nonce Nonce { get; } = new([4, 5, 6]);
+    public PlainKey Key { get; } = new([1, 1, 1, 1]);
+    public Nonce Nonce { get; } = new([2, 2, 2, 2]);
 
     public virtual PlainData Decrypt(PlainKey cipherKey, EncryptedData encryptedData, Nonce nonce)
     {
@@ -16,8 +15,6 @@ public class FakeSymmetricCipher : ISymmetricCipher
         if (!nonce.Bytes.SequenceEqual(Nonce.Bytes))
             throw new Exception("Wrong nonce!");
         return new PlainData([.. encryptedData.Bytes.Reverse()]);
-
-
     }
 
     public virtual EncryptedData Encrypt(PlainKey plainKey, PlainData plainData, Nonce nonce)

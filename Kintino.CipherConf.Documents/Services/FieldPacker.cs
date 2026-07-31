@@ -1,28 +1,37 @@
 ﻿using Kintino.CipherConf.Documents.Models;
 using Kintino.CipherConf.Primitives;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Kintino.CipherConf.Documents.Services;
 
 internal class FieldPacker
 {
-    private record SerializationObj(int Scv, int Acv, int Kidx, string Nonce, string Data);
+    private record SerializationObj
+    {
+        [JsonPropertyName("k")]
+        public string Key { get; init; }
+        [JsonPropertyName("n")]
+        public string Nonce { get; init; }
+        [JsonPropertyName("d")]
+        public string Data { get; init; }
+        public SerializationObj(string Key, string Nonce, string Data)
+        {
+            this.Key = Key;
+            this.Nonce = Nonce;
+            this.Data = Data;
+        }
+    };
 
     public static string Pack(EncryptedFieldPack package)
     {
-        package.Deconstruct(
-            out var symmetricCipherVersion,
-            out var asymmetricCipherVersion,
-            out var keyIndex,
-            out var encryptedData, out var nonce);
+        package.Deconstruct(out var key, out var data, out var nonce);
 
         // data to serialization object
         var serializationPath = new SerializationObj(
-            Scv: symmetricCipherVersion,
-            Acv: asymmetricCipherVersion,
-            Kidx: keyIndex,
+            Key: key.Bytes.ToBase64String(),
             Nonce: nonce.Bytes.ToBase64String(),
-            Data: encryptedData.Bytes.ToBase64String());
+            Data: data.Bytes.ToBase64String());
 
         // serialize to json and base64
         var json = JsonSerializer.Serialize(serializationPath)
@@ -47,17 +56,15 @@ internal class FieldPacker
 
         // serialization object -> result
         return new EncryptedFieldPack(
-            SymmetricCipherVersion: serializationPack.Scv,
-            AsymmetricCipherVersion: serializationPack.Acv,
-            KeyIndex: serializationPack.Kidx,
+            EncryptedKey: new EncryptedKey(serializationPack.Key.FromBase64String()),
             EncryptedData: new EncryptedData(serializationPack.Data.FromBase64String()),
             Nonce: new Nonce(new PlainData(serializationPack.Nonce.FromBase64String())))
         ;
     }
 
-    public static bool IsEncryptedFieldValue(string str)
+    public static bool IsEncryptedFieldValue(string? str)
     {
-        return str.StartsWith("ENC(") && str.EndsWith(')');
+        return !string.IsNullOrEmpty(str) && str.StartsWith("ENC(") && str.EndsWith(')');
     }
 
     private static string Wrap(string str)

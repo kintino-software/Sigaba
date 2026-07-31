@@ -4,7 +4,6 @@ namespace Kintino.CipherConf.Documents.Models;
 
 internal interface IDocumentModel
 {
-    DocumentMetadata Metadata { get; }
     void Parse(string documentContent);
     IEnumerable<string> GetFieldNames();
     void SetFieldValue<T>(string key, [MaybeNull] T value);

@@ -11,31 +11,21 @@ internal class RawJsonSerializer
     public record ValuePosition(int StartIndex, int Length);
 
     private static JsonReaderOptions readerOptions = new() { CommentHandling = JsonCommentHandling.Allow, AllowTrailingCommas = true };
-    private readonly JsonSerializerOptions serializerOptions;
 
     private readonly byte[] originalBytes;
     private readonly Dictionary<string, ValuePosition> keyToPositionMap;
     private readonly Dictionary<string, string> replacements;
-    private readonly Dictionary<string, string> additions;
 
     public IReadOnlyDictionary<string, ValuePosition> KeyToPositionMap => keyToPositionMap;
     public IReadOnlyDictionary<string, string> Replacements => replacements;
-    public IReadOnlyDictionary<string, string> Additions => additions;
 
     // instantiation
 
     private RawJsonSerializer(byte[] originalBytes, Dictionary<string, ValuePosition> keyToPositionMap)
     {
-        serializerOptions = new()
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = true,
-            IndentSize = 4,
-        };
         this.originalBytes = originalBytes;
         this.keyToPositionMap = keyToPositionMap;
         this.replacements = [];
-        this.additions = [];
     }
 
     public static RawJsonSerializer Create(string jsonDocument)
@@ -58,16 +48,22 @@ internal class RawJsonSerializer
         return false;
     }
 
-    public bool TryGetValue<T>(string key, [NotNullWhen(true)] out T? value)
+    public bool TryGetValue<T>(string key, [MaybeNull] out T value)
     {
-        var result = false;
-        value = default;
         if (TryGetRawValue(key, out var rawValue))
         {
-            result = true;
-            value = rawValue == "null" ? default : JsonSerializer.Deserialize<T>(rawValue, serializerOptions);
+            try
+            {
+                value = rawValue == "null" ? default : JsonSerializer.Deserialize<T>(rawValue);
+                return true;
+            }
+            catch
+            {
+                // swallow deserialization errors and return false
+            }
         }
-        return result;
+        value = default;
+        return false;
     }
 
     // modification
@@ -82,36 +78,8 @@ internal class RawJsonSerializer
 
     public RawJsonSerializer Replace<T>(string key, T newValue)
     {
-        var rawValue = newValue is null ? "null" : JsonSerializer.Serialize(newValue, serializerOptions);
+        var rawValue = newValue is null ? "null" : JsonSerializer.Serialize(newValue);
         return Replace(key, rawValue);
-    }
-
-    public RawJsonSerializer AppendToRoot(string key, string newRawValue)
-    {
-        if (keyToPositionMap.ContainsKey(key))
-            throw new ArgumentException($"Key '{key}' already exists in the original document.", nameof(key));
-        additions.Add(key, newRawValue);
-        return this;
-    }
-
-    public RawJsonSerializer AppendToRoot<T>(string key, T newValue)
-    {
-        var rawValue = newValue is null ? "null" : JsonSerializer.Serialize(newValue, serializerOptions);
-        return AppendToRoot(key, rawValue);
-    }
-
-    public RawJsonSerializer AppendToRootOrReplace(string key, string newRawValue)
-    {
-        if (keyToPositionMap.ContainsKey(key))
-            return Replace(key, newRawValue);
-        else
-            return AppendToRoot(key, newRawValue);
-    }
-
-    public RawJsonSerializer AppendToRootOrReplace<T>(string key, T newValue)
-    {
-        var rawValue = newValue is null ? "null" : JsonSerializer.Serialize(newValue, serializerOptions);
-        return AppendToRootOrReplace(key, rawValue);
     }
 
     // serialization
@@ -119,39 +87,10 @@ internal class RawJsonSerializer
     public string Serialize()
     {
         var modified = ReplaceAll(originalBytes, keyToPositionMap, replacements);
-        var appended = Append(modified, additions);
-        return appended;
+        return modified;
     }
 
     // helpers
-
-    private static string Append(string json, Dictionary<string, string> additions)
-    {
-        if (additions.Count == 0)
-            return json;
-
-        var lastClosingBraceIndex = json.LastIndexOf('}');
-        if (lastClosingBraceIndex == -1)
-            throw new InvalidOperationException("Invalid JSON document: no closing brace found.");
-
-        var sb = new StringBuilder(json.Length + additions.Sum(kv => kv.Key.Length + kv.Value.Length + 6)); // rough estimate
-        sb.Append(json.AsSpan(0, lastClosingBraceIndex).TrimEnd());
-
-        foreach (var (key, value) in additions)
-        {
-            sb.Append(',');
-            sb.Append(Environment.NewLine);
-            sb.Append("    ");
-            sb.Append('"');
-            sb.Append(key);
-            sb.Append("\": ");
-            sb.Append(value);
-        }
-
-        sb.Append(Environment.NewLine);
-        sb.Append(json.AsSpan(lastClosingBraceIndex));
-        return sb.ToString();
-    }
 
     private static string ReplaceAll(byte[] originalBytes, Dictionary<string, ValuePosition> positions, Dictionary<string, string> replacements)
     {

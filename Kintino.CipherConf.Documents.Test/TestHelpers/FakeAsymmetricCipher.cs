@@ -5,9 +5,8 @@ namespace Kintino.CipherConf.Documents.TestHelpers;
 
 internal class FakeAsymmetricCipher : IAsymmetricCipher
 {
-    public PrivateKey CorrectPrivateKey { get; } = new([1, 2, 3, 4]);
-    public PublicKey CorrectPublicKey { get; } = new([1, 2, 3, 4]);
-    public int Version { get; } = 1;
+    public PrivateKey CorrectPrivateKey { get; } = new([2, 4, 6, 8]);
+    public PublicKey CorrectPublicKey { get; } = new([1, 3, 5, 7]);
 
     public (PublicKey PublicKey, PrivateKey PrivateKey) CreateNewKeyPair()
     {

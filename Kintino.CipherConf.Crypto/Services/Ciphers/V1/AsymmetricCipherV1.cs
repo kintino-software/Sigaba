@@ -8,12 +8,12 @@ namespace Kintino.CipherConf.Crypto.Services.Ciphers.V1;
 /// <br/>
 /// Key size is fixed at 384 bytes for this implementation.
 /// </summary>
-internal class AsymmetricCipherV1 : IAsymmetricCipher
+internal class AsymmetricCipherV1 : IVersionedAsymmetricCipher
 {
     public const int RsaKeySizeInBytes = 384; // 3072 bits is the recommended size at july-2026
     public static readonly RSAEncryptionPadding Padding = RSAEncryptionPadding.OaepSHA256;
 
-    int IAsymmetricCipher.Version { get; } = 1;
+    byte IVersionedAsymmetricCipher.Version { get; } = 1;
 
     (PublicKey PublicKey, PrivateKey PrivateKey) IAsymmetricCipher.CreateNewKeyPair()
     {

@@ -1,8 +1,6 @@
-﻿using Xunit.Abstractions;
+﻿namespace Kintino.CipherConf.Documents.Services.Json;
 
-namespace Kintino.CipherConf.Documents.Services.Json;
-
-public class RawJsonSerializerTest(ITestOutputHelper output)
+public class RawJsonSerializerTest
 {
     // Create
 
@@ -156,32 +154,6 @@ public class RawJsonSerializerTest(ITestOutputHelper output)
         result.Should().Be(expected);
     }
 
-    // AppendToRoot
-
-    [Fact]
-    public void Should_append_new_field_to_root()
-    {
-        var original = """
-        {
-            "text": "value",
-            "number": 49
-        }
-        """;
-        var expected = """
-        {
-            "text": "value",
-            "number": 49,
-            "newField": "newValue"
-        }
-        """;
-        var service = RawJsonSerializer.Create(original);
-
-        service.AppendToRoot("newField", @"""newValue""");
-
-        var result = service.Serialize();
-        output.WriteLine(result);
-        result.Should().Be(expected);
-    }
 
 }
 

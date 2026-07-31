@@ -1,4 +1,4 @@
-﻿using Kintino.CipherConf.Crypto.Services;
+﻿using Kintino.CipherConf.Crypto.Services.Ciphers;
 using Kintino.CipherConf.Crypto.Services.Ciphers.V1;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -9,9 +9,10 @@ public static class ServicesExtensions
     public static IServiceCollection AddCryptoModule(this IServiceCollection services)
     {
         return services
-            .AddSingleton<IAsymmetricCipher, AsymmetricCipherV1>()
-            .AddSingleton<ISymmetricCipher, SymmetricCipherV1>()
-            .AddSingleton<ICipherFactory, CipherFactory>();
+            .AddSingleton<IVersionedAsymmetricCipher, AsymmetricCipherV1>()
+            .AddSingleton<IVersionedSymmetricCipher, SymmetricCipherV1>()
+            .AddSingleton<ISymmetricCipher, SymmetricCipher>()
+            .AddSingleton<IAsymmetricCipher, AsymmetricCipher>();
 
     }
 }
