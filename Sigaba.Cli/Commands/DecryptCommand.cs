@@ -1,13 +1,13 @@
 ﻿using Sigaba.App;
-using Sigaba.Cli.Adaptors.SpectreConsole;
 using Spectre.Console.Cli;
 
 namespace Sigaba.Cli.Commands;
 
-internal class DecryptCommand(IEncryptConfigApp app) : CommandWithGlobalSettings
+internal class DecryptCommand(IEncryptConfigApp app) : AsyncCommand
 {
-    protected override Task<int> ExecuteAsync(CommandContext context, GlobalSettings settings, CancellationToken cancellationToken)
+    protected override async Task<int> ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
-        return TryRunAsync(app.DecipherFilesAsync);
+        await app.DecipherFilesAsync();
+        return 0;
     }
 }

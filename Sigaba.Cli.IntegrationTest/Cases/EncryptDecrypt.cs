@@ -4,6 +4,12 @@ namespace Sigaba.Cli.Cases;
 
 public class EncryptDecrypt : BaseTest
 {
+    private readonly string cwd;
+    public EncryptDecrypt()
+    {
+        cwd = CreateAndSetCwd("a", "b");
+    }
+
     private async Task InitProject()
     {
         await CreateApp().RunAsync("init");
@@ -12,8 +18,7 @@ public class EncryptDecrypt : BaseTest
     [Fact]
     public async Task EncryptFlow()
     {
-        var settingsFilePath = Fs.Path.Combine(RootPath, "appsettings.json");
-
+        var settingsFilePath = Fs.Path.Combine(cwd, "appsettings_secrets.json");
         Fs.AddFile(
             settingsFilePath,
             new MockFileData("""

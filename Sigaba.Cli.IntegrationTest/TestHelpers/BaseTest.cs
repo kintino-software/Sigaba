@@ -19,4 +19,12 @@ public abstract class BaseTest
         return new CliApp(Fs);
     }
 
+    public string CreateAndSetCwd(params string[] dirPaths)
+    {
+        var cwd = Path.Combine(RootPath, Path.Combine(dirPaths));
+        Fs.AddDirectory(cwd);
+        Fs.Directory.SetCurrentDirectory(cwd);
+        return cwd;
+    }
+
 }
