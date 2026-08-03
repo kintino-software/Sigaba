@@ -1,0 +1,36 @@
+<Solution>
+  <Folder Name="/App/" />
+  <Folder Name="/App/App/">
+    <Project Path="Sigaba.App.Test/Sigaba.App.Test.csproj" Id="74e1df41-31e4-40e9-bfe9-17fb8ea497d1" />
+    <Project Path="Sigaba.App/Sigaba.App.csproj" Id="605781c5-76f2-46a4-b11e-5173cf641776" />
+  </Folder>
+  <Folder Name="/App/Persistence/">
+    <Project Path="Sigaba.App.Persistence.Test/Sigaba.App.Persistence.Test.csproj" Id="78fafd08-227b-4620-b38b-6777797b12cc" />
+    <Project Path="Sigaba.App.Persistence/Sigaba.App.Persistence.csproj" Id="e8ff49fe-9b6a-4945-8c2f-78c1ba979e3a" />
+  </Folder>
+  <Folder Name="/Modules/" />
+  <Folder Name="/Modules/Common/">
+    <Project Path="Sigaba.Common.Test/Sigaba.Common.Test.csproj" />
+    <Project Path="Sigaba.Common/Sigaba.Common.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Crypto/">
+    <Project Path="Sigaba.Crypto.Test/Sigaba.Crypto.Test.csproj" Id="9471fed4-8468-455c-b0f2-904e462ff43d" />
+    <Project Path="Sigaba.Crypto/Sigaba.Crypto.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Documents/">
+    <Project Path="Sigaba.Documents.Test/Sigaba.Documents.Test.csproj" />
+    <Project Path="Sigaba.Documents/Sigaba.Documents.csproj" />
+  </Folder>
+  <Folder Name="/UI/" />
+  <Folder Name="/UI/Cli/">
+    <Project Path="Sigaba.Cli.IntegrationTest/Sigaba.Cli.IntegrationTest.csproj" Id="1e021457-f8ac-4c1d-929c-66cfb48db55f" />
+    <Project Path="Sigaba.Cli/Sigaba.Cli.csproj" />
+  </Folder>
+  <Folder Name="/_Solution items/">
+    <File Path=".github/workflows/cd.yml" />
+    <File Path=".github/workflows/ci.yml" />
+    <File Path=".gitignore" />
+    <File Path=".runsettings" />
+    <File Path="readme.md" />
+  </Folder>
+</Solution>
