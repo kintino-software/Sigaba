@@ -1,19 +1,10 @@
-﻿using Microsoft.Extensions.FileSystemGlobbing;
-using System.IO.Abstractions;
-using Vipentti.IO.Abstractions.FileSystemGlobbing;
+﻿using System.IO.Abstractions;
 
-namespace Kintino.CipherConf.App.Services.FileSystemServices;
+namespace Kintino.CipherConf.App.Service;
+
 
 internal class FsHelper(IFileSystem fs) : IFsHelper
 {
-    IEnumerable<string> IFsHelper.Crawl(string rootDirFullPath, string[] includeGlob, string[] excludeGlob)
-    {
-        var matcher = new Matcher();
-        matcher.AddIncludePatterns(includeGlob);
-        matcher.AddExcludePatterns(excludeGlob);
-        return matcher.GetResultsInFullPath(fs, rootDirFullPath);
-    }
-
     async Task IFsHelper.WithTempFileAsync(string originalFile, Func<string, Task> editingOperation, Func<string, Task> beforeDeleteOperation)
     {
         var tempFolder = CreateAppFolderIfNotExists("temp");

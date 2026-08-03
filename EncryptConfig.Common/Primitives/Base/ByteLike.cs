@@ -1,6 +1,7 @@
 ﻿using Kintino.CipherConf.Primitives.Base;
+using Kintino.CipherConf.Primitives;
 
-namespace Kintino.CipherConf.Primitives;
+namespace Kintino.CipherConf.Primitives.Base;
 
 public abstract record ByteLike<TSelf>(byte[] Bytes) : IByteLike where TSelf : IByteLike
 {

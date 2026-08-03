@@ -4,6 +4,10 @@
     <Project Path="Kintino.CipherConf.App.Test/Kintino.CipherConf.App.Test.csproj" Id="74e1df41-31e4-40e9-bfe9-17fb8ea497d1" />
     <Project Path="Kintino.CipherConf.App/Kintino.CipherConf.App.csproj" Id="605781c5-76f2-46a4-b11e-5173cf641776" />
   </Folder>
+  <Folder Name="/App/Persistence/">
+    <Project Path="Kintino.CipherConf.App.Persistence.Test/Kintino.CipherConf.App.Persistence.Test.csproj" Id="78fafd08-227b-4620-b38b-6777797b12cc" />
+    <Project Path="Kintino.CipherConf.App.Persistence/Kintino.CipherConf.App.Persistence.csproj" Id="e8ff49fe-9b6a-4945-8c2f-78c1ba979e3a" />
+  </Folder>
   <Folder Name="/Modules/" />
   <Folder Name="/Modules/Common/">
     <Project Path="EncryptConfig.Common.Test/Kintino.CipherConf.Common.Test.csproj" Id="17a05f60-879b-4c74-9e2c-ddf824cb7c7d" />

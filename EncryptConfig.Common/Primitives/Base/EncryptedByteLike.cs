@@ -1,4 +1,6 @@
-﻿namespace Kintino.CipherConf.Primitives.Base;
+﻿using Kintino.CipherConf.Primitives.Base;
+
+namespace Kintino.CipherConf.Primitives.Base;
 
 public abstract record EncryptedByteLike<TSelf>(byte[] Bytes) : ByteLike<TSelf>(Bytes), IEncryptedData where TSelf : IEncryptedData
 {

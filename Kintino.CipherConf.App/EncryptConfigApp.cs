@@ -1,56 +1,53 @@
-﻿using Kintino.CipherConf.App.Models;
-using Kintino.CipherConf.App.Services.FileSystemServices;
-using Kintino.CipherConf.App.Services.Serializers;
-using Kintino.CipherConf.Crypto;
+﻿using Kintino.CipherConf.App.Service;
 using Kintino.CipherConf.Documents;
+using System.IO.Abstractions;
 
 namespace Kintino.CipherConf.App;
 
 internal class EncryptConfigApp(
-    IAsymmetricCipher asymmetricCipher,
     IFsHelper fsHelper,
+    IContextLoader contextLoader,
     IFileCipher fileCipher,
-    IContextLoader contextLoader)
-    : IEncryptConfigApp
+    IFileSystem fs) : IEncryptConfigApp
 {
+    private readonly string currentDir = fs.Directory.GetCurrentDirectory();
+
     async Task IEncryptConfigApp.InitAsync()
     {
-        if (await contextLoader.HasContextAsync())
+        if (await contextLoader.HasContextAsync(currentDir))
             throw new InvalidOperationException($"The app is already initialized.");
-        var (publicKey, privateKey) = asymmetricCipher.CreateNewKeyPair();
-        await contextLoader.CreateContextAsync(publicKey, privateKey);
+        await contextLoader.CreateContextAsync(currentDir);
     }
 
     async Task IEncryptConfigApp.CipherFilesAsync()
     {
         var context = await GetContextOrThrow();
-        if (context.PublicKey == null)
-            throw new InvalidOperationException("Missing public key in context. You cannot cipher files without a public key.");
+        var publicKey = context.GetPublicKey()
+            ?? throw new InvalidOperationException("Missing public key in context. You cannot cipher files without a public key.");
 
-        foreach (var filePath in fsHelper.Crawl(context.AppContextDirectory, context.IncludeFileGlob, context.ExcludeFileGlob))
+        foreach (var filePath in context.GetWorkingSetFiles())
         {
-            await fileCipher.CipherFile(filePath, context.PublicKey, context.FieldRegex.IsMatch);
-
+            await fileCipher.CipherFile(filePath, publicKey, context.FieldNameFilter);
         }
     }
 
     async Task IEncryptConfigApp.DecipherFilesAsync()
     {
         var context = await GetContextOrThrow();
-        if (context.PrivateKey == null)
-            throw new InvalidOperationException("Missing private key in context. You cannot decipher files without a private key.");
+        var privateKey = context.GetPrivateKey()
+            ?? throw new InvalidOperationException("Missing private key in context. You cannot decipher files without a private key.");
 
-        foreach (var filePath in fsHelper.Crawl(context.AppContextDirectory, context.IncludeFileGlob, context.ExcludeFileGlob))
+        foreach (var filePath in context.GetWorkingSetFiles())
         {
-            await fileCipher.DecipherFile(filePath, context.PrivateKey);
+            await fileCipher.DecipherFile(filePath, privateKey);
         }
     }
 
     async Task IEncryptConfigApp.EditFileAsync(ITextEditor textEditor, string editingFilePath)
     {
         var context = await GetContextOrThrow();
-        if (context.PublicKey == null)
-            throw new InvalidOperationException("You cannot edit files without a public key.");
+        var publicKey = context.GetPublicKey()
+            ?? throw new InvalidOperationException("You cannot edit files without a public key.");
 
         await fsHelper.WithTempFileAsync(
             originalFile: editingFilePath,
@@ -61,17 +58,18 @@ internal class EncryptConfigApp(
             },
             beforeDeleteOperation: async (tempFilePath) =>
             {
-                await fileCipher.CipherFile(tempFilePath, context.PublicKey, context.FieldRegex.IsMatch);
+                await fileCipher.CipherFile(tempFilePath, publicKey, context.FieldNameFilter);
                 await fsHelper.CopyAndOverwrite(tempFilePath, editingFilePath);
             });
     }
 
     // helpers
 
-    private async Task<Context> GetContextOrThrow()
+    private async Task<IContext> GetContextOrThrow()
     {
-        var context = await contextLoader.LoadContextAsync();
+        var context = await contextLoader.LoadContextAsync(currentDir);
         return context ?? throw new InvalidOperationException("Could not retrieve context. Try to initialize the folder first.");
     }
+
 
 }
