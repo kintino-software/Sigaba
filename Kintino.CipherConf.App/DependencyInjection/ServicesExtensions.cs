@@ -1,4 +1,5 @@
-﻿using Kintino.CipherConf.Crypto.DependencyInjection;
+﻿using Kintino.CipherConf.App.Service;
+using Kintino.CipherConf.Crypto.DependencyInjection;
 using Kintino.CipherConf.Documents.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using System.IO.Abstractions;
@@ -13,7 +14,9 @@ public static class ServicesExtensions
             .AddSingleton<IFileSystem>(fs ?? new FileSystem())
             .AddCryptoModule()
             .AddDocumentsModule()
-            .AddAppPersistence();
+            .AddAppPersistence()
+            .AddSingleton<IFsHelper, FsHelper>()
+            .AddSingleton<IEncryptConfigApp, EncryptConfigApp>();
 
         return services;
     }

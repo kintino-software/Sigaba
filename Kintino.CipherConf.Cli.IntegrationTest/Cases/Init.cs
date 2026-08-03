@@ -8,8 +8,8 @@ public class Init : BaseTest
         var app = CreateApp();
         await app.RunAsync("init");
 
-        Fs.File.Exists(Fs.Path.Combine(RootPath, "private")).Should().BeTrue();
         Fs.File.Exists(Fs.Path.Combine(RootPath, "private.key")).Should().BeTrue();
+        Fs.File.Exists(Fs.Path.Combine(RootPath, "public.key")).Should().BeTrue();
         Fs.File.Exists(Fs.Path.Combine(RootPath, "cipherconf.settings.json")).Should().BeTrue();
     }
 

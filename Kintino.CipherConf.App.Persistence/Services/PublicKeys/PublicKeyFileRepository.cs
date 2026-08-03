@@ -3,10 +3,8 @@ using System.IO.Abstractions;
 
 namespace Kintino.CipherConf.App.Services.PublicKeys;
 
-internal class PublicKeyFileRepository : IPublicKeyRepository
+internal class PublicKeyFileRepository(IFileSystem fs) : IPublicKeyRepository
 {
-    private readonly IFileSystem fs = FS.Current;
-
     public async Task<PublicKey?> LoadAsync(string filePath)
     {
         if (!fs.File.Exists(filePath))

@@ -1,10 +1,12 @@
-﻿namespace Kintino.CipherConf.App.Services.Settings;
+﻿using System.IO.Abstractions;
+
+namespace Kintino.CipherConf.App.Services.Settings;
 
 internal interface IToolSettings
 {
     int Version { get; }
     bool FieldNamePredicate(string fieldName);
-    IEnumerable<string> GetFilesWorkingSet(string startFolder);
+    IEnumerable<string> GetFilesWorkingSet(IFileSystem fs, string startFolder);
 }
 
 internal interface IToolSettings<TSelf> : IToolSettings where TSelf : IToolSettings

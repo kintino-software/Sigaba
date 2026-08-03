@@ -4,9 +4,9 @@ namespace Kintino.CipherConf.App.Services.PublicKeys;
 
 public class PublicKeyFileRepositoryTest : BaseTest
 {
-    private static IPublicKeyRepository CreateService()
+    private IPublicKeyRepository CreateService()
     {
-        return new PublicKeyFileRepository();
+        return new PublicKeyFileRepository(Fs);
     }
 
     private static PublicKey CreatePublicKey(params byte[] data)

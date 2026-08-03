@@ -11,7 +11,7 @@ public class ContextTest : BaseTest
 
     private IContext CreateContext()
     {
-        return new Context(RootPath, privateKey, publicKey, settings);
+        return new Context(RootPath, privateKey, publicKey, settings, Fs);
     }
 
     [Fact]
@@ -32,7 +32,7 @@ public class ContextTest : BaseTest
     public void Should_get_working_set_files()
     {
         var workingSetFiles = new[] { "file1", "file2" };
-        settings.GetFilesWorkingSet(Arg.Any<string>()).Returns(workingSetFiles);
+        settings.GetFilesWorkingSet(Fs, Arg.Any<string>()).Returns(workingSetFiles);
         var context = CreateContext();
         context.GetWorkingSetFiles().Should().BeEquivalentTo(workingSetFiles);
     }

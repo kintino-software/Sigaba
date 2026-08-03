@@ -1,5 +1,4 @@
-﻿using Kintino.CipherConf.App.Dependencies;
-using System.IO.Abstractions.TestingHelpers;
+﻿using System.IO.Abstractions.TestingHelpers;
 
 namespace Kintino.CipherConf.App.TestHelpers;
 
@@ -11,7 +10,6 @@ public abstract class BaseTest
     protected BaseTest()
     {
         RootPath = Fs.Path.GetPathRoot(Fs.Directory.GetCurrentDirectory());
-        FS.Setup(Fs);
     }
 
     protected string FromRoot(params string[] relativePath)

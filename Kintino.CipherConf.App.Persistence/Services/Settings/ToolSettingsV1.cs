@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.FileSystemGlobbing;
+using System.IO.Abstractions;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -6,7 +7,7 @@ using Vipentti.IO.Abstractions.FileSystemGlobbing;
 
 namespace Kintino.CipherConf.App.Services.Settings;
 
-internal class ToolSettingsV1 : IToolSettings<ToolSettingsV1>
+internal class ToolSettingsV1(string fieldRegexPattern, string[] includeGlob, string[] excludeGlob) : IToolSettings<ToolSettingsV1>
 {
     public record SerialObj
     {
@@ -20,28 +21,10 @@ internal class ToolSettingsV1 : IToolSettings<ToolSettingsV1>
         public required string[] ExcludeFileGlob { get; init; } = [];
     }
 
-    private readonly string fieldRegexPattern;
-    private readonly string[] includeGlob;
-    private readonly string[] excludeGlob;
-    private readonly Lazy<Regex> lazyFieldNameRegex;
-    private readonly Lazy<IEnumerable<string>> lazyFileWorkingSet;
-
-    public ToolSettingsV1(string fieldRegexPattern, string[] includeGlob, string[] excludeGlob)
-    {
-        this.fieldRegexPattern = fieldRegexPattern;
-        this.includeGlob = includeGlob;
-        this.excludeGlob = excludeGlob;
-
-        lazyFieldNameRegex = new Lazy<Regex>(() => new Regex(fieldRegexPattern, RegexOptions.IgnoreCase));
-
-        lazyFileWorkingSet = new Lazy<IEnumerable<string>>(() =>
-        {
-            var matcher = new Matcher();
-            matcher.AddIncludePatterns(includeGlob);
-            matcher.AddExcludePatterns(excludeGlob);
-            return matcher.GetResultsInFullPath(FS.Current, Directory.GetCurrentDirectory());
-        });
-    }
+    private readonly string fieldRegexPattern = fieldRegexPattern;
+    private readonly string[] includeGlob = includeGlob;
+    private readonly string[] excludeGlob = excludeGlob;
+    private readonly Lazy<Regex> lazyFieldNameRegex = new(() => new Regex(fieldRegexPattern, RegexOptions.IgnoreCase));
 
     // IToolSettings implementation
 
@@ -76,8 +59,11 @@ internal class ToolSettingsV1 : IToolSettings<ToolSettingsV1>
         return this.lazyFieldNameRegex.Value.IsMatch(fieldName);
     }
 
-    public IEnumerable<string> GetFilesWorkingSet(string startFolder)
+    public IEnumerable<string> GetFilesWorkingSet(IFileSystem fs, string startFolder)
     {
-        return this.lazyFileWorkingSet.Value;
+        var matcher = new Matcher();
+        matcher.AddIncludePatterns(includeGlob);
+        matcher.AddExcludePatterns(excludeGlob);
+        return matcher.GetResultsInFullPath(fs, startFolder);
     }
 }

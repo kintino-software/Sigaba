@@ -40,7 +40,7 @@ internal class ContextLoader(
             ?? throw new InvalidOperationException("No context in this folder. You have to initialize it first.");
         var privateKey = await privateKeyRepository.LoadAsync(privateKeyFilePath);
         var publicKey = await publicKeyRepository.LoadAsync(publicKeyFilePath);
-        return new Context(currentFolder, privateKey, publicKey, toolSettings);
+        return new Context(currentFolder, privateKey, publicKey, toolSettings, fs);
     }
 
     // helpers

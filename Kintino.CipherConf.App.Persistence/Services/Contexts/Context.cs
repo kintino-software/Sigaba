@@ -1,9 +1,10 @@
 ﻿using Kintino.CipherConf.App.Services.Settings;
 using Kintino.CipherConf.Primitives;
+using System.IO.Abstractions;
 
 namespace Kintino.CipherConf.App.Services.Contexts;
 
-internal class Context(string projectRoot, PrivateKey? privateKey, PublicKey? publicKey, IToolSettings toolSettings) : IContext
+internal class Context(string projectRoot, PrivateKey? privateKey, PublicKey? publicKey, IToolSettings toolSettings, IFileSystem fs) : IContext
 {
     PrivateKey? IContext.GetPrivateKey() => privateKey;
 
@@ -11,6 +12,6 @@ internal class Context(string projectRoot, PrivateKey? privateKey, PublicKey? pu
 
     bool IContext.FieldNameFilter(string fieldName) => toolSettings.FieldNamePredicate(fieldName);
 
-    IEnumerable<string> IContext.GetWorkingSetFiles() => toolSettings.GetFilesWorkingSet(projectRoot);
+    IEnumerable<string> IContext.GetWorkingSetFiles() => toolSettings.GetFilesWorkingSet(fs, projectRoot);
 }
 

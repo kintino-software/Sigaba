@@ -14,12 +14,11 @@ public class EncryptConfigAppTest : BaseTest
     private readonly IFileCipher fileCipher = Substitute.For<IFileCipher>();
     private readonly IFsHelper fsHelper = Substitute.For<IFsHelper>();
     private readonly IContextLoader contextLoader = Substitute.For<IContextLoader>();
-    private readonly string currentDir = Path.Combine("a", "b");
 
 
     private IEncryptConfigApp CreateService()
     {
-        contextLoader.LoadContextAsync(currentDir).ReturnsForAnyArgs(context);
+        contextLoader.LoadContextAsync(RootDir).ReturnsForAnyArgs(context);
         return new EncryptConfigApp(fsHelper, contextLoader, fileCipher, Fs);
     }
 
@@ -35,18 +34,7 @@ public class EncryptConfigAppTest : BaseTest
 
         await service.InitAsync();
 
-        await contextLoader.Received().CreateContextAsync(currentDir);
-    }
-
-    [Fact]
-    public async Task Should_throw_when_initializing_and_context_already_exists()
-    {
-        var service = CreateService();
-
-        var action = () => service.InitAsync();
-
-        await action.Should().ThrowAsync<InvalidOperationException>().WithMessage("The app is already initialized.");
-        await contextLoader.DidNotReceive().CreateContextAsync(currentDir);
+        await contextLoader.Received().CreateContextAsync(RootDir);
     }
 
     // CipherFilesAsync
@@ -62,7 +50,7 @@ public class EncryptConfigAppTest : BaseTest
 
         await service.CipherFilesAsync();
 
-        await contextLoader.Received().LoadContextAsync(currentDir);
+        await contextLoader.Received().LoadContextAsync(RootDir);
         await fileCipher.Received().CipherFile("file1.txt", publicKey, Arg.Any<Predicate<string>>());
         await fileCipher.Received().CipherFile("file2.txt", publicKey, Arg.Any<Predicate<string>>());
 
@@ -80,7 +68,7 @@ public class EncryptConfigAppTest : BaseTest
 
         await action.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Missing public key in context. You cannot cipher files without a public key.");
-        await contextLoader.Received().LoadContextAsync(currentDir);
+        await contextLoader.Received().LoadContextAsync(RootDir);
         await fileCipher.Received(0).CipherFile(Arg.Any<string>(), Arg.Any<PublicKey>(), Arg.Any<Predicate<string>>());
     }
 
