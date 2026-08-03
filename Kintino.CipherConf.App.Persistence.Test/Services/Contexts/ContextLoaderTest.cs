@@ -48,7 +48,7 @@ public class ContextLoaderTest : BaseTest
 
         var action = () => service.CreateContextAsync(RootPath);
 
-        await action.Should().ThrowAsync<InvalidOperationException>().WithMessage("Context already exists.");
+        await action.Should().ThrowAsync<InvalidOperationException>().WithMessage("A context already exists in this folder.");
     }
 
     // LoadContextAsync
@@ -83,7 +83,7 @@ public class ContextLoaderTest : BaseTest
 
         var action = () => service.LoadContextAsync(RootPath);
 
-        await action.Should().ThrowAsync<InvalidOperationException>().WithMessage("No settings found.");
+        await action.Should().ThrowAsync<InvalidOperationException>().WithMessage("No context in this folder. You have to initialize it first.");
     }
 }
 

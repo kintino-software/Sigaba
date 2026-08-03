@@ -1,5 +1,5 @@
-﻿using Kintino.CipherConf.Primitives;
-using Kintino.CipherConf.App.Services.Settings;
+﻿using Kintino.CipherConf.App.Services.Settings;
+using Kintino.CipherConf.Primitives;
 
 namespace Kintino.CipherConf.App.Services.Contexts;
 
@@ -11,7 +11,7 @@ public class ContextTest : BaseTest
 
     private IContext CreateContext()
     {
-        return new Context(privateKey, publicKey, settings);
+        return new Context(RootPath, privateKey, publicKey, settings);
     }
 
     [Fact]
@@ -32,7 +32,7 @@ public class ContextTest : BaseTest
     public void Should_get_working_set_files()
     {
         var workingSetFiles = new[] { "file1", "file2" };
-        settings.WorkingSetFiles.Returns(workingSetFiles);
+        settings.GetFilesWorkingSet(Arg.Any<string>()).Returns(workingSetFiles);
         var context = CreateContext();
         context.GetWorkingSetFiles().Should().BeEquivalentTo(workingSetFiles);
     }
@@ -40,7 +40,7 @@ public class ContextTest : BaseTest
     [Fact]
     public void Should_filter_field_names()
     {
-        settings.FieldFilter(Arg.Any<string>()).Returns(true);
+        settings.FieldNamePredicate(Arg.Any<string>()).Returns(true);
         var context = CreateContext();
         context.FieldNameFilter("anyField").Should().BeTrue();
     }

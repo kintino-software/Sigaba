@@ -44,8 +44,4 @@
     <ProjectReference Include="..\Kintino.CipherConf.App.Persistence\Kintino.CipherConf.App.Persistence.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\PublicKeys\" />
-  </ItemGroup>
-
 </Project>

@@ -1,11 +1,12 @@
 ﻿using Kintino.CipherConf.Primitives;
 using System.IO.Abstractions;
-using Kintino.CipherConf.App.Services.PublicKeys;
 
 namespace Kintino.CipherConf.App.Services.PublicKeys;
 
-internal class PublicKeyFileRepository(IFileSystem fs) : IPublicKeyRepository
+internal class PublicKeyFileRepository : IPublicKeyRepository
 {
+    private readonly IFileSystem fs = FS.Current;
+
     public async Task<PublicKey?> LoadAsync(string filePath)
     {
         if (!fs.File.Exists(filePath))

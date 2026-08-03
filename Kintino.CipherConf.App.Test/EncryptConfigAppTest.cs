@@ -19,7 +19,6 @@ public class EncryptConfigAppTest : BaseTest
 
     private IEncryptConfigApp CreateService()
     {
-        Fs.Directory.SetCurrentDirectory(currentDir);
         contextLoader.LoadContextAsync(currentDir).ReturnsForAnyArgs(context);
         return new EncryptConfigApp(fsHelper, contextLoader, fileCipher, Fs);
     }
@@ -29,7 +28,6 @@ public class EncryptConfigAppTest : BaseTest
     [Fact]
     public async Task Should_initialize_context()
     {
-        contextLoader.HasContextAsync(currentDir).ReturnsForAnyArgs(false);
         var publicKey = new PublicKey([1]);
         var privateKey = new PrivateKey([2]);
         asymmetricCipher.CreateNewKeyPair().Returns((publicKey, privateKey));
@@ -37,20 +35,17 @@ public class EncryptConfigAppTest : BaseTest
 
         await service.InitAsync();
 
-        await contextLoader.Received().HasContextAsync(currentDir);
         await contextLoader.Received().CreateContextAsync(currentDir);
     }
 
     [Fact]
     public async Task Should_throw_when_initializing_and_context_already_exists()
     {
-        contextLoader.HasContextAsync(currentDir).ReturnsForAnyArgs(true);
         var service = CreateService();
 
         var action = () => service.InitAsync();
 
         await action.Should().ThrowAsync<InvalidOperationException>().WithMessage("The app is already initialized.");
-        await contextLoader.Received().HasContextAsync(currentDir);
         await contextLoader.DidNotReceive().CreateContextAsync(currentDir);
     }
 

@@ -12,11 +12,9 @@ internal class EncryptConfigApp(
 {
     private readonly string currentDir = fs.Directory.GetCurrentDirectory();
 
-    async Task IEncryptConfigApp.InitAsync()
+    Task IEncryptConfigApp.InitAsync()
     {
-        if (await contextLoader.HasContextAsync(currentDir))
-            throw new InvalidOperationException($"The app is already initialized.");
-        await contextLoader.CreateContextAsync(currentDir);
+        return contextLoader.CreateContextAsync(currentDir);
     }
 
     async Task IEncryptConfigApp.CipherFilesAsync()

@@ -13,7 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="Kintino.CipherConf.App.Exceptions"/>
+    <Using Include="Kintino.CipherConf.App.Exceptions" />
+    <Using Include="Kintino.CipherConf.App.Dependencies" />
   </ItemGroup>
 
   <ItemGroup>

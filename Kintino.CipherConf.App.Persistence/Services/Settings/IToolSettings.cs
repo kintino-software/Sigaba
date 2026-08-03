@@ -1,8 +1,15 @@
 ﻿namespace Kintino.CipherConf.App.Services.Settings;
 
-public interface IToolSettings
+internal interface IToolSettings
 {
-    Predicate<string> FieldFilter { get; }
-    IEnumerable<string> WorkingSetFiles { get; }
+    int Version { get; }
+    bool FieldNamePredicate(string fieldName);
+    IEnumerable<string> GetFilesWorkingSet(string startFolder);
 }
 
+internal interface IToolSettings<TSelf> : IToolSettings where TSelf : IToolSettings
+{
+    string Serialize();
+    static abstract TSelf CreateDefault();
+    static abstract TSelf Deserialize(string serialized);
+}

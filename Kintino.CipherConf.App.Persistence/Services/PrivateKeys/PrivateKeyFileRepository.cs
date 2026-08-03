@@ -3,8 +3,10 @@ using System.IO.Abstractions;
 
 namespace Kintino.CipherConf.App.Services.PrivateKeys;
 
-internal class PrivateKeyFileRepository(IFileSystem fs) : IPrivateKeyRepository
+internal class PrivateKeyFileRepository : IPrivateKeyRepository
 {
+    private readonly IFileSystem fs = FS.Current;
+
     async Task<PrivateKey?> IPrivateKeyRepository.LoadAsync(string filePath)
     {
         var privateKeyContent = await fs.File.ReadAllTextAsync(filePath);
