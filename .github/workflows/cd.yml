@@ -11,11 +11,18 @@ jobs:
   publish:
     name: Build and Publish to NuGet
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Set version
         run: echo "APP_VERSION=${{ env.major }}.${{ env.minor }}.${{ github.run_number }}${{ env.tag }}" >> $GITHUB_ENV
+      - name: NuGet login
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
       - name: Restore dependencies
@@ -39,5 +46,6 @@ jobs:
       - name: Push to NuGet
         run: >-
           dotnet nuget push ./artifacts/*.nupkg 
-          --source https://api.nuget.org/v3/index.json 
+          --source https://api.nuget.org/v3/index.json
+          --api-key ${{steps.login.outputs.NUGET_API_KEY}}
           --skip-duplicate
