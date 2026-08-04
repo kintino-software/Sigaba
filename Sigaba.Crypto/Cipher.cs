@@ -1,6 +1,6 @@
 ﻿using Sigaba.Primitives;
 
-namespace Sigaba.Crypto.Services.Ciphers.V1;
+namespace Sigaba.Crypto;
 
 internal class Cipher(IEnumerable<IVersionedCipher> versionedCiphers) : ICipher
 {
