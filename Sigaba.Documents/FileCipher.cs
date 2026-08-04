@@ -6,7 +6,7 @@ using System.IO.Abstractions;
 
 namespace Sigaba.Documents;
 
-internal class FileCipher(IFileSystem fs, ISymmetricCipher symmetricCipher, IAsymmetricCipher asymmetricCipher) : IFileCipher
+internal class FileCipher(IFileSystem fs, ICipher cipher) : IFileCipher
 {
     async ValueTask IFileCipher.CipherFile(string filePath, PublicKey publicKey, Predicate<string> fieldFilter)
     {
@@ -15,26 +15,21 @@ internal class FileCipher(IFileSystem fs, ISymmetricCipher symmetricCipher, IAsy
         if (fieldNames.Count < 1)
             return;
 
-        var plainKey = symmetricCipher.GenerateNewKey();
-        var encryptedKey = asymmetricCipher.Encrypt(plainKey, publicKey);
-
         foreach (var fieldName in fieldNames)
         {
             // Should not re-encrypt fields that are already encrypted so we skip them
-            if (document.TryGetValue<string>(fieldName, out var value) && FieldPacker.IsEncryptedFieldValue(value))
+            if (document.TryGetValue<string>(fieldName, out var value) && IsEncryptedFieldValue(value))
                 continue;
 
             var rawValue = document.GetFieldRawValue(fieldName);
-            var nonce = symmetricCipher.GenerateNewNonce();
-            var encryptedData = symmetricCipher.Encrypt(plainKey, new PlainData(rawValue.ToUTF8Bytes()), nonce);
+            var rawValueBytes = rawValue.ToUTF8Bytes();
+            var plainData = new PlainData(rawValueBytes);
 
-            var package = new EncryptedFieldPack(
-                EncryptedKey: encryptedKey,
-                EncryptedData: encryptedData,
-                Nonce: nonce);
+            var encryptedData = cipher.Encrypt(plainData, publicKey);
 
-            var pack = FieldPacker.Pack(package);
-            document.SetFieldValue(fieldName, pack);
+            var encryptedDataBase64 = encryptedData.ToBase64();
+            var wraped = Wrap(encryptedDataBase64);
+            document.SetFieldValue(fieldName, wraped);
         }
 
         await SaveChangedDocumentAsync(document, filePath);
@@ -48,15 +43,16 @@ internal class FileCipher(IFileSystem fs, ISymmetricCipher symmetricCipher, IAsy
         {
             if (!document.TryGetValue<string>(field, out var value) ||  // field is not a string, it means that is not encrypted
                 value is null ||                                        // field is null, also means is not encrypted
-                !FieldPacker.IsEncryptedFieldValue(value))              // field is not encrypted
+                !IsEncryptedFieldValue(value))              // field is not encrypted
             {
                 continue;
             }
 
-            FieldPacker.Unpack(value).Deconstruct(out var encryptedKey, out var encryptedData, out var nonce);
-            var plainKey = asymmetricCipher.Decrypt(encryptedKey, privateKey);
+            var encryptedData64 = Unwrap(value);
+            var encryptedData = EncryptedData.FromBase64(encryptedData64);
 
-            var plainData = symmetricCipher.Decrypt(plainKey, encryptedData, nonce);
+            var plainData = cipher.Decrypt(encryptedData, privateKey);
+
             var rawValue = plainData.Bytes.FromUtf8Bytes();
             document.SetFieldRawValue(field, rawValue);
         }
@@ -78,5 +74,26 @@ internal class FileCipher(IFileSystem fs, ISymmetricCipher symmetricCipher, IAsy
     {
         var newContent = document.Serialize();
         await fs.File.WriteAllTextAsync(filePath, newContent);
+    }
+
+
+    public static bool IsEncryptedFieldValue(string? str)
+    {
+        return !string.IsNullOrEmpty(str) && str.StartsWith("ENC(") && str.EndsWith(')');
+    }
+
+    private static string Wrap(string str)
+    {
+        return $"ENC({str})";
+    }
+
+    private static string Unwrap(string str)
+    {
+        if (!str.StartsWith("ENC(") || !str.EndsWith(')'))
+        {
+            throw new ArgumentException("Invalid wrapped encrypted value format", nameof(str));
+        }
+        var result = str[4..^1]; // Extract the wrapped part
+        return result;
     }
 }

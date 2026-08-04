@@ -1,5 +1,4 @@
-﻿using Sigaba.App.Services.Common;
-using Sigaba.App.Services.PrivateKeys;
+﻿using Sigaba.App.Services.PrivateKeys;
 using Sigaba.App.Services.PublicKeys;
 using Sigaba.App.Services.Settings;
 using Sigaba.Crypto;
@@ -11,11 +10,9 @@ internal class ContextLoader(
     IToolSettingsRepository toolSettingsRepository,
     IPublicKeyRepository publicKeyRepository,
     IPrivateKeyRepository privateKeyRepository,
-    IAsymmetricCipher asymmetricCipher,
+    ICipher cipher,
     IFileSystem fs) : IContextLoader
 {
-    private readonly ToolEnvironment environment = new(fs);
-
     // IContextLoader implementation
 
     async Task IContextLoader.CreateContextAsync(string projectRootFolder)
@@ -26,7 +23,7 @@ internal class ContextLoader(
             throw new InvalidOperationException("A context already exists in this folder.");
         }
 
-        var (publicKey, privateKey) = asymmetricCipher.CreateNewKeyPair();
+        var (publicKey, privateKey) = cipher.GenerateKeys();
         await toolSettingsRepository.SaveDefaultAsync(settingsFilePath);
         await publicKeyRepository.SaveAsync(publicKey, publicKeyFilePath);
         await privateKeyRepository.SaveAsync(privateKey, privateKeyFilePath);

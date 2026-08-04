@@ -6,13 +6,12 @@ namespace Sigaba.Documents;
 public class FileCipherTest : BaseTest
 {
     private readonly MockFileSystem fs = new();
-    private readonly FakeSymmetricCipher symmetricCipher = new();
-    private readonly FakeAsymmetricCipher asymmetricCipher = new();
+    private readonly FakeCipher cipher = new();
     private readonly Predicate<string> fieldFilter = (f) => f.Contains("_secret");
 
     private IFileCipher CreateService()
     {
-        return new FileCipher(fs, symmetricCipher, asymmetricCipher);
+        return new FileCipher(fs, cipher);
     }
 
     // CipherFile
@@ -33,7 +32,7 @@ public class FileCipherTest : BaseTest
         """;
         fs.AddFile("test.json", new MockFileData(jsonDocument));
 
-        await service.CipherFile("test.json", asymmetricCipher.CorrectPublicKey, fieldFilter);
+        await service.CipherFile("test.json", cipher.CorrectPublicKey, fieldFilter);
 
         var evaluator = JsonEvaluator.FromFile(fs.GetFile("test.json"));
         evaluator
@@ -64,8 +63,8 @@ public class FileCipherTest : BaseTest
         """;
         fs.AddFile("test.json", new MockFileData(originalJson));
 
-        await service.CipherFile("test.json", asymmetricCipher.CorrectPublicKey, fieldFilter);
-        await service.DecipherFile("test.json", asymmetricCipher.CorrectPrivateKey);
+        await service.CipherFile("test.json", cipher.CorrectPublicKey, fieldFilter);
+        await service.DecipherFile("test.json", cipher.CorrectPrivateKey);
         var actualJson = fs.GetFile("test.json").TextContents;
 
         actualJson.Should().Be(originalJson);
@@ -93,8 +92,8 @@ public class FileCipherTest : BaseTest
         """;
         fs.AddFile("test.json", new MockFileData(originalJson));
 
-        await service.CipherFile("test.json", asymmetricCipher.CorrectPublicKey, fieldFilter);
-        await service.DecipherFile("test.json", asymmetricCipher.CorrectPrivateKey);
+        await service.CipherFile("test.json", cipher.CorrectPublicKey, fieldFilter);
+        await service.DecipherFile("test.json", cipher.CorrectPrivateKey);
         var result = fs.GetFile("test.json").TextContents;
 
         result.Should().Be(originalJson);

@@ -10,7 +10,7 @@ namespace Sigaba.App;
 public class EncryptConfigAppTest : BaseTest
 {
     private readonly IContext context = Substitute.For<IContext>();
-    private readonly IAsymmetricCipher asymmetricCipher = Substitute.For<IAsymmetricCipher>();
+    private readonly ICipher cipher = Substitute.For<ICipher>();
     private readonly IFileCipher fileCipher = Substitute.For<IFileCipher>();
     private readonly IFsHelper fsHelper = Substitute.For<IFsHelper>();
     private readonly IContextLoader contextLoader = Substitute.For<IContextLoader>();
@@ -29,7 +29,7 @@ public class EncryptConfigAppTest : BaseTest
     {
         var publicKey = new PublicKey([1]);
         var privateKey = new PrivateKey([2]);
-        asymmetricCipher.CreateNewKeyPair().Returns((publicKey, privateKey));
+        cipher.GenerateKeys().Returns((publicKey, privateKey));
         var service = CreateService();
 
         await service.InitAsync();

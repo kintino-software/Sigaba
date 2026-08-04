@@ -4,7 +4,7 @@ namespace Sigaba.Crypto.Services;
 
 internal static class ByteTagger
 {
-    public static TByteLike Tag<TByteLike>(TByteLike input, byte tag) where TByteLike : IByteLike
+    public static TByteLike Tag<TByteLike>(this TByteLike input, byte tag) where TByteLike : IByteLike
     {
         var taggedBytes = new byte[input.Bytes.Length + 1];
 
@@ -13,7 +13,7 @@ internal static class ByteTagger
         return (TByteLike)Activator.CreateInstance(typeof(TByteLike), taggedBytes)!;
     }
 
-    public static TByteLike Untag<TByteLike>(TByteLike input, out byte tag) where TByteLike : IByteLike
+    public static TByteLike Untag<TByteLike>(this TByteLike input, out byte tag) where TByteLike : IByteLike
     {
         if (input.Bytes.Length < 1)
         {
@@ -25,4 +25,6 @@ internal static class ByteTagger
         var untagged = (TByteLike)Activator.CreateInstance(typeof(TByteLike), untaggedBytes)!;
         return untagged;
     }
+
+
 }

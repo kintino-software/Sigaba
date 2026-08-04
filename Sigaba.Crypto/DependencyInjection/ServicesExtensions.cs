@@ -9,10 +9,8 @@ public static class ServicesExtensions
     public static IServiceCollection AddCryptoModule(this IServiceCollection services)
     {
         return services
-            .AddSingleton<IVersionedAsymmetricCipher, AsymmetricCipherV1>()
-            .AddSingleton<IVersionedSymmetricCipher, SymmetricCipherV1>()
-            .AddSingleton<ISymmetricCipher, SymmetricCipher>()
-            .AddSingleton<IAsymmetricCipher, AsymmetricCipher>();
+            .AddSingleton<IVersionedCipher, CipherV1>()
+            .AddSingleton<ICipher, Cipher>();
 
     }
 }

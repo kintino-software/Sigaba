@@ -12,11 +12,11 @@ public class ContextLoaderTest : BaseTest
     private readonly IToolSettingsRepository settingsRepository = Substitute.For<IToolSettingsRepository>();
     private readonly IPublicKeyRepository publicKeyRepository = Substitute.For<IPublicKeyRepository>();
     private readonly IPrivateKeyRepository privateKeyRepository = Substitute.For<IPrivateKeyRepository>();
-    private readonly IAsymmetricCipher asymmetricCipher = Substitute.For<IAsymmetricCipher>();
+    private readonly ICipher cipher = Substitute.For<ICipher>();
 
     private IContextLoader CreateService()
     {
-        return new ContextLoader(settingsRepository, publicKeyRepository, privateKeyRepository, asymmetricCipher, Fs);
+        return new ContextLoader(settingsRepository, publicKeyRepository, privateKeyRepository, cipher, Fs);
     }
 
     // CreateContextAsync
@@ -29,12 +29,12 @@ public class ContextLoaderTest : BaseTest
         settingsRepository.LoadAsync(RootPath).ReturnsNull();
         var publicKey = new PublicKey([1]);
         var privateKey = new PrivateKey([2]);
-        asymmetricCipher.CreateNewKeyPair().Returns((publicKey, privateKey));
+        cipher.GenerateKeys().Returns((publicKey, privateKey));
         var service = CreateService();
 
         await service.CreateContextAsync(targetDir);
 
-        asymmetricCipher.Received().CreateNewKeyPair();
+        cipher.Received().GenerateKeys();
         await settingsRepository.Received().SaveDefaultAsync(Path.Combine(targetDir, Constants.ToolSettingsFileName));
         await publicKeyRepository.Received().SaveAsync(publicKey, Path.Combine(targetDir, Constants.PublicKeyFileName));
         await privateKeyRepository.Received().SaveAsync(privateKey, Path.Combine(targetDir, Constants.PrivateKeyFileName));
