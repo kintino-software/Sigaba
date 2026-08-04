@@ -5,46 +5,73 @@ Sigaba is a command-line tool that encrypts/decrypts selected fields in files th
 Once encrypted, the file will still be human-readable, but the sensitive fields will be replaced with encrypted values. 
 
 So, before encryption you would have:
+
 ```json
 {
-    "password_secret": "my plain password here!"
-}
-```
-and after the encryption:
-```json
-{
-    "password_secret": "ENC(bU4hcFtAU1GAIUUHBsu7GAAAAAAAAAAAAAAAAGbuUQ5dVXAKfHKCLXFevZcwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAAT3\u002B7HFv4HQAf7hYTovk61ScJz3uUOkgAg7hi4vi34okP62bjJcZHCCTFtmR2hwzhyH1aynaUB2C/W0GdegqYRV)"
+    "apikey_secret": "plain-api-key",
+    "connectionString_secret": "Server=myServerAddress;Database=myDataBase;User Id=myUsername;Password=myPassword;",
+    "public_field": "public value"
+    
 }
 ```
 
-The tool uses asymmetric encryption, which means that you can share the public key with your team members, while keeping the private key secure.
+and after the encryption:
+
+```json
+{
+    "apikey_secret": "ENC(XAKfHKC...)",
+    "connectionString_secret": "ENC(bU4hcFt...)",
+    "public_field": "public value"
+}
+```
+
+The tool uses asymmetric encryption, which means that you can share a public key with your team members, while keeping the private key secure.
 
 Currently, this tool only works on .json files.
+
 ## Installation
 
 To install Sigaba, you can use the following command:
+
 ```bash
 dotnet tool install --global Sigaba
 ```
 
 ## Usage
 
-1. First, initialize Sigaba in your project or solution directory:
-```bash
-cd /path/to/your/project
-sigaba init
-```
-It will create a _sigaba.json_, a _public.key_ and a _private.key_ file in the current directory.
+1. Initialize Sigaba in your project or solution directory:
 
-Move the _private.key_ file to a secure location and do not commit it to your version control system.
+    ```bash
+    sigaba init
+    ```
 
-2. To encrypt your configuration files, use the following command:
-```bash
-sigaba encrypt
-```
+    It will create a ```sigaba.json```, a ```public.key``` and a ```private.key``` file in the current directory.
+
+    **IMPORTANT: Move the ```private.key``` and ```public.key``` files to a secure location and do not commit it to your version control system!**
+
+    The public key can be shared with users that can update the secret values. Although those users can change the value and reencrypt them, they cannot see the unencrypted value.
+
+    The private key should be shared only with parties that must decrypt and have access to unencrypted values. Generally is a good practice to allow only an automated system to access the private key through a secure mecanism. For example, in Azure Devops, you upload the private key as a secure file and use it during a deployment pipeline.
+
+2. To encrypt your files, use the following command:
+
+    ```bash
+    sigaba encrypt
+    ```
+
+    The tool will look for the files and fields according to the configuration file and encrypt them.
+
+3. To decrypt the encrypted files, use:
+
+    ```bash
+    sigaba decrypt
+    ```
+
 ## Configuration
+
 To configure the tool, open and edit _sigaba.json_ file.
 You will see a content like:
+
 ```json
 {
     "version":1,
@@ -53,35 +80,49 @@ You will see a content like:
     "exclude":["**node_modules/**","**/bin/**","**/obj/**"]
 }
 ```
+
 | Name       | Type         |                                                                                                                                       |
 | ---------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| version    | number       | Dot not changet it. Keeps track of the configuration file version.                                                                    |
+| version    | number       | **Dot not changet it!** Keeps track of the configuration file version.                                                                |
 | fieldRegex | string       | The regex pattern used to select the fields to be encrypted/decrypted. The pattern is matched against the field name, not it's value. |
 | include    | string array | A glob pattern to filter which file will be encrypted/decrypted.                                                                      |
 | exclude    | string array | A glob pattern to filter which file will NOT be encrypted/decrypted.                                                                  |
 
 In the example above, the tool will process all files that ends with _\.secrets.json_ (like appsettings.secrets.json), but will not process files inside a _node_modules_ or _bin_ or _obj_ folder.
-Then, on each of the files, the tool will look for any field name that ends with _\_secret_ and encrypt it's value.
+Then, on each of the filtered files, the tool will look for any field name that ends with _\_secret_ and encrypt it's value.
 
+## Features
 
+1. Encryptys any kind of value: strings, numbers, booleans, arrays and even nulls (but it does not work with nested objects - see below).
+2. Preserve comments and formatting after decryption and encryption.
+3. Users with the public key can change the secret values and reencrypt them.
 
-## json limitations:
-1. In this version cannot encrypt entire json objects
+## Limitations
+
+### JSON files
+
+1. This version cannot encrypt entire json objects
+
     ```json
     {
         "parent_secret": { "child_secret": "sensitive data" }
     }
     ```
+
     will become:
+
     ```json
     {
         "parent_secret": { "child_secret": "ENC(AAAA...)" }
     }
     ```
+
     and never
+
     ```json
     {
         "parent_secret": "ENC(AAAA...)"
     }
     ```
-    this is to prevent encrypted values nested inside encrypted objects that would cause a mess to decrypt.
+
+    That's to avoid confusion on which level of the document would be encrypted first and the hassle to handle nested encrypted values.

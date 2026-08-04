@@ -11,24 +11,17 @@
   <PropertyGroup>
     <Version>0.0.0-alpha</Version>
     <PackAsTool>true</PackAsTool>
+    <AssemblyName>Sigaba</AssemblyName>
     <ToolCommandName>sigaba</ToolCommandName>
     <Authors>Kintino software</Authors>
     <Company>Kintino software</Company>
     <Description>
-      Sigaba is a command-line tool that encrypts/decrypts configuration files.
+      Sigaba is a command-line tool that encrypts/decrypts selected fields in files that contain sensitive information, such as passwords and connection strings. It is mainly intended to be used on configuration files.
     </Description>
     <PackageTags>cipher;cryptography;encryption;decryption;configuration;cli;appsettings</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReadmeFile>Readme.md</PackageReadmeFile>
+    <PackageReadmeFile>../README.md</PackageReadmeFile>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Include="Readme.md" Pack="true" PackagePath="/"/>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Readme.md" />
-  </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Sigaba.Cli.IntegrationTest" />
