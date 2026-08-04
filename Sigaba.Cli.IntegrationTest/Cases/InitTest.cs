@@ -1,6 +1,6 @@
 ﻿namespace Sigaba.Cli.Cases;
 
-public class Init : BaseTest
+public class InitTest : BaseTest
 {
     [Fact]
     public async Task WithoutArgs()

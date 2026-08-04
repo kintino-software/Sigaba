@@ -7,6 +7,8 @@ internal class PrivateKeyFileRepository(IFileSystem fs) : IPrivateKeyRepository
 {
     async Task<PrivateKey?> IPrivateKeyRepository.LoadAsync(string filePath)
     {
+        if (!fs.File.Exists(filePath))
+            return null;
         var privateKeyContent = await fs.File.ReadAllTextAsync(filePath);
         var privateKey = PrivateKey.FromBase64(privateKeyContent);
         return privateKey;
