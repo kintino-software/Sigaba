@@ -5,6 +5,7 @@ namespace Sigaba.Cli.Cases;
 public class EncryptDecrypt : BaseTest
 {
     private readonly string cwd;
+
     public EncryptDecrypt()
     {
         cwd = CreateAndSetCwd("a", "b");
