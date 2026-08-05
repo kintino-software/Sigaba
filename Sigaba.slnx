@@ -32,5 +32,6 @@
     <File Path=".gitignore" />
     <File Path=".runsettings" />
     <File Path="global.json" />
+    <File Path="readme.md" />
   </Folder>
 </Solution>
