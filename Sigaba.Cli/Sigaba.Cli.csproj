@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <AssemblyName>Sigaba</AssemblyName>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>sigaba</ToolCommandName>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -9,28 +12,31 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>0.0.0-alpha</Version>
     <PackageId>Sigaba</PackageId>
-    <PackAsTool>true</PackAsTool>
-    <AssemblyName>Sigaba</AssemblyName>
-    <ToolCommandName>sigaba</ToolCommandName>
-    <Authors>Kintino software</Authors>
-    <Company>Kintino software</Company>
-    <PackageProjectUrl>https://github.com/kintino-software/Sigaba</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/kintino-software/Sigaba</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>Initial pre-release</PackageReleaseNotes>
+    <Version>0.0.0-alpha</Version>
     <Description>
       Sigaba is a command-line tool that encrypts/decrypts selected fields in files that contain sensitive information, such as passwords and connection strings.
       It is mainly intended to be used on configuration files.
     </Description>
-    <PackageTags>cipher;cryptography;encryption;decryption;configuration;cli;appsettings</PackageTags>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/kintino-software/Sigaba</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/kintino-software/Sigaba</RepositoryUrl>
+    <Authors>Kintino software</Authors>
+    <Company>Kintino software</Company>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>icon-128x128.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>configuration;encryption;cipher;tool;cli;cryptography;decryption;appsettings</PackageTags>
+    <PackageReleaseNotes>Initial pre-release</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
     <Content Include="../README.md" Pack="true" PackagePath="\">
+      <Visible>false</Visible>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="../assets/icon-128x128.png" Pack="true" PackagePath="\">
+      <Visible>false</Visible>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
