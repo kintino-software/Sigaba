@@ -2,7 +2,7 @@
 using Sigaba.Primitives;
 using System.IO.Abstractions;
 
-namespace Sigaba.App.Services.Contexts;
+namespace Sigaba.App.Models;
 
 internal class Context(string projectRoot, PrivateKey? privateKey, PublicKey? publicKey, IToolSettings toolSettings, IFileSystem fs) : IContext
 {

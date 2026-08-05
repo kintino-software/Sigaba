@@ -1,4 +1,5 @@
-﻿using Sigaba.App.Services.PrivateKeys;
+﻿using Sigaba.App.Models;
+using Sigaba.App.Services.PrivateKeys;
 using Sigaba.App.Services.PublicKeys;
 using Sigaba.App.Services.Settings;
 using Sigaba.Crypto;

@@ -33,7 +33,7 @@ public class ToolSettingsFileRepositoryTest : BaseTest
             loaded.Should().NotBeNull($"it should load the settings from {fileName}");
         }
 
-        testedInstances.Should().BeEquivalentTo(allVersionTypes, "it should have tested all implementations of IToolSettings");
+        testedInstances.Should().BeEquivalentTo(allVersionTypes, "it should check all implementations of IToolSettings");
     }
 
 }
