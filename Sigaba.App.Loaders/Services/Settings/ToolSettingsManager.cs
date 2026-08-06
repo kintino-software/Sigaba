@@ -2,7 +2,7 @@
 
 namespace Sigaba.App.Services.Settings;
 
-internal partial class ToolSettingsFileRepository(IFileSystem fs)
+internal partial class ToolSettingsManager(IFileSystem fs)
 {
     private string Cwd => fs.Directory.GetCurrentDirectory();
     private string FilePath => fs.Path.Combine(Cwd, Constants.ToolSettingsFileName);
@@ -10,17 +10,17 @@ internal partial class ToolSettingsFileRepository(IFileSystem fs)
     private bool FileExists() => fs.File.Exists(FilePath);
 }
 
-internal partial class ToolSettingsFileRepository : IToolSettingsRepository
+internal partial class ToolSettingsManager : IToolSettingsManager
 {
-    Task<bool> IToolSettingsRepository.ExistsAsync() => Task.FromResult(FileExists());
+    Task<bool> IToolSettingsManager.ExistsAsync() => Task.FromResult(FileExists());
 
-    async Task IToolSettingsRepository.SaveDefaultAsync()
+    async Task IToolSettingsManager.SaveDefaultAsync()
     {
         var v1 = ToolSettingsV1.CreateDefault(); // TODO: Consider querying the latest version of IToolSettings instead of hardcoding it.
         await fs.File.WriteAllTextAsync(FilePath, v1.Serialize());
     }
 
-    async Task<IToolSettings> IToolSettingsRepository.LoadAsync()
+    async Task<IToolSettings> IToolSettingsManager.LoadAsync()
     {
         if (!FileExists())
             throw new InvalidOperationException("ToolSettings file does not exist.");

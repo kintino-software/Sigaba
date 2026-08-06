@@ -21,8 +21,4 @@
     <ProjectReference Include="..\Sigaba.Documents\Sigaba.Documents.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
-
 </Project>

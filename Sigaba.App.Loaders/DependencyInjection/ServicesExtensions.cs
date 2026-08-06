@@ -12,9 +12,9 @@ public static class ServicesExtensions
     {
         services
             .AddSingleton<IContextLoader, ContextLoader>()
-            .AddSingleton<IToolSettingsRepository, ToolSettingsFileRepository>()
-            .AddSingleton<IPublicKeyRepository, PublicKeyFileRepository>()
-            .AddSingleton<IPrivateKeyRepository, PrivateKeyFileRepository>();
+            .AddSingleton<IToolSettingsManager, ToolSettingsManager>()
+            .AddSingleton<IPublicKeyManager, PublicKeyManager>()
+            .AddSingleton<IPrivateKeyManager, PrivateKeyManager>();
 
         return services;
     }

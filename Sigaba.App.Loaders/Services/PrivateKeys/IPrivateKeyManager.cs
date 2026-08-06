@@ -2,7 +2,7 @@
 
 namespace Sigaba.App.Services.PrivateKeys;
 
-internal interface IPrivateKeyRepository
+internal interface IPrivateKeyManager
 {
     Task<bool> ExistAsync();
     Task<PrivateKey?> LoadAsync();

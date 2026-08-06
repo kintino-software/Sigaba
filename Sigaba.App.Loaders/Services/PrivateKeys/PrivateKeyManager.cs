@@ -3,7 +3,7 @@ using System.IO.Abstractions;
 
 namespace Sigaba.App.Services.PrivateKeys;
 
-internal partial class PrivateKeyFileRepository(IFileSystem fs) : IPrivateKeyRepository
+internal partial class PrivateKeyManager(IFileSystem fs) : IPrivateKeyManager
 {
     private string Cwd => fs.Directory.GetCurrentDirectory();
     private string FilePath => fs.Path.Combine(Cwd, Constants.PrivateKeyFileName);
@@ -11,11 +11,11 @@ internal partial class PrivateKeyFileRepository(IFileSystem fs) : IPrivateKeyRep
     private bool FileExists() => fs.File.Exists(FilePath);
 }
 
-internal partial class PrivateKeyFileRepository : IPrivateKeyRepository
+internal partial class PrivateKeyManager : IPrivateKeyManager
 {
-    Task<bool> IPrivateKeyRepository.ExistAsync() => Task.FromResult(FileExists());
+    Task<bool> IPrivateKeyManager.ExistAsync() => Task.FromResult(FileExists());
 
-    async Task<PrivateKey?> IPrivateKeyRepository.LoadAsync()
+    async Task<PrivateKey?> IPrivateKeyManager.LoadAsync()
     {
         if (!FileExists())
             return null;
@@ -24,7 +24,7 @@ internal partial class PrivateKeyFileRepository : IPrivateKeyRepository
         return privateKey;
     }
 
-    async Task IPrivateKeyRepository.SaveAsync(PrivateKey privateKey)
+    async Task IPrivateKeyManager.SaveAsync(PrivateKey privateKey)
     {
         var privateKeyContent = privateKey.ToBase64();
         await fs.File.WriteAllTextAsync(FilePath, privateKeyContent);

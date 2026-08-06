@@ -9,9 +9,9 @@ namespace Sigaba.App.Services.Contexts;
 
 public class ContextLoaderTest : BaseTest
 {
-    private readonly IToolSettingsRepository settingsRepository = Substitute.For<IToolSettingsRepository>();
-    private readonly IPublicKeyRepository publicKeyRepository = Substitute.For<IPublicKeyRepository>();
-    private readonly IPrivateKeyRepository privateKeyRepository = Substitute.For<IPrivateKeyRepository>();
+    private readonly IToolSettingsManager settingsRepository = Substitute.For<IToolSettingsManager>();
+    private readonly IPublicKeyManager publicKeyRepository = Substitute.For<IPublicKeyManager>();
+    private readonly IPrivateKeyManager privateKeyRepository = Substitute.For<IPrivateKeyManager>();
     private readonly ICipher cipher = Substitute.For<ICipher>();
 
     private IContextLoader CreateService()

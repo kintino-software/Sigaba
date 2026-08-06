@@ -7,7 +7,7 @@ using Sigaba.Primitives;
 
 namespace Sigaba.App;
 
-public class EncryptConfigAppTest : BaseTest
+public class SigabaAppTest : BaseTest
 {
     private readonly IContext context = Substitute.For<IContext>();
     private readonly ICipher cipher = Substitute.For<ICipher>();
@@ -16,10 +16,10 @@ public class EncryptConfigAppTest : BaseTest
     private readonly IContextLoader contextLoader = Substitute.For<IContextLoader>();
 
 
-    private IEncryptConfigApp CreateService()
+    private ISigabaApp CreateService()
     {
         contextLoader.LoadContextAsync().ReturnsForAnyArgs(context);
-        return new EncryptConfigApp(fsHelper, contextLoader, fileCipher);
+        return new SigabaApp(fsHelper, contextLoader, fileCipher);
     }
 
     // InitAsync

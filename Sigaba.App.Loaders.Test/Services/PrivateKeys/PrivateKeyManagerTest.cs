@@ -2,11 +2,11 @@
 
 namespace Sigaba.App.Services.PrivateKeys;
 
-public class PrivateKeyFileRepositoryTest : BaseTest
+public class PrivateKeyManagerTest : BaseTest
 {
-    private IPrivateKeyRepository CreateService()
+    private IPrivateKeyManager CreateService()
     {
-        return new PrivateKeyFileRepository(Fs);
+        return new PrivateKeyManager(Fs);
     }
 
     private static PrivateKey CreatePrivateKey(params byte[] data)

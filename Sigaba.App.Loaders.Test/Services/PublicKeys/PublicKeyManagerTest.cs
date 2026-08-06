@@ -2,11 +2,11 @@
 
 namespace Sigaba.App.Services.PublicKeys;
 
-public class PublicKeyFileRepositoryTest : BaseTest
+public class PublicKeyManagerTest : BaseTest
 {
-    private IPublicKeyRepository CreateService()
+    private IPublicKeyManager CreateService()
     {
-        return new PublicKeyFileRepository(Fs);
+        return new PublicKeyManager(Fs);
     }
 
     private static PublicKey CreatePublicKey(params byte[] data)

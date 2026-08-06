@@ -7,9 +7,9 @@ using System.IO.Abstractions;
 namespace Sigaba.App.Services.Contexts;
 
 internal class ContextLoader(
-    IToolSettingsRepository toolSettingsRepository,
-    IPublicKeyRepository publicKeyRepository,
-    IPrivateKeyRepository privateKeyRepository,
+    IToolSettingsManager toolSettingsRepository,
+    IPublicKeyManager publicKeyRepository,
+    IPrivateKeyManager privateKeyRepository,
     ICipher cipher,
     IFileSystem fs) : IContextLoader
 {

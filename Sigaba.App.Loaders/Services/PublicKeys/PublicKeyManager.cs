@@ -3,18 +3,18 @@ using System.IO.Abstractions;
 
 namespace Sigaba.App.Services.PublicKeys;
 
-internal partial class PublicKeyFileRepository(IFileSystem fs) : IPublicKeyRepository
+internal partial class PublicKeyManager(IFileSystem fs) : IPublicKeyManager
 {
     private string Cwd => fs.Directory.GetCurrentDirectory();
     private string FilePath => fs.Path.Combine(Cwd, Constants.PublicKeyFileName);
     private bool FileExists() => fs.File.Exists(FilePath);
 }
 
-internal partial class PublicKeyFileRepository : IPublicKeyRepository
+internal partial class PublicKeyManager : IPublicKeyManager
 {
-    Task<bool> IPublicKeyRepository.ExistAsync() => Task.FromResult(true);
+    Task<bool> IPublicKeyManager.ExistAsync() => Task.FromResult(true);
 
-    async Task<PublicKey?> IPublicKeyRepository.LoadAsync()
+    async Task<PublicKey?> IPublicKeyManager.LoadAsync()
     {
         if (!FileExists())
             return null;
@@ -23,7 +23,7 @@ internal partial class PublicKeyFileRepository : IPublicKeyRepository
         return publicKey;
     }
 
-    async Task IPublicKeyRepository.SaveAsync(PublicKey publicKey)
+    async Task IPublicKeyManager.SaveAsync(PublicKey publicKey)
     {
         var publicKeyContent = publicKey.ToBase64();
         await fs.File.WriteAllTextAsync(FilePath, publicKeyContent);

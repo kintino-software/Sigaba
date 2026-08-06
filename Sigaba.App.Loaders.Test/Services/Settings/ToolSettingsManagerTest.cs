@@ -1,11 +1,10 @@
 ﻿namespace Sigaba.App.Services.Settings;
 
-public class ToolSettingsFileRepositoryTest : BaseTest
+public class ToolSettingsManagerTest : BaseTest
 {
-
-    private IToolSettingsRepository CreateService()
+    private IToolSettingsManager CreateService()
     {
-        return new ToolSettingsFileRepository(Fs);
+        return new ToolSettingsManager(Fs);
     }
 
     [Fact]

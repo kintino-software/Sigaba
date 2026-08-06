@@ -26,10 +26,10 @@ public class ToolEnvironment(IFileSystem fs)
     public string GetRequiredProjectRootDir()
     {
         return GetProjectRootDir()
-            ?? throw new SettingsNotFoundException();
+            ?? throw new InvalidOperationException("Project root directory not found.");
     }
 
-    public string CurrentDir() => fs.Directory.GetCurrentDirectory();
+    public string GetCwd() => fs.Directory.GetCurrentDirectory();
 
     public bool TryGetNearestFile(string fileName, [NotNullWhen(true)] out string? filePath)
     {
@@ -52,4 +52,12 @@ public class ToolEnvironment(IFileSystem fs)
             : throw new FileNotFoundException($"File '{fileName}' not found in current or parent directories.");
     }
 
+    public string GetOrCreateToolSystemFolder()
+    {
+        var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        var toolSystemFolder = fs.Path.Combine(appData, Constants.ToolSystemFolderName);
+        if (!fs.Directory.Exists(toolSystemFolder))
+            fs.Directory.CreateDirectory(toolSystemFolder);
+        return toolSystemFolder;
+    }
 }

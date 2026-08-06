@@ -1,6 +1,6 @@
 ﻿namespace Sigaba.App;
 
-public interface IEncryptConfigApp
+public interface ISigabaApp
 {
     Task InitAsync();
     Task CipherFilesAsync();

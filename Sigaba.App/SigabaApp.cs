@@ -3,17 +3,17 @@ using Sigaba.Documents;
 
 namespace Sigaba.App;
 
-internal class EncryptConfigApp(
+internal class SigabaApp(
     IFsHelper fsHelper,
     IContextLoader contextLoader,
-    IFileCipher fileCipher) : IEncryptConfigApp
+    IFileCipher fileCipher) : ISigabaApp
 {
-    Task IEncryptConfigApp.InitAsync()
+    Task ISigabaApp.InitAsync()
     {
         return contextLoader.CreateContextAsync();
     }
 
-    async Task IEncryptConfigApp.CipherFilesAsync()
+    async Task ISigabaApp.CipherFilesAsync()
     {
         var context = await GetContextOrThrow();
         var publicKey = context.GetPublicKey()
@@ -25,7 +25,7 @@ internal class EncryptConfigApp(
         }
     }
 
-    async Task IEncryptConfigApp.DecipherFilesAsync()
+    async Task ISigabaApp.DecipherFilesAsync()
     {
         var context = await GetContextOrThrow();
         var privateKey = context.GetPrivateKey()
@@ -37,7 +37,7 @@ internal class EncryptConfigApp(
         }
     }
 
-    async Task IEncryptConfigApp.EditFileAsync(ITextEditor textEditor, string editingFilePath)
+    async Task ISigabaApp.EditFileAsync(ITextEditor textEditor, string editingFilePath)
     {
         var context = await GetContextOrThrow();
         var publicKey = context.GetPublicKey()

@@ -1,6 +1,6 @@
 ﻿namespace Sigaba.App.Services.Settings;
 
-internal interface IToolSettingsRepository
+internal interface IToolSettingsManager
 {
     Task<bool> ExistsAsync();
     Task<IToolSettings> LoadAsync();

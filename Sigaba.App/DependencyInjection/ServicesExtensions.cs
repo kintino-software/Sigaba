@@ -16,7 +16,7 @@ public static class ServicesExtensions
             .AddDocumentsModule()
             .AddAppPersistence()
             .AddSingleton<IFsHelper, FsHelper>()
-            .AddSingleton<IEncryptConfigApp, EncryptConfigApp>();
+            .AddSingleton<ISigabaApp, SigabaApp>();
 
         return services;
     }

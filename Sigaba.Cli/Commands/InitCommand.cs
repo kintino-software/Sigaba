@@ -3,7 +3,7 @@ using Spectre.Console.Cli;
 
 namespace Sigaba.Cli.Commands;
 
-internal class InitCommand(IEncryptConfigApp app) : AsyncCommand
+internal class InitCommand(ISigabaApp app) : AsyncCommand
 {
     protected override async Task<int> ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {

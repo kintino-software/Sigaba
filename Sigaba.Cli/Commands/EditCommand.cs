@@ -5,7 +5,7 @@ using System.IO.Abstractions;
 
 namespace Sigaba.Cli.Commands;
 
-internal class EditCommand(IEncryptConfigApp app, IFileSystem fs, ITextEditor textEditor) : AsyncCommand<EditCommand.EditCommandSettings>
+internal class EditCommand(ISigabaApp app, IFileSystem fs, ITextEditor textEditor) : AsyncCommand<EditCommand.EditCommandSettings>
 {
     public class EditCommandSettings : CommandSettings
     {
