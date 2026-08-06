@@ -1,6 +1,7 @@
 ﻿using System.IO.Abstractions;
+using Sigaba.App.Services;
 
-namespace Sigaba.App.Service;
+namespace Sigaba.App.Services;
 
 
 internal class FsHelper(IFileSystem fs) : IFsHelper

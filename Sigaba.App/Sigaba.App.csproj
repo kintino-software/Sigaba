@@ -17,7 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sigaba.App.Loaders\Sigaba.App.Loaders.csproj" />
     <ProjectReference Include="..\Sigaba.Documents\Sigaba.Documents.csproj" />
   </ItemGroup>
 

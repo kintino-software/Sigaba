@@ -11,4 +11,9 @@ public abstract class BaseTest
     {
         RootDir = Fs.Path.GetPathRoot(Fs.AllPaths.First());
     }
+
+    protected string FromRoot(params string[] relativePath)
+    {
+        return Path.Combine([RootDir, .. relativePath]);
+    }
 }

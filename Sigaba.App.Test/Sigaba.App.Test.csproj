@@ -12,6 +12,7 @@
   <ItemGroup>
     <Using Include="AwesomeAssertions" />
     <Using Include="NSubstitute" />
+    <Using Include="Sigaba.App.TestHelpers" />
   </ItemGroup>
 
   <ItemGroup>

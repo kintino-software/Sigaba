@@ -1,4 +1,4 @@
-﻿namespace Sigaba.App.Service;
+﻿namespace Sigaba.App.Services;
 
 public interface IFsHelper
 {

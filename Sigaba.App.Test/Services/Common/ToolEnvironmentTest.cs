@@ -10,7 +10,7 @@ public class ToolEnvironmentTest : BaseTest
 
         var env = new ToolEnvironment(Fs);
 
-        env.GetProjectRootDir().Should().Be(Path.Combine(RootPath, "a", "b", "c"));
+        env.GetProjectRootDir().Should().Be(Path.Combine(RootDir, "a", "b", "c"));
     }
 
     [Fact]
