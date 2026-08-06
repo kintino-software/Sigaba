@@ -20,7 +20,7 @@ public class PublicKeyFileRepositoryTest : BaseTest
         var service = CreateService();
         var publicKey = CreatePublicKey();
 
-        await service.SaveAsync(publicKey, "public.key");
+        await service.SaveAsync(publicKey);
 
         Fs.File.Exists("public.key").Should().BeTrue();
     }
@@ -30,12 +30,12 @@ public class PublicKeyFileRepositoryTest : BaseTest
     {
         var service = CreateService();
         var oldKey = CreatePublicKey(1, 2, 3);
-        await service.SaveAsync(oldKey, "public.key");
+        await service.SaveAsync(oldKey);
         var newKey = CreatePublicKey(4, 5, 6);
 
-        await service.SaveAsync(newKey, "public.key");
+        await service.SaveAsync(newKey);
 
-        var actual = await service.LoadAsync("public.key");
+        var actual = await service.LoadAsync();
         actual.Should().BeEquivalentTo(newKey);
     }
 
@@ -44,9 +44,9 @@ public class PublicKeyFileRepositoryTest : BaseTest
     {
         var service = CreateService();
         var key = CreatePublicKey();
-        await service.SaveAsync(key, "public.key");
+        await service.SaveAsync(key);
 
-        var actual = await service.LoadAsync("public.key");
+        var actual = await service.LoadAsync();
 
         actual.Should().BeEquivalentTo(key);
     }

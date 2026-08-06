@@ -17,8 +17,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sigaba.App.Persistence\Sigaba.App.Persistence.csproj" />
+    <ProjectReference Include="..\Sigaba.App.Loaders\Sigaba.App.Loaders.csproj" />
     <ProjectReference Include="..\Sigaba.Documents\Sigaba.Documents.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\" />
   </ItemGroup>
 
 </Project>

@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Sigaba.App.Persistence.Test" />
+    <InternalsVisibleTo Include="Sigaba.App.Loaders.Test" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 

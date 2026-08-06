@@ -20,7 +20,7 @@ public class PrivateKeyFileRepositoryTest : BaseTest
         var service = CreateService();
         var privateKey = CreatePrivateKey();
 
-        await service.SaveAsync(privateKey, "private.key");
+        await service.SaveAsync(privateKey);
 
         Fs.File.Exists("private.key").Should().BeTrue();
     }
@@ -31,11 +31,11 @@ public class PrivateKeyFileRepositoryTest : BaseTest
     {
         var service = CreateService();
         var oldKey = CreatePrivateKey(1, 2, 3);
-        await service.SaveAsync(oldKey, "private.key");
+        await service.SaveAsync(oldKey);
         var newKey = CreatePrivateKey(4, 5, 6);
 
-        await service.SaveAsync(newKey, "private.key");
-        var actual = await service.LoadAsync("private.key");
+        await service.SaveAsync(newKey);
+        var actual = await service.LoadAsync();
 
         actual.Should().BeEquivalentTo(newKey);
     }
@@ -45,9 +45,9 @@ public class PrivateKeyFileRepositoryTest : BaseTest
     {
         var service = CreateService();
         var original = CreatePrivateKey();
-        await service.SaveAsync(original, "private.key");
+        await service.SaveAsync(original);
 
-        var actual = await service.LoadAsync("private.key");
+        var actual = await service.LoadAsync();
 
         actual.Should().BeEquivalentTo(original);
     }

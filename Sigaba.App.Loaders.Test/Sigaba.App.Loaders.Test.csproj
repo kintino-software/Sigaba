@@ -41,7 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sigaba.App.Persistence\Sigaba.App.Persistence.csproj" />
+    <ProjectReference Include="..\Sigaba.App.Loaders\Sigaba.App.Loaders.csproj" />
   </ItemGroup>
 
 </Project>

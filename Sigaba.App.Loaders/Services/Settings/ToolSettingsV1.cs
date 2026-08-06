@@ -7,7 +7,7 @@ using Vipentti.IO.Abstractions.FileSystemGlobbing;
 
 namespace Sigaba.App.Services.Settings;
 
-internal class ToolSettingsV1(string fieldRegexPattern, string[] includeGlob, string[] excludeGlob) : IToolSettings<ToolSettingsV1>
+internal partial class ToolSettingsV1(string fieldRegexPattern, string[] includeGlob, string[] excludeGlob)
 {
     public record SerialObj
     {
@@ -21,29 +21,31 @@ internal class ToolSettingsV1(string fieldRegexPattern, string[] includeGlob, st
         public required string[] ExcludeFileGlob { get; init; } = [];
     }
 
-    private readonly string fieldRegexPattern = fieldRegexPattern;
-    private readonly string[] includeGlob = includeGlob;
-    private readonly string[] excludeGlob = excludeGlob;
     private readonly Lazy<Regex> lazyFieldNameRegex = new(() => new Regex(fieldRegexPattern, RegexOptions.IgnoreCase));
 
-    // IToolSettings implementation
+}
 
+internal partial class ToolSettingsV1 : IToolSettings<ToolSettingsV1>
+{
     public int Version => 1;
 
     public static ToolSettingsV1 CreateDefault()
     {
         return new ToolSettingsV1(
             fieldRegexPattern: @"^.*_secret$",
-            includeGlob: ["**/*_secrets.json"],
+            includeGlob: ["**/*.secrets.json"],
             excludeGlob: ["**node_modules/**", "**/bin/**", "**/obj/**"]);
     }
 
-    public string Serialize() => JsonSerializer.Serialize(new SerialObj
+    public string Serialize()
     {
-        FieldRegex = this.fieldRegexPattern,
-        IncludeFileGlob = this.includeGlob,
-        ExcludeFileGlob = this.excludeGlob
-    }, JsonHelper.JsonSerializerOptions);
+        return JsonSerializer.Serialize(new SerialObj
+        {
+            FieldRegex = fieldRegexPattern,
+            IncludeFileGlob = includeGlob,
+            ExcludeFileGlob = excludeGlob
+        }, JsonHelper.JsonSerializerOptions);
+    }
 
     public static ToolSettingsV1 Deserialize(string serialized)
     {
@@ -59,11 +61,12 @@ internal class ToolSettingsV1(string fieldRegexPattern, string[] includeGlob, st
         return this.lazyFieldNameRegex.Value.IsMatch(fieldName);
     }
 
-    public IEnumerable<string> GetFilesWorkingSet(IFileSystem fs, string startFolder)
+    public IEnumerable<string> GetFilesWorkingSet(IFileSystem fs)
     {
+        var cwd = fs.Directory.GetCurrentDirectory();
         var matcher = new Matcher();
         matcher.AddIncludePatterns(includeGlob);
         matcher.AddExcludePatterns(excludeGlob);
-        return matcher.GetResultsInFullPath(fs, startFolder);
+        return matcher.GetResultsInFullPath(fs, cwd);
     }
 }

@@ -16,12 +16,10 @@ internal interface IToolSettings
     /// <returns>True if the field should be included; otherwise, false.</returns>
     bool FieldNamePredicate(string fieldName);
     /// <summary>
-    /// Gets the working set of files starting from the specified folder, using the provided file system abstraction.
+    /// Gets the working set of files.
     /// </summary>
-    /// <param name="fs">The file system abstraction to use.</param>
-    /// <param name="startFolder">The folder from which to start the search.</param>
     /// <returns>An enumerable of file paths in the working set.</returns>
-    IEnumerable<string> GetFilesWorkingSet(IFileSystem fs, string startFolder);
+    IEnumerable<string> GetFilesWorkingSet(IFileSystem fs);
     /// <summary>
     /// Serializes the settings to a string.
     /// </summary>

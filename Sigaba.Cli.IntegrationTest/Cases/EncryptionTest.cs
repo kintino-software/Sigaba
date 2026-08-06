@@ -14,8 +14,8 @@ public class EncryptionTest : BaseTest
     [Fact]
     public async Task Should_encrypt_all_files_in_directory_tree()
     {
-        var file1Path = Fs.Path.Combine(cwd, "fileA_secrets.json");
-        var file2Path = Fs.Path.Combine(cwd, "subdir", "fileB_secrets.json");
+        var file1Path = Fs.Path.Combine(cwd, "fileA.secrets.json");
+        var file2Path = Fs.Path.Combine(cwd, "subdir", "fileB.secrets.json");
         var content1 = """
             {
                 "field1": "value 1",

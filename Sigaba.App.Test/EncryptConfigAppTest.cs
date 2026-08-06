@@ -18,8 +18,8 @@ public class EncryptConfigAppTest : BaseTest
 
     private IEncryptConfigApp CreateService()
     {
-        contextLoader.LoadContextAsync(RootDir).ReturnsForAnyArgs(context);
-        return new EncryptConfigApp(fsHelper, contextLoader, fileCipher, Fs);
+        contextLoader.LoadContextAsync().ReturnsForAnyArgs(context);
+        return new EncryptConfigApp(fsHelper, contextLoader, fileCipher);
     }
 
     // InitAsync
@@ -34,7 +34,7 @@ public class EncryptConfigAppTest : BaseTest
 
         await service.InitAsync();
 
-        await contextLoader.Received().CreateContextAsync(RootDir);
+        await contextLoader.Received().CreateContextAsync();
     }
 
     // CipherFilesAsync
@@ -50,7 +50,7 @@ public class EncryptConfigAppTest : BaseTest
 
         await service.CipherFilesAsync();
 
-        await contextLoader.Received().LoadContextAsync(RootDir);
+        await contextLoader.Received().LoadContextAsync();
         await fileCipher.Received().CipherFile("file1.txt", publicKey, Arg.Any<Predicate<string>>());
         await fileCipher.Received().CipherFile("file2.txt", publicKey, Arg.Any<Predicate<string>>());
 
@@ -68,7 +68,7 @@ public class EncryptConfigAppTest : BaseTest
 
         await action.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Missing public key in context. You cannot cipher files without a public key.");
-        await contextLoader.Received().LoadContextAsync(RootDir);
+        await contextLoader.Received().LoadContextAsync();
         await fileCipher.Received(0).CipherFile(Arg.Any<string>(), Arg.Any<PublicKey>(), Arg.Any<Predicate<string>>());
     }
 

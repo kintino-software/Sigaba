@@ -23,7 +23,7 @@ internal static class JsonHelper
             switch (reader.TokenType)
             {
                 case (JsonTokenType.PropertyName):
-                    if (reader.GetString()?.ToLower() == "version")
+                    if ((reader.GetString()?.ToLower())?.Equals(nameof(IToolSettings.Version), StringComparison.CurrentCultureIgnoreCase) == true)
                     {
                         reader.Read();
                         return reader.GetInt32();

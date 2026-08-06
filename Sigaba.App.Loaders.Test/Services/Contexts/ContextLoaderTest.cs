@@ -26,27 +26,28 @@ public class ContextLoaderTest : BaseTest
     {
         var targetDir = FromRoot("a", "b");
         Fs.AddDirectory(targetDir);
-        settingsRepository.LoadAsync(RootPath).ReturnsNull();
+        settingsRepository.LoadAsync().ReturnsNull();
         var publicKey = new PublicKey([1]);
         var privateKey = new PrivateKey([2]);
         cipher.GenerateKeys().Returns((publicKey, privateKey));
         var service = CreateService();
 
-        await service.CreateContextAsync(targetDir);
+        await service.CreateContextAsync();
 
         cipher.Received().GenerateKeys();
-        await settingsRepository.Received().SaveDefaultAsync(Path.Combine(targetDir, Constants.ToolSettingsFileName));
-        await publicKeyRepository.Received().SaveAsync(publicKey, Path.Combine(targetDir, Constants.PublicKeyFileName));
-        await privateKeyRepository.Received().SaveAsync(privateKey, Path.Combine(targetDir, Constants.PrivateKeyFileName));
+        await settingsRepository.Received().SaveDefaultAsync();
+        await publicKeyRepository.Received().SaveAsync(publicKey);
+        await privateKeyRepository.Received().SaveAsync(privateKey);
     }
 
     [Fact]
     public async Task Should_throw_if_creating_context_where_it_already_exists()
     {
+        settingsRepository.ExistsAsync().Returns(true);
         Fs.AddEmptyFile(FromRoot(Constants.ToolSettingsFileName));
         var service = CreateService();
 
-        var action = () => service.CreateContextAsync(RootPath);
+        var action = () => service.CreateContextAsync();
 
         await action.Should().ThrowAsync<InvalidOperationException>().WithMessage("A context already exists in this folder.");
     }
@@ -62,26 +63,27 @@ public class ContextLoaderTest : BaseTest
         var publicKey = hasPublicKey ? new PublicKey([1]) : null;
         var privateKey = hasPrivateKey ? new PrivateKey([2]) : null;
         var settings = Substitute.For<IToolSettings>();
-        settingsRepository.LoadAsync(default).Returns(settings);
-        publicKeyRepository.LoadAsync(default).ReturnsForAnyArgs(publicKey);
-        privateKeyRepository.LoadAsync(default).ReturnsForAnyArgs(privateKey);
+        settingsRepository.ExistsAsync().Returns(true);
+        settingsRepository.LoadAsync().Returns(settings);
+        publicKeyRepository.LoadAsync().ReturnsForAnyArgs(publicKey);
+        privateKeyRepository.LoadAsync().ReturnsForAnyArgs(privateKey);
         var service = CreateService();
 
-        var result = await service.LoadContextAsync(RootPath);
+        var result = await service.LoadContextAsync();
 
-        await publicKeyRepository.Received().LoadAsync(Path.Combine(RootPath, Constants.PublicKeyFileName));
-        await privateKeyRepository.Received().LoadAsync(Path.Combine(RootPath, Constants.PrivateKeyFileName));
-        await settingsRepository.Received().LoadAsync(Path.Combine(RootPath, Constants.ToolSettingsFileName));
+        await publicKeyRepository.Received().LoadAsync();
+        await privateKeyRepository.Received().LoadAsync();
+        await settingsRepository.Received().LoadAsync();
         result.Should().NotBeNull();
     }
 
     [Fact]
     public async Task Should_throw_if_settings_not_found()
     {
-        settingsRepository.LoadAsync(default).ReturnsNullForAnyArgs();
+        settingsRepository.LoadAsync().ReturnsNullForAnyArgs();
         var service = CreateService();
 
-        var action = () => service.LoadContextAsync(RootPath);
+        var action = () => service.LoadContextAsync();
 
         await action.Should().ThrowAsync<InvalidOperationException>().WithMessage("No context in this folder. You have to initialize it first.");
     }

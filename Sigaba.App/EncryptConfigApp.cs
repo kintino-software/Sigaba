@@ -1,20 +1,16 @@
 ﻿using Sigaba.App.Service;
 using Sigaba.Documents;
-using System.IO.Abstractions;
 
 namespace Sigaba.App;
 
 internal class EncryptConfigApp(
     IFsHelper fsHelper,
     IContextLoader contextLoader,
-    IFileCipher fileCipher,
-    IFileSystem fs) : IEncryptConfigApp
+    IFileCipher fileCipher) : IEncryptConfigApp
 {
-    private readonly string currentDir = fs.Directory.GetCurrentDirectory();
-
     Task IEncryptConfigApp.InitAsync()
     {
-        return contextLoader.CreateContextAsync(currentDir);
+        return contextLoader.CreateContextAsync();
     }
 
     async Task IEncryptConfigApp.CipherFilesAsync()
@@ -65,7 +61,7 @@ internal class EncryptConfigApp(
 
     private async Task<IContext> GetContextOrThrow()
     {
-        var context = await contextLoader.LoadContextAsync(currentDir);
+        var context = await contextLoader.LoadContextAsync();
         return context ?? throw new InvalidOperationException("Could not retrieve context. Try to initialize the folder first.");
     }
 

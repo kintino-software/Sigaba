@@ -1,5 +1,4 @@
-﻿using Sigaba.App.Models;
-using Sigaba.App.Services.Settings;
+﻿using Sigaba.App.Services.Settings;
 using Sigaba.Primitives;
 
 namespace Sigaba.App.Services.Contexts;
@@ -12,7 +11,7 @@ public class ContextTest : BaseTest
 
     private IContext CreateContext()
     {
-        return new Context(RootPath, privateKey, publicKey, settings, Fs);
+        return new Context(Fs, privateKey, publicKey, settings);
     }
 
     [Fact]
@@ -33,7 +32,7 @@ public class ContextTest : BaseTest
     public void Should_get_working_set_files()
     {
         var workingSetFiles = new[] { "file1", "file2" };
-        settings.GetFilesWorkingSet(Fs, Arg.Any<string>()).Returns(workingSetFiles);
+        settings.GetFilesWorkingSet(Fs).Returns(workingSetFiles);
         var context = CreateContext();
         context.GetWorkingSetFiles().Should().BeEquivalentTo(workingSetFiles);
     }

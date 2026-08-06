@@ -24,13 +24,12 @@ public class ToolSettingsFileRepositoryTest : BaseTest
         foreach (var serializedContent in serializations)
         {
             var serialized = serializedContent;
-            var fileName = Guid.NewGuid().ToString();
-            Fs.AddFile(fileName, serialized);
+            Fs.AddFile(Constants.ToolSettingsFileName, serialized);
 
-            var loaded = await service.LoadAsync(fileName);
+            var loaded = await service.LoadAsync();
             testedInstances.Add(loaded.GetType());
 
-            loaded.Should().NotBeNull($"it should load the settings from {fileName}");
+            loaded.Should().NotBeNull();
         }
 
         testedInstances.Should().BeEquivalentTo(allVersionTypes, "it should check all implementations of IToolSettings");
