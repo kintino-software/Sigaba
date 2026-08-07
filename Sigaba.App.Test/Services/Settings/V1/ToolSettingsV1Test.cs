@@ -1,17 +1,21 @@
-﻿using System.Text.Json.Nodes;
+﻿using Sigaba.Primitives;
+using System.Text.Json.Nodes;
 
-namespace Sigaba.App.Services.Settings;
+namespace Sigaba.App.Services.Settings.V1;
 
 public class ToolSettingsV1Test : BaseTest
 {
-    private static ToolSettingsV1 CreateSettings(string fieldRegex = null, string[] includeGlob = null, string[] excludeGlob = null)
+    private readonly PublicKey publicKey = new([1, 2, 3, 4]);
+
+    private SigabaFileV1 CreateSettings(string fieldRegex = null, string[] includeGlob = null, string[] excludeGlob = null)
     {
         return fieldRegex == null && includeGlob == null && excludeGlob == null
-            ? ToolSettingsV1.CreateDefault()
-            : new ToolSettingsV1(
+            ? SigabaFileV1.CreateDefault(publicKey)
+            : new SigabaFileV1(
                 fieldRegex ?? @".*",
                 includeGlob ?? [],
-                excludeGlob ?? []);
+                excludeGlob ?? [],
+                publicKey);
     }
 
     // Version
@@ -56,7 +60,7 @@ public class ToolSettingsV1Test : BaseTest
             }
             """;
 
-        var toolSettings = ToolSettingsV1.Deserialize(json);
+        var toolSettings = SigabaFileV1.Deserialize(json);
 
         toolSettings.Should().NotBeNull();
     }

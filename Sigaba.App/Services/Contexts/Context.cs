@@ -1,17 +1,13 @@
-﻿using Sigaba.App.Services.Settings;
-using Sigaba.Primitives;
-using System.IO.Abstractions;
+﻿using Sigaba.Primitives;
 
 namespace Sigaba.App.Services.Contexts;
 
-internal class Context(IFileSystem fs, PrivateKey? privateKey, PublicKey? publicKey, IToolSettings toolSettings) : IContext
+public class Context
 {
-    PrivateKey? IContext.GetPrivateKey() => privateKey;
-
-    PublicKey? IContext.GetPublicKey() => publicKey;
-
-    bool IContext.FieldNameFilter(string fieldName) => toolSettings.FieldNamePredicate(fieldName);
-
-    IEnumerable<string> IContext.GetWorkingSetFiles() => toolSettings.GetFilesWorkingSet(fs);
+    public required string SigabaRootDir { get; init; }
+    public required string SigabaFilePath { get; init; }
+    public required PublicKey PublicKey { get; init; }
+    public required PrivateKey? PrivateKey { get; init; }
+    public required Predicate<string> FieldFilterPredicate { get; init; }
+    public required IEnumerable<string> WorkingSetFiles { get; init; }
 }
-

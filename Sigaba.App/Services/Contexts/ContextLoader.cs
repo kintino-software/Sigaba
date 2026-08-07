@@ -1,44 +1,54 @@
 ﻿using Sigaba.App.Services.PrivateKeys;
-using Sigaba.App.Services.PublicKeys;
-using Sigaba.App.Services.Settings;
-using Sigaba.Crypto;
+using Sigaba.App.Services.SigabaFiles;
+using Sigaba.Primitives;
 using System.IO.Abstractions;
 
 namespace Sigaba.App.Services.Contexts;
 
-internal class ContextLoader(
-    IToolSettingsManager toolSettingsRepository,
-    IPublicKeyManager publicKeyRepository,
-    IPrivateKeyManager privateKeyRepository,
-    ICipher cipher,
-    IFileSystem fs) : IContextLoader
+internal partial class ContextLoader(IFileSystem fs, ISigabaFileManager sigabaFileManager, IPrivateKeyManager privateKeyManager)
 {
-    async Task IContextLoader.CreateContextAsync()
+    private string? GetNearestFileWithName(string startDirectory, string fileName)
     {
-        if (await toolSettingsRepository.ExistsAsync())
+        var currentDirectory = startDirectory;
+        while (!fs.File.Exists(fs.Path.Combine(currentDirectory, fileName)))
         {
-            throw new InvalidOperationException("A context already exists in this folder.");
+            currentDirectory = fs.Path.GetDirectoryName(currentDirectory);
+            if (string.IsNullOrEmpty(currentDirectory))
+                return null;
         }
+        return currentDirectory;
+    }
+}
 
-        var (publicKey, privateKey) = cipher.GenerateKeys();
-
-        await toolSettingsRepository.SaveDefaultAsync();
-        await publicKeyRepository.SaveAsync(publicKey);
-        await privateKeyRepository.SaveAsync(privateKey);
+internal partial class ContextLoader : IContextLoader
+{
+    async Task IContextLoader.CreateContextAsync(string initializationFolderPath, PublicKey publicKey, PrivateKey privateKey)
+    {
+        var sigabaFile = sigabaFileManager.CreateDefault(publicKey);
+        await sigabaFileManager.SaveAsync(sigabaFile, fs.Path.Combine(initializationFolderPath, Constants.SigabaFileName));
+        await privateKeyManager.SaveAsync(privateKey);
     }
 
-    async Task<IContext?> IContextLoader.LoadContextAsync()
+    async Task<Context> IContextLoader.LoadContextFromFolderAsync(string folderPath)
     {
-        if (!await toolSettingsRepository.ExistsAsync())
+        var sigabaFilePath = GetNearestFileWithName(folderPath, Constants.SigabaFileName)
+            ?? throw new FileNotFoundException($"Could not find {Constants.SigabaFileName} in {folderPath} or any parent directory.");
+        var rootFolder = fs.Path.GetDirectoryName(sigabaFilePath)
+            ?? throw new InvalidOperationException($"Could not determine root folder for {sigabaFilePath}.");
+
+        var sigabaFile = await sigabaFileManager.LoadAsync(sigabaFilePath);
+        var privateKey = await privateKeyManager.LoadAsync();
+
+        var context = new Context
         {
-            throw new InvalidOperationException("No context in this folder. You have to initialize it first.");
-        }
+            SigabaRootDir = rootFolder,
+            SigabaFilePath = sigabaFilePath,
+            PublicKey = sigabaFile.PublicKey,
+            PrivateKey = privateKey,
+            FieldFilterPredicate = sigabaFile.FieldNamePredicate,
+            WorkingSetFiles = sigabaFile.GetTargetFiles(fs, rootFolder)
+        };
 
-        var toolSettings = await toolSettingsRepository.LoadAsync();
-        var privateKey = await privateKeyRepository.LoadAsync();
-        var publicKey = await publicKeyRepository.LoadAsync();
-        return new Context(fs, privateKey, publicKey, toolSettings);
+        return context;
     }
-
-
 }

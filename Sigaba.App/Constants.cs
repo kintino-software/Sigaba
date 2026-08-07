@@ -2,9 +2,9 @@
 
 public static class Constants
 {
-    public const string ToolSettingsFileName = "sigaba.json";
-    public const string PublicKeyFileName = "public.key";
-    public const string PrivateKeyFileName = "private.key";
-
-    public const string ToolSystemFolderName = ".sigaba";
+    public static string SigabaFileName { get; } = "sigaba.json";
+    public static string PrivateKeyFileName { get; } = "private.key";
+    public static string ToolSystemFolderName { get; } = ".sigaba";
+    public static string SigabaSystemFolderPath { get; } =
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ToolSystemFolderName);
 }

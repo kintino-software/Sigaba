@@ -1,37 +1,40 @@
-﻿using Sigaba.Documents;
-using Sigaba.App.Services;
+﻿using Sigaba.App.Services.Contexts;
+using Sigaba.Crypto;
+using Sigaba.Documents;
+using System.IO.Abstractions;
 
 namespace Sigaba.App;
 
-internal class SigabaApp(
-    IFsHelper fsHelper,
+internal partial class SigabaApp(
+    IFileSystem fs,
+    ICipher cipher,
     IContextLoader contextLoader,
     IFileCipher fileCipher) : ISigabaApp
 {
-    Task ISigabaApp.InitAsync()
+    async Task ISigabaApp.InitAsync(string initializationFolderPath)
     {
-        return contextLoader.CreateContextAsync();
+        var (publicKey, privateKey) = cipher.GenerateKeys();
+        await contextLoader.CreateContextAsync(initializationFolderPath, publicKey, privateKey);
     }
 
-    async Task ISigabaApp.CipherFilesAsync()
+    async Task ISigabaApp.CipherFilesAsync(string referenceFolderPath)
     {
-        var context = await GetContextOrThrow();
-        var publicKey = context.GetPublicKey()
-            ?? throw new InvalidOperationException("Missing public key in context. You cannot cipher files without a public key.");
+        var context = await contextLoader.LoadContextFromFolderAsync(referenceFolderPath);
 
-        foreach (var filePath in context.GetWorkingSetFiles())
+        foreach (var filePath in context.WorkingSetFiles)
         {
-            await fileCipher.CipherFile(filePath, publicKey, context.FieldNameFilter);
+            await fileCipher.CipherFile(filePath, context.PublicKey, context.FieldFilterPredicate);
         }
     }
 
-    async Task ISigabaApp.DecipherFilesAsync()
+    async Task ISigabaApp.DecipherFilesAsync(string referenceFolderPath)
     {
-        var context = await GetContextOrThrow();
-        var privateKey = context.GetPrivateKey()
-            ?? throw new InvalidOperationException("Missing private key in context. You cannot decipher files without a private key.");
+        var context = await contextLoader.LoadContextFromFolderAsync(referenceFolderPath);
 
-        foreach (var filePath in context.GetWorkingSetFiles())
+        var privateKey = context.PrivateKey
+            ?? throw new InvalidOperationException("You cannot decipher files without a private key.");
+
+        foreach (var filePath in context.WorkingSetFiles)
         {
             await fileCipher.DecipherFile(filePath, privateKey);
         }
@@ -39,31 +42,15 @@ internal class SigabaApp(
 
     async Task ISigabaApp.EditFileAsync(ITextEditor textEditor, string editingFilePath)
     {
-        var context = await GetContextOrThrow();
-        var publicKey = context.GetPublicKey()
-            ?? throw new InvalidOperationException("You cannot edit files without a public key.");
+        var directoryPath = fs.Path.GetDirectoryName(editingFilePath)
+            ?? throw new InvalidOperationException($"The file '{editingFilePath}' is not in a valid directory.");
+        var context = await contextLoader.LoadContextFromFolderAsync(directoryPath);
 
-        await fsHelper.WithTempFileAsync(
-            originalFile: editingFilePath,
-            editingOperation: async (tempFilePath) =>
-            {
-                await fsHelper.CopyAndOverwrite(editingFilePath, tempFilePath);
-                await textEditor.EditFile(tempFilePath);
-            },
-            beforeDeleteOperation: async (tempFilePath) =>
-            {
-                await fileCipher.CipherFile(tempFilePath, publicKey, context.FieldNameFilter);
-                await fsHelper.CopyAndOverwrite(tempFilePath, editingFilePath);
-            });
+        if (!context.WorkingSetFiles.Contains(editingFilePath))
+            throw new InvalidOperationException($"The file '{editingFilePath}' is not part of the working set. You cannot edit it.");
+
+        await textEditor.EditFile(editingFilePath);
+        await fileCipher.CipherFile(editingFilePath, context.PublicKey, context.FieldFilterPredicate);
     }
-
-    // helpers
-
-    private async Task<IContext> GetContextOrThrow()
-    {
-        var context = await contextLoader.LoadContextAsync();
-        return context ?? throw new InvalidOperationException("Could not retrieve context. Try to initialize the folder first.");
-    }
-
 
 }

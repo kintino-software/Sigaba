@@ -4,10 +4,6 @@
     <Project Path="Sigaba.App.Test/Sigaba.App.Test.csproj" Id="74e1df41-31e4-40e9-bfe9-17fb8ea497d1" />
     <Project Path="Sigaba.App/Sigaba.App.csproj" Id="605781c5-76f2-46a4-b11e-5173cf641776" />
   </Folder>
-  <Folder Name="/App/Loaders/">
-    <Project Path="Sigaba.App.Loaders.Test/Sigaba.App.Loaders.Test.csproj" />
-    <Project Path="Sigaba.App.Loaders/Sigaba.App.Loaders.csproj" />
-  </Folder>
   <Folder Name="/Modules/" />
   <Folder Name="/Modules/Common/">
     <Project Path="Sigaba.Common.Test/Sigaba.Common.Test.csproj" />

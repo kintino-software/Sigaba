@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 
-namespace Sigaba.App.Services.Settings;
+namespace Sigaba.App.Services.SigabaFiles;
 
 /// <summary>
 /// Common helpers for JSON serialization and deserialization.
@@ -23,7 +23,7 @@ internal static class JsonHelper
             switch (reader.TokenType)
             {
                 case (JsonTokenType.PropertyName):
-                    if ((reader.GetString()?.ToLower())?.Equals(nameof(IToolSettings.Version), StringComparison.CurrentCultureIgnoreCase) == true)
+                    if (reader.GetString()?.Equals("version", StringComparison.CurrentCultureIgnoreCase) == true)
                     {
                         reader.Read();
                         return reader.GetInt32();
