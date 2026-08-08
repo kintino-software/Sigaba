@@ -1,6 +1,4 @@
-﻿using Sigaba.App;
-
-namespace Sigaba.Cli.Cases;
+﻿namespace Sigaba.Cli.Cases;
 
 public class InitTest : BaseTest
 {
@@ -9,9 +7,10 @@ public class InitTest : BaseTest
     {
         var cwd = CreateAndSetCwd("a/b".AsPath());
         var app = CreateApp();
+
         await app.RunAsync("init");
 
-        Fs.File.Exists(Fs.Path.Combine(cwd, Constants.SigabaFileName)).Should().BeTrue();
+        Fs.File.Exists($"{cwd}/sigaba.json".AsPath()).Should().BeTrue();
         Fs.AllFiles.Should().ContainSingle(f => f.EndsWith("private.key"));
     }
 

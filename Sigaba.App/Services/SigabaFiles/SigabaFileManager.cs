@@ -1,9 +1,8 @@
-﻿using Sigaba.App.Services.Settings.V1;
-using Sigaba.App.Services.SigabaFiles;
+﻿using Sigaba.App.Services.SigabaFiles.V1;
 using Sigaba.Primitives;
 using System.IO.Abstractions;
 
-namespace Sigaba.App.Services.Settings;
+namespace Sigaba.App.Services.SigabaFiles;
 
 internal partial class SigabaFileManager(IFileSystem fs) : ISigabaFileManager
 {

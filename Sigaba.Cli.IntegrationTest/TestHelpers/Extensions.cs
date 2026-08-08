@@ -13,16 +13,27 @@ public static class Extensions
         {
             return Path.Combine(str.Split(['/', '\\']));
         }
+
+        public T GetJsonValue<T>(string jsonPath)
+        {
+            var jsonNode = JsonNode.Parse(
+                str,
+                documentOptions: new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip });
+
+            var jsonPathResult = JsonPath.Parse(jsonPath).Evaluate(jsonNode);
+            if (jsonPathResult.Matches.Count == 0)
+            {
+                throw new Exception($"Could not parse '{jsonPath}' from json content:\n{str}.");
+            }
+            var match = jsonPathResult.Matches[0];
+            var jsonValue = match.Value.AsValue()
+                ?? throw new Exception($"The value at '{jsonPath}' is not a valid JSON value.");
+            return jsonValue.GetValue<T>();
+        }
     }
 
     extension(IFileSystem fs)
     {
-        public JsonTester InspectJson(string filePath)
-        {
-            var jsonContent = fs.File.ReadAllText(filePath);
-            return JsonTester.Parse(jsonContent);
-        }
-
         public void EditJsonFile<T>(string filePath, string jsonPathQuery, Func<T, T> editFunc)
         {
             if (!fs.File.Exists(filePath))

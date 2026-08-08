@@ -1,13 +1,11 @@
 ﻿using Microsoft.Extensions.FileSystemGlobbing;
-using Sigaba.App.Services.SigabaFiles;
-using Sigaba.App.Services.SigabaFiles.V1;
 using Sigaba.Primitives;
 using System.IO.Abstractions;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Vipentti.IO.Abstractions.FileSystemGlobbing;
 
-namespace Sigaba.App.Services.Settings.V1;
+namespace Sigaba.App.Services.SigabaFiles.V1;
 
 internal partial class SigabaFileV1(
     string fieldRegexPattern,

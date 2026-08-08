@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Sigaba.App.Services.Contexts;
 using Sigaba.App.Services.PrivateKeys;
-using Sigaba.App.Services.Settings;
 using Sigaba.App.Services.SigabaFiles;
 using Sigaba.Crypto.DependencyInjection;
 using Sigaba.Documents.DependencyInjection;

@@ -59,11 +59,10 @@ public class DecryptTest : BaseTest
 
         var app = CreateApp();
         await app.RunAsync("init");
-        Fs.RemoveFile(Fs.AllFiles.First(f => f.EndsWith("private.key"))); // remove private key to simulate missing key
-        await app.RunAsync("encrypt");
 
         //
 
+        Fs.RemoveFile(Fs.AllFiles.First(f => f.EndsWith("private.key"))); // remove private key to simulate missing key
         var action = () => app.RunAsync("decrypt");
 
         //

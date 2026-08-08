@@ -43,12 +43,13 @@ public class EncryptionTest : BaseTest
 
         //
 
-        Fs.InspectJson(file1Path)
-            .ShouldHavePropertyWithValue("field1", "\"value 1\"")
-            .ShouldHavePropertyWithValueThatIsNot("field2_secret", "\"secret value 2\"");
-        Fs.InspectJson(file2Path)
-            .ShouldHavePropertyWithValue("field3", "\"value 3\"")
-            .ShouldHavePropertyWithValueThatIsNot("field4_secret", "\"secret value 4\"");
+        var file1content = await Fs.File.ReadAllTextAsync(file1Path);
+        file1content.GetJsonValue<string>("$.field1").Should().Be("value 1");
+        file1content.GetJsonValue<string>("$.field2_secret").Should().NotBe("secret value 2");
+
+        var file2Content = await Fs.File.ReadAllTextAsync(file2Path);
+        file2Content.GetJsonValue<string>("$.field3").Should().Be("value 3");
+        file2Content.GetJsonValue<string>("$.field4_secret").Should().NotBe("secret value 4");
     }
 
     [Fact]
