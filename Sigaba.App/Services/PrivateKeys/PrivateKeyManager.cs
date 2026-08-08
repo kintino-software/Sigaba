@@ -3,27 +3,24 @@ using System.IO.Abstractions;
 
 namespace Sigaba.App.Services.PrivateKeys;
 
-internal partial class PrivateKeyManager(IFileSystem fs)
+internal partial class PrivateKeyManager(IFileSystem fs) : IPrivateKeyManager
 {
-    private string FilePath => fs.Path.Combine(Constants.SigabaSystemFolderPath, Constants.PrivateKeyFileName);
-    private bool FileExists() => fs.File.Exists(FilePath);
-}
-
-internal partial class PrivateKeyManager : IPrivateKeyManager
-{
-    async Task<PrivateKey?> IPrivateKeyManager.LoadAsync()
+    async Task<PrivateKey?> IPrivateKeyManager.LoadAsync(string filePath)
     {
-        if (!FileExists())
+        if (!fs.File.Exists(filePath))
             return null;
-        var privateKeyContent = await fs.File.ReadAllTextAsync(FilePath);
+        var privateKeyContent = await fs.File.ReadAllTextAsync(filePath);
         var privateKey = PrivateKey.FromBase64(privateKeyContent);
         return privateKey;
     }
 
-    async Task IPrivateKeyManager.SaveAsync(PrivateKey privateKey)
+    async Task IPrivateKeyManager.SaveAsync(PrivateKey privateKey, string filePath)
     {
+        var directory = fs.Path.GetDirectoryName(filePath)
+            ?? throw new InvalidOperationException($"Cannot get directory name from file path: {filePath}");
+        fs.CreateFolderIfNotExists(directory);
         var privateKeyContent = privateKey.ToBase64();
-        await fs.File.WriteAllTextAsync(FilePath, privateKeyContent);
+        await fs.File.WriteAllTextAsync(filePath, privateKeyContent);
     }
 
 

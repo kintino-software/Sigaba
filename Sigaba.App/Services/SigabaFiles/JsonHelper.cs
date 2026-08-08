@@ -17,21 +17,30 @@ internal static class JsonHelper
     /// <returns>The version number if found; otherwise, -1.</returns>
     public static int ReadVersionFromJson(string jsonDocument)
     {
+        int version = -1;
         var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(jsonDocument), isFinalBlock: true, state: default);
-        while (reader.Read())
+
+        try
         {
-            switch (reader.TokenType)
+            while (reader.Read())
             {
-                case (JsonTokenType.PropertyName):
-                    if (reader.GetString()?.Equals("version", StringComparison.CurrentCultureIgnoreCase) == true)
-                    {
-                        reader.Read();
-                        return reader.GetInt32();
-                    }
-                    break;
+                switch (reader.TokenType)
+                {
+                    case (JsonTokenType.PropertyName):
+                        if (reader.GetString()?.Equals("version", StringComparison.CurrentCultureIgnoreCase) == true)
+                        {
+                            reader.Read();
+                            version = reader.GetInt32();
+                        }
+                        break;
+                }
             }
         }
-        return -1;
+        catch (JsonException)
+        {
+            // swallow the exception if the JSON is malformed
+        }
+        return version;
     }
 
     /// <summary>

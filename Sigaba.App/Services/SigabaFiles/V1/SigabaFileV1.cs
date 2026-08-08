@@ -79,11 +79,5 @@ internal partial class SigabaFileV1 : ISigabaFile
         return matcher.GetResultsInFullPath(fs, cwd);
     }
 
-
 }
 
-internal partial class SigabaFileV1 : ISigabaFile<SigabaFileV1>
-{
-
-
-}

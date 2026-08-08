@@ -8,14 +8,14 @@ public class EncryptionTest : BaseTest
 
     public EncryptionTest()
     {
-        cwd = CreateAndSetCwd("a", "b");
+        cwd = CreateAndSetCwd("a/b".AsPath());
     }
 
     [Fact]
     public async Task Should_encrypt_all_files_in_directory_tree()
     {
-        var file1Path = Fs.Path.Combine(cwd, "fileA.secrets.json");
-        var file2Path = Fs.Path.Combine(cwd, "subdir", "fileB.secrets.json");
+        var file1Path = $"{cwd}/fileA.secrets.json".AsPath();
+        var file2Path = $"{cwd}/subdir/fileB.secrets.json".AsPath();
         var content1 = """
             {
                 "field1": "value 1",
@@ -61,7 +61,7 @@ public class EncryptionTest : BaseTest
 
         var app = CreateApp();
         await app.RunAsync("init");
-        Fs.RemoveFile("public.key"); // remove public key to simulate missing key
+        Fs.EditJsonFile<string>("sigaba.json", "$.publicKey", value => (value + "x")); // messing with the key so that it is invalid
 
         //
 

@@ -1,6 +1,5 @@
 ﻿using NSubstitute.ReceivedExtensions;
-using Sigaba.App.Services.PrivateKeys;
-using Sigaba.App.Services.SigabaFiles;
+using Sigaba.App.Services.Contexts;
 using Sigaba.Crypto;
 using Sigaba.Documents;
 using Sigaba.Primitives;
@@ -11,15 +10,24 @@ public class SigabaAppTest : BaseTest
 {
     private readonly ICipher cipher = Substitute.For<ICipher>();
     private readonly IFileCipher fileCipher = Substitute.For<IFileCipher>();
-    private readonly IToolSettings toolSettings = Substitute.For<IToolSettings>();
-    private readonly ISigabaFileManager settingsManager = Substitute.For<ISigabaFileManager>();
-    private readonly IPrivateKeyManager privateKeyManager = Substitute.For<IPrivateKeyManager>();
+    private readonly IContextLoader contextLoader = Substitute.For<IContextLoader>();
+    private readonly Context context = new()
+    {
+        SigabaRootDir = Path.Combine("a", "b"),
+        SigabaFilePath = Path.Combine("a", "b", "sigaba.json"),
+        PublicKey = new PublicKey([1]),
+        PrivateKey = new PrivateKey([2]),
+        FieldFilterPredicate = _ => true,
+        WorkingSetFiles = [
+            Path.Combine("a", "b", "file1.txt"),
+            Path.Combine("a", "b", "file2.txt")
+        ]
+    };
 
     private ISigabaApp CreateService()
     {
-        settingsManager.LoadAsync(default).ReturnsForAnyArgs(toolSettings);
-
-        return new SigabaApp(Fs, cipher, settingsManager, privateKeyManager, fileCipher);
+        contextLoader.LoadContextFromFolderAsync(Arg.Any<string>()).Returns(context);
+        return new SigabaApp(Fs, cipher, contextLoader, fileCipher);
     }
 
     // InitAsync
@@ -36,21 +44,7 @@ public class SigabaAppTest : BaseTest
         await service.InitAsync(targetDir);
 
         cipher.Received().GenerateKeys();
-        settingsManager.Received().CreateDefault(publicKey);
-        await settingsManager.Received().SaveAsync(Arg.Any<IToolSettings>(), Path.Combine("a", "b", Constants.SigabaFileName));
-        await privateKeyManager.Received().SaveAsync(privateKey);
-    }
-
-    [Fact]
-    public async Task Should_throw_when_initializing_existing_context()
-    {
-        var targetDir = Path.Combine("a", "b");
-        Fs.AddEmptyFile(Path.Combine(targetDir, Constants.SigabaFileName));
-        var service = CreateService();
-
-        var action = () => service.InitAsync(targetDir);
-
-        await action.Should().ThrowAsync<InvalidOperationException>();
+        await contextLoader.Received().CreateContextAsync(targetDir, publicKey, privateKey);
     }
 
     // CipherFilesAsync
@@ -58,29 +52,13 @@ public class SigabaAppTest : BaseTest
     [Fact]
     public async Task Should_cipher_files()
     {
-        var targetDir = Path.Combine("a", "b");
-        Fs.AddEmptyFile(Path.Combine(targetDir, Constants.SigabaFileName));
-        var publicKey = new PublicKey([1]);
-        toolSettings.PublicKey.Returns(publicKey);
-        toolSettings.GetFilesWorkingSet(Fs).Returns(["file1.txt", "file2.txt"]);
         var service = CreateService();
 
-        await service.CipherFilesAsync(targetDir);
+        await service.CipherFilesAsync(Path.Combine("a", "b"));
 
-        await fileCipher.Received().CipherFile("file1.txt", publicKey, Arg.Any<Predicate<string>>());
-        await fileCipher.Received().CipherFile("file2.txt", publicKey, Arg.Any<Predicate<string>>());
+        await fileCipher.Received().CipherFile(context.WorkingSetFiles.ElementAt(0), context.PublicKey, context.FieldFilterPredicate);
+        await fileCipher.Received().CipherFile(context.WorkingSetFiles.ElementAt(1), context.PublicKey, context.FieldFilterPredicate);
 
-    }
-
-    [Fact]
-    public async Task Should_throw_when_project_root_not_found()
-    {
-        var targetDir = Path.Combine("a", "b");
-        var service = CreateService();
-
-        var action = () => service.CipherFilesAsync(targetDir);
-
-        await action.Should().ThrowAsync<InvalidOperationException>();
     }
 
 }

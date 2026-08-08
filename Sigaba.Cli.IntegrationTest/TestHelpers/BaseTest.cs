@@ -19,9 +19,9 @@ public abstract class BaseTest
         return new CliApp(Fs);
     }
 
-    public string CreateAndSetCwd(params string[] dirPaths)
+    public string CreateAndSetCwd(string cwdPath)
     {
-        var cwd = Path.Combine(RootPath, Path.Combine(dirPaths));
+        var cwd = Path.Combine(RootPath, cwdPath);
         Fs.AddDirectory(cwd);
         Fs.Directory.SetCurrentDirectory(cwd);
         return cwd;

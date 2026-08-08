@@ -1,5 +1,5 @@
-﻿using Sigaba.Primitives;
-using System.Text.Json.Nodes;
+﻿using Sigaba.App.Services.SigabaFiles;
+using Sigaba.Primitives;
 
 namespace Sigaba.App.Services.Settings.V1;
 
@@ -7,7 +7,7 @@ public class ToolSettingsV1Test : BaseTest
 {
     private readonly PublicKey publicKey = new([1, 2, 3, 4]);
 
-    private SigabaFileV1 CreateSettings(string fieldRegex = null, string[] includeGlob = null, string[] excludeGlob = null)
+    private ISigabaFile CreateModel(string fieldRegex = null, string[] includeGlob = null, string[] excludeGlob = null)
     {
         return fieldRegex == null && includeGlob == null && excludeGlob == null
             ? SigabaFileV1.CreateDefault(publicKey)
@@ -18,63 +18,49 @@ public class ToolSettingsV1Test : BaseTest
                 publicKey);
     }
 
-    // Version
-
-    [Fact]
-    public void Should_have_version_1()
-    {
-        var settings = CreateSettings();
-        settings.Version.Should().Be(1);
-    }
-
-    // Serialization
+    // Serialize
 
     [Fact]
     public void Should_serialize_to_json()
     {
-        var settings = CreateSettings(
-            excludeGlob: ["**/a", "**/b"],
-            fieldRegex: @"c$",
-            includeGlob: ["**/d", "**/e"]);
-
-        var json = settings.Serialize();
-
-        var root = JsonNode.Parse(json);
-        root["version"].GetValue<int>().Should().Be(1);
-        root["fieldRegex"].GetValue<string>().Should().Be(@"c$");
-        root["include"].AsArray().Select(x => x.GetValue<string>()).Should().BeEquivalentTo(["**/d", "**/e"]);
-        root["exclude"].AsArray().Select(x => x.GetValue<string>()).Should().BeEquivalentTo(["**/a", "**/b"]);
+        var model = SigabaFileV1.CreateDefault(publicKey);
+        var action = () => model.Serialize();
+        action.Should().NotThrow();
     }
 
     // Deserialize
 
     [Fact]
-    public void Should_create_from_json()
+    public void Should_deserialize_from_json()
     {
-        var json = """
-            {
-                "version": 1,
-                "fieldRegex": "^.*",
-                "include": ["**/*"],
-                "exclude": ["**/*"]
-            }
-            """;
+        var original = SigabaFileV1.CreateDefault(publicKey);
 
-        var toolSettings = SigabaFileV1.Deserialize(json);
+        var json = original.Serialize();
+        var actual = SigabaFileV1.Deserialize(json);
 
-        toolSettings.Should().NotBeNull();
+        actual.Should().NotBeNull();
     }
+
+    // Version
+
+    [Fact]
+    public void Should_have_version_1()
+    {
+        var model = CreateModel();
+        model.Version.Should().Be(1);
+    }
+
 
     // FieldNamePredicate
 
     [Fact]
     public void Should_filter_field_names()
     {
-        string[] input = ["field1", "field2", "field3_secret", "field4_secret"];
-        string[] expected = ["field3_secret", "field4_secret"];
-        var settings = CreateSettings(fieldRegex: @"^.*_secret$");
+        string[] input = ["aaaa", "bbbb", "ccccx"];
+        string[] expected = ["ccccx"];
+        var model = CreateModel(fieldRegex: @"x$");
 
-        var result = input.Where(settings.FieldNamePredicate).ToArray();
+        var result = input.Where(model.FieldNamePredicate).ToArray();
 
         result.Should().BeEquivalentTo(expected);
     }

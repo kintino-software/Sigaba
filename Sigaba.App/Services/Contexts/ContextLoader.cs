@@ -7,17 +7,7 @@ namespace Sigaba.App.Services.Contexts;
 
 internal partial class ContextLoader(IFileSystem fs, ISigabaFileManager sigabaFileManager, IPrivateKeyManager privateKeyManager)
 {
-    private string? GetNearestFileWithName(string startDirectory, string fileName)
-    {
-        var currentDirectory = startDirectory;
-        while (!fs.File.Exists(fs.Path.Combine(currentDirectory, fileName)))
-        {
-            currentDirectory = fs.Path.GetDirectoryName(currentDirectory);
-            if (string.IsNullOrEmpty(currentDirectory))
-                return null;
-        }
-        return currentDirectory;
-    }
+    private string PrivateKeyFilePath => fs.Path.Combine(Constants.SigabaSystemFolderPath, Constants.PrivateKeyFileName);
 }
 
 internal partial class ContextLoader : IContextLoader
@@ -26,18 +16,18 @@ internal partial class ContextLoader : IContextLoader
     {
         var sigabaFile = sigabaFileManager.CreateDefault(publicKey);
         await sigabaFileManager.SaveAsync(sigabaFile, fs.Path.Combine(initializationFolderPath, Constants.SigabaFileName));
-        await privateKeyManager.SaveAsync(privateKey);
+        await privateKeyManager.SaveAsync(privateKey, PrivateKeyFilePath);
     }
 
     async Task<Context> IContextLoader.LoadContextFromFolderAsync(string folderPath)
     {
-        var sigabaFilePath = GetNearestFileWithName(folderPath, Constants.SigabaFileName)
+        var sigabaFilePath = fs.GetNearestFileWithNameGoingUp(folderPath, Constants.SigabaFileName)
             ?? throw new FileNotFoundException($"Could not find {Constants.SigabaFileName} in {folderPath} or any parent directory.");
         var rootFolder = fs.Path.GetDirectoryName(sigabaFilePath)
             ?? throw new InvalidOperationException($"Could not determine root folder for {sigabaFilePath}.");
 
         var sigabaFile = await sigabaFileManager.LoadAsync(sigabaFilePath);
-        var privateKey = await privateKeyManager.LoadAsync();
+        var privateKey = await privateKeyManager.LoadAsync(PrivateKeyFilePath);
 
         var context = new Context
         {

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Sigaba.App.Services.Contexts;
 using Sigaba.App.Services.PrivateKeys;
 using Sigaba.App.Services.Settings;
 using Sigaba.App.Services.SigabaFiles;
@@ -18,6 +19,7 @@ public static class ServicesExtensions
             .AddDocumentsModule()
             .AddSingleton<ISigabaFileManager, SigabaFileManager>()
             .AddSingleton<IPrivateKeyManager, PrivateKeyManager>()
+            .AddSingleton<IContextLoader, ContextLoader>()
             .AddSingleton<ISigabaApp, SigabaApp>();
 
         return services;
