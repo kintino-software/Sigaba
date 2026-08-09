@@ -25,7 +25,7 @@ internal class FileCipher(IFileSystem fs, ICipher cipher) : IFileCipher
             var rawValueBytes = rawValue.ToUTF8Bytes();
             var plainData = new PlainData(rawValueBytes);
 
-            var encryptedData = cipher.Encrypt(plainData, publicKey);
+            var encryptedData = cipher.EncryptWithKey(plainData, publicKey);
 
             var encryptedDataBase64 = encryptedData.ToBase64();
             var wraped = Wrap(encryptedDataBase64);
@@ -51,7 +51,7 @@ internal class FileCipher(IFileSystem fs, ICipher cipher) : IFileCipher
             var encryptedData64 = Unwrap(value);
             var encryptedData = EncryptedData.FromBase64(encryptedData64);
 
-            var plainData = cipher.Decrypt(encryptedData, privateKey);
+            var plainData = cipher.DecryptWithKey(encryptedData, privateKey);
 
             var rawValue = plainData.Bytes.FromUtf8Bytes();
             document.SetFieldRawValue(field, rawValue);

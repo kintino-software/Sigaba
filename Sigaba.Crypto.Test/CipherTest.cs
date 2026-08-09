@@ -20,8 +20,8 @@ public class CipherTest : BaseTest
         foreach (var cipher in new IVersionedCipher[] { fakeCipherV1, fakeCipherV2 })
         {
             cipher.GenerateKeys().Returns((publicKey, privateKey));
-            cipher.Encrypt(default, default).ReturnsForAnyArgs(encryptedData);
-            cipher.Decrypt(default, default).ReturnsForAnyArgs(plainData);
+            cipher.EncryptWithKey(default, default).ReturnsForAnyArgs(encryptedData);
+            cipher.DecryptWithKey(default, default).ReturnsForAnyArgs(plainData);
         }
     }
 
@@ -64,9 +64,9 @@ public class CipherTest : BaseTest
         var service = CreateService(fakeCipherV2);
         var (publicKey, _) = service.GenerateKeys();
 
-        var result = service.Encrypt(plainData, publicKey);
+        var result = service.EncryptWithKey(plainData, publicKey);
 
-        fakeCipherV2.Received(1).Encrypt(plainData, Arg.Any<PublicKey>());
+        fakeCipherV2.Received(1).EncryptWithKey(plainData, Arg.Any<PublicKey>());
     }
 
     // Decrypt
@@ -76,14 +76,14 @@ public class CipherTest : BaseTest
     {
         var oldService = CreateService(fakeCipherV1);
         var (publicKey, privateKey) = oldService.GenerateKeys();
-        var oldEncryptedData = oldService.Encrypt(plainData, publicKey); // if encrypts with older version
+        var oldEncryptedData = oldService.EncryptWithKey(plainData, publicKey); // if encrypts with older version
         var newService = CreateService(fakeCipherV1, fakeCipherV2);
 
-        _ = newService.Decrypt(oldEncryptedData, privateKey);
+        _ = newService.DecryptWithKey(oldEncryptedData, privateKey);
 
-        fakeCipherV1.Received(1).Encrypt(plainData, Arg.Any<PublicKey>());
-        fakeCipherV1.Received(1).Decrypt(oldEncryptedData, Arg.Any<PrivateKey>()); // should decript also with the older version
-        fakeCipherV2.Received(0).Decrypt(Arg.Any<EncryptedData>(), Arg.Any<PrivateKey>()); // and not the new version
+        fakeCipherV1.Received(1).EncryptWithKey(plainData, Arg.Any<PublicKey>());
+        fakeCipherV1.Received(1).DecryptWithKey(oldEncryptedData, Arg.Any<PrivateKey>()); // should decript also with the older version
+        fakeCipherV2.Received(0).DecryptWithKey(Arg.Any<EncryptedData>(), Arg.Any<PrivateKey>()); // and not the new version
     }
 }
 

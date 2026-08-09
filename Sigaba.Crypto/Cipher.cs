@@ -14,18 +14,28 @@ internal class Cipher(IEnumerable<IVersionedCipher> versionedCiphers) : ICipher
         return (publicKey.Tag(version), privateKey.Tag(version));
     }
 
-    PlainData ICipher.Decrypt(EncryptedData encryptedData, PrivateKey privateKey)
+    PlainData ICipher.DecryptWithKey(EncryptedData encryptedData, PrivateKey privateKey)
     {
         var untaggedPrivateKey = privateKey.Untag(out var version);
         var versionedCipher = GetCipherByVersion(version);
-        return versionedCipher.Decrypt(encryptedData, untaggedPrivateKey);
+        return versionedCipher.DecryptWithKey(encryptedData, untaggedPrivateKey);
     }
 
-    EncryptedData ICipher.Encrypt(PlainData plainData, PublicKey publicKey)
+    EncryptedData ICipher.EncryptWithKey(PlainData plainData, PublicKey publicKey)
     {
         var untaggedPublicKey = publicKey.Untag(out var version);
         var versionedCipher = GetCipherByVersion(version);
-        return versionedCipher.Encrypt(plainData, untaggedPublicKey);
+        return versionedCipher.EncryptWithKey(plainData, untaggedPublicKey);
+    }
+
+    EncryptedData ICipher.EncryptWithPassword(PlainData plainData, string password)
+    {
+        throw new NotImplementedException();
+    }
+
+    PlainData ICipher.DecryptWithPassword(EncryptedData encryptedData, string password)
+    {
+        throw new NotImplementedException();
     }
 
     // helper methods
@@ -41,4 +51,5 @@ internal class Cipher(IEnumerable<IVersionedCipher> versionedCiphers) : ICipher
         var latestCipher = versionedCiphers.OrderByDescending(c => c.Version).FirstOrDefault();
         return latestCipher ?? throw new InvalidOperationException("No asymmetric ciphers are available.");
     }
+
 }
