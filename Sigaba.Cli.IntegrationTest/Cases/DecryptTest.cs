@@ -8,13 +8,13 @@ public class DecryptTest : BaseTest
 
     public DecryptTest()
     {
-        cwd = CreateAndSetCwd("a/b".AsPath());
+        cwd = Fs.SafeSetCwd("testdir");
     }
 
     [Fact]
     public async Task Should_decrypt_all_files_in_directory_tree()
     {
-        var file1Path = $"{cwd}/fileA_secrets.json".AsPath();
+        var file1Path = Fs.SafePath(cwd, "fileA_secrets.json");
         var originalContent1 = """
             {
                 "field1": "value 1",
@@ -23,7 +23,7 @@ public class DecryptTest : BaseTest
             """;
         Fs.AddFile(file1Path, new MockFileData(originalContent1));
 
-        var file2Path = $"{cwd}/subdir/fileB_secrets.json".AsPath();
+        var file2Path = Fs.SafePath(cwd, "subdir", "fileB_secrets.json");
         var originalContent2 = """
             {
                 "field3": "value 3",
@@ -32,13 +32,12 @@ public class DecryptTest : BaseTest
             """;
         Fs.AddFile(file2Path, new MockFileData(originalContent2));
 
-        var app = CreateApp();
-        await app.RunAsync("init");
-        await app.RunAsync("encrypt");
+        await App.RunAsync(["init"]);
+        await App.RunAsync(["encrypt"]);
 
         //
 
-        await app.RunAsync("decrypt");
+        await App.RunAsync(["decrypt"]);
 
         //
 
@@ -49,21 +48,19 @@ public class DecryptTest : BaseTest
     [Fact]
     public async Task Should_not_decript_without_private_key()
     {
-        var file1Path = $"{cwd}/file_secrets.json".AsPath();
-        var originalContent1 = """
+        var filePath = Fs.SafePath(cwd, "file_secrets.json");
+        var content = """
             {
                 "field_secret": "secret value",
             }
             """;
-        Fs.AddFile(file1Path, new MockFileData(originalContent1));
-
-        var app = CreateApp();
-        await app.RunAsync("init");
+        Fs.AddFile(filePath, new MockFileData(content));
+        await App.RunAsync(["init"]);
 
         //
 
         Fs.RemoveFile(Fs.AllFiles.First(f => f.EndsWith("private.key"))); // remove private key to simulate missing key
-        var action = () => app.RunAsync("decrypt");
+        var action = () => App.RunAsync(["decrypt"]);
 
         //
 

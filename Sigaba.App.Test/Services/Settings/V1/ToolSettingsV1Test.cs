@@ -7,6 +7,7 @@ namespace Sigaba.App.Services.Settings.V1;
 public class ToolSettingsV1Test : BaseTest
 {
     private readonly PublicKey publicKey = new([1, 2, 3, 4]);
+    private readonly Guid projectId = Guid.NewGuid();
 
     private ISigabaFile CreateModel(string fieldRegex = null, string[] includeGlob = null, string[] excludeGlob = null)
     {
@@ -16,6 +17,7 @@ public class ToolSettingsV1Test : BaseTest
                 fieldRegex ?? @".*",
                 includeGlob ?? [],
                 excludeGlob ?? [],
+                projectId,
                 publicKey);
     }
 

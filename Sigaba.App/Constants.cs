@@ -1,10 +1,9 @@
 ﻿namespace Sigaba.App;
 
-public static class Constants
+internal class Constants
 {
-    public static string SigabaFileName { get; } = "sigaba.json";
-    public static string PrivateKeyFileName { get; } = "private.key";
-    public static string ToolSystemFolderName { get; } = ".sigaba";
-    public static string SigabaSystemFolderPath { get; } =
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ToolSystemFolderName);
+    public const string PrivateKeyFileName = "private.key";
+    public const string SigabaFileName = "sigaba.json";
+    public static readonly string SigabaSystemDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ".sigaba");
+    public const string PrivateKeyDirEnvVarKey = "SIGABA_PRIVATE_KEY_DIR";
 }

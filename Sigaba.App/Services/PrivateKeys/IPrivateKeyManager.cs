@@ -4,6 +4,6 @@ namespace Sigaba.App.Services.PrivateKeys;
 
 internal interface IPrivateKeyManager
 {
-    Task<PrivateKey?> LoadAsync(string filePath);
-    Task SaveAsync(PrivateKey privateKey, string filePath);
+    Task<PrivateKey> LoadAsync(Guid projectId, string password);
+    Task SaveAsync(Guid projectId, PrivateKey privateKey, string password);
 }

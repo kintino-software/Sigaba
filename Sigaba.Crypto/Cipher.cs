@@ -14,28 +14,32 @@ internal class Cipher(IEnumerable<IVersionedCipher> versionedCiphers) : ICipher
         return (publicKey.Tag(version), privateKey.Tag(version));
     }
 
-    PlainData ICipher.DecryptWithKey(EncryptedData encryptedData, PrivateKey privateKey)
+    PlainData ICipher.DecryptWithKey(IEncryptedData encryptedData, PrivateKey privateKey)
     {
         var untaggedPrivateKey = privateKey.Untag(out var version);
         var versionedCipher = GetCipherByVersion(version);
         return versionedCipher.DecryptWithKey(encryptedData, untaggedPrivateKey);
     }
 
-    EncryptedData ICipher.EncryptWithKey(PlainData plainData, PublicKey publicKey)
+    EncryptedData ICipher.EncryptWithKey(IPlainData plainData, PublicKey publicKey)
     {
         var untaggedPublicKey = publicKey.Untag(out var version);
         var versionedCipher = GetCipherByVersion(version);
         return versionedCipher.EncryptWithKey(plainData, untaggedPublicKey);
     }
 
-    EncryptedData ICipher.EncryptWithPassword(PlainData plainData, string password)
+    EncryptedData ICipher.EncryptWithPassword(IPlainData plainData, string password)
     {
-        throw new NotImplementedException();
+        var versionedCipher = GetLatestCipher();
+        var encryptedData = versionedCipher.EncryptWithPassword(plainData, password);
+        return ByteTagger.Tag(encryptedData, versionedCipher.Version);
     }
 
-    PlainData ICipher.DecryptWithPassword(EncryptedData encryptedData, string password)
+    PlainData ICipher.DecryptWithPassword(IEncryptedData encryptedData, string password)
     {
-        throw new NotImplementedException();
+        var encrypted = ByteTagger.Untag(encryptedData, out var version);
+        var versionedCipher = GetCipherByVersion(version);
+        return versionedCipher.DecryptWithPassword(encrypted, password);
     }
 
     // helper methods

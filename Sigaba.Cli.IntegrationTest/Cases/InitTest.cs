@@ -5,12 +5,16 @@ public class InitTest : BaseTest
     [Fact]
     public async Task WithoutArgs()
     {
-        var cwd = CreateAndSetCwd("a/b".AsPath());
-        var app = CreateApp();
+        var privateKeyDir = Fs.SafePath("a/b");
+        Fs.AddDirectory(privateKeyDir);
+        var cwd = Fs.SafeSetCwd(Fs.SafePath("cwd"));
 
-        await app.RunAsync("init");
+        App.Console.Input.PushTextWithEnter("password"); // enter password
+        App.Console.Input.PushTextWithEnter("password"); // confirm password
+        App.Console.Input.PushTextWithEnter(privateKeyDir); // fileLocation
+        await App.RunAsync(["init"]);
 
-        Fs.File.Exists($"{cwd}/sigaba.json".AsPath()).Should().BeTrue();
+        Fs.File.Exists(Fs.SafePath(cwd, "sigaba.json")).Should().BeTrue();
         Fs.AllFiles.Should().ContainSingle(f => f.EndsWith("private.key"));
     }
 

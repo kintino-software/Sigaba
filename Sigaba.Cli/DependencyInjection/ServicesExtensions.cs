@@ -1,0 +1,28 @@
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Sigaba.App;
+using Sigaba.Cli.Interactive;
+using Sigaba.Cli.Services;
+using Spectre.Console;
+
+namespace Sigaba.Cli.DependencyInjection;
+
+internal static class ServicesExtensions
+{
+    public static IServiceCollection AddCliApp(this IServiceCollection services)
+    {
+        services
+            .AddSingleton<ITextEditor, WindowsEditTextEditor>()
+            .AddSingleton<IAnsiConsole>(_ => AnsiConsole.Console)
+            .AddLogging(cfg => cfg.AddSimpleConsole(cfg =>
+                {
+                    cfg.IncludeScopes = false;
+                    cfg.ColorBehavior = Microsoft.Extensions.Logging.Console.LoggerColorBehavior.Enabled;
+                    cfg.TimestampFormat = "[yyyy-MM-dd HH:mm:ss] ";
+                }));
+
+        services.AddSingleton<InteractiveInit>();
+
+        return services;
+    }
+}

@@ -2,4 +2,4 @@
 
 namespace Sigaba.Primitives;
 
-public record PlainData(byte[] Bytes) : PlainByteLike<PlainData>(Bytes);
+public record PlainData(byte[] Bytes) : ByteLike<PlainData>(Bytes), IPlainData;

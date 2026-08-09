@@ -4,7 +4,7 @@ using Sigaba.Primitives;
 
 namespace Sigaba.Crypto;
 
-public class CipherTest : BaseTest
+public class CipherTest
 {
     private readonly IVersionedCipher fakeCipherV1 = Substitute.For<IVersionedCipher>();
     private readonly IVersionedCipher fakeCipherV2 = Substitute.For<IVersionedCipher>();

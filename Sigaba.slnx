@@ -1,6 +1,5 @@
 <Solution>
-  <Folder Name="/App/" />
-  <Folder Name="/App/App/">
+  <Folder Name="/App/">
     <Project Path="Sigaba.App.Test/Sigaba.App.Test.csproj" Id="74e1df41-31e4-40e9-bfe9-17fb8ea497d1" />
     <Project Path="Sigaba.App/Sigaba.App.csproj" Id="605781c5-76f2-46a4-b11e-5173cf641776" />
   </Folder>
@@ -16,6 +15,9 @@
   <Folder Name="/Modules/Documents/">
     <Project Path="Sigaba.Documents.Test/Sigaba.Documents.Test.csproj" />
     <Project Path="Sigaba.Documents/Sigaba.Documents.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Testing/">
+    <Project Path="Sigaba.Testing/Sigaba.Testing.csproj" Id="ebf10fa3-92d9-4463-83c3-82d5a763a7ea" />
   </Folder>
   <Folder Name="/UI/" />
   <Folder Name="/UI/Cli/">

@@ -11,6 +11,7 @@ internal partial class SigabaFileV1(
     string fieldRegexPattern,
     string[] includeGlob,
     string[] excludeGlob,
+    Guid projectId,
     PublicKey publicKey)
 {
     private readonly Lazy<Regex> lazyFieldNameRegex = new(() => new Regex(fieldRegexPattern, RegexOptions.IgnoreCase));
@@ -26,6 +27,7 @@ internal partial class SigabaFileV1(
                 IncludeFileGlob = includeGlob,
                 ExcludeFileGlob = excludeGlob
             },
+            ProjectId = projectId,
             PublicKeyBase64 = currentPublicKey.ToBase64(),
         };
 
@@ -35,10 +37,11 @@ internal partial class SigabaFileV1(
     public static SigabaFileV1 CreateDefault(PublicKey publicKey)
     {
         return new SigabaFileV1(
+            projectId: Guid.NewGuid(),
+            publicKey: publicKey,
             fieldRegexPattern: @"^.*_secret$",
             includeGlob: ["**/*.secrets.json"],
-            excludeGlob: ["**node_modules/**", "**/bin/**", "**/obj/**"],
-            publicKey: publicKey);
+            excludeGlob: ["**node_modules/**", "**/bin/**", "**/obj/**"]);
     }
 
     public static SigabaFileV1 Deserialize(string serialized)
@@ -50,16 +53,19 @@ internal partial class SigabaFileV1(
             throw new Exception($"Unsupported version: {schema.Version}. Expected version: 1.");
 
         return new SigabaFileV1(
-            schema.Configuration.FieldRegex,
-            schema.Configuration.IncludeFileGlob,
-            schema.Configuration.ExcludeFileGlob,
-            PublicKey.FromBase64(schema.PublicKeyBase64));
+            fieldRegexPattern: schema.Configuration.FieldRegex,
+            includeGlob: schema.Configuration.IncludeFileGlob,
+            excludeGlob: schema.Configuration.ExcludeFileGlob,
+            projectId: schema.ProjectId,
+            publicKey: PublicKey.FromBase64(schema.PublicKeyBase64));
     }
 }
 
 internal partial class SigabaFileV1 : ISigabaFile
 {
     int ISigabaFile.Version { get; } = 1;
+
+    Guid ISigabaFile.ProjectId { get => projectId; }
 
     PublicKey ISigabaFile.PublicKey { get => this.currentPublicKey; set => this.currentPublicKey = value; }
 

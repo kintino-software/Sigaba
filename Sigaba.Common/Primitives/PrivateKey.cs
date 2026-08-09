@@ -2,4 +2,4 @@
 
 namespace Sigaba.Primitives;
 
-public record PrivateKey(byte[] Bytes) : PlainByteLike<PrivateKey>(Bytes);
+public record PrivateKey(byte[] Bytes) : ByteLike<PrivateKey>(Bytes), IPlainData;

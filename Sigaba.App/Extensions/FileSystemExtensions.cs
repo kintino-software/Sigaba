@@ -35,5 +35,13 @@ internal static class FileSystemExtensions
             }
             return filePath;
         }
+
+        public Task SafeWriteFile(string filePath, string content)
+        {
+            var dir = fs.Path.GetDirectoryName(filePath)
+                ?? throw new InvalidOperationException("Directory name cannot be null.");
+            fs.CreateFolderIfNotExists(dir);
+            return fs.File.WriteAllTextAsync(filePath, content);
+        }
     }
 }

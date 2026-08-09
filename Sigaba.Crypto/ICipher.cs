@@ -4,9 +4,9 @@ namespace Sigaba.Crypto;
 
 public interface ICipher
 {
-    EncryptedData EncryptWithKey(PlainData plainData, PublicKey publicKey);
-    PlainData DecryptWithKey(EncryptedData encryptedData, PrivateKey privateKey);
-    EncryptedData EncryptWithPassword(PlainData plainData, string password);
-    PlainData DecryptWithPassword(EncryptedData encryptedData, string password);
+    EncryptedData EncryptWithKey(IPlainData plainData, PublicKey publicKey);
+    PlainData DecryptWithKey(IEncryptedData encryptedData, PrivateKey privateKey);
+    EncryptedData EncryptWithPassword(IPlainData plainData, string password);
+    PlainData DecryptWithPassword(IEncryptedData encryptedData, string password);
     (PublicKey, PrivateKey) GenerateKeys();
 }

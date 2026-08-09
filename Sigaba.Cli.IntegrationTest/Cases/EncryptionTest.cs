@@ -8,14 +8,14 @@ public class EncryptionTest : BaseTest
 
     public EncryptionTest()
     {
-        cwd = CreateAndSetCwd("a/b".AsPath());
+        cwd = Fs.SafeSetCwd("testdir");
     }
 
     [Fact]
     public async Task Should_encrypt_all_files_in_directory_tree()
     {
         // adding file in the root
-        var file1Path = $"{cwd}/fileA.secrets.json".AsPath();
+        var file1Path = Fs.SafePath(cwd, "fileA.secrets.json");
         var content1 = """
             {
                 "field1": "value 1",
@@ -25,7 +25,7 @@ public class EncryptionTest : BaseTest
         Fs.AddFile(file1Path, new MockFileData(content1));
 
         // adding a file in a subdirectory
-        var file2Path = $"{cwd}/subdir1/subdir2/fileB.secrets.json".AsPath();
+        var file2Path = Fs.SafePath(cwd, "subdir1/subdir2/fileB.secrets.json");
         var content2 = """
             {
                 "field3": "value 3",
@@ -34,28 +34,27 @@ public class EncryptionTest : BaseTest
             """;
         Fs.AddFile(file2Path, new MockFileData(content2));
 
-        var app = CreateApp();
-        await app.RunAsync("init");
+        await App.RunAsync(["init"]);
 
         //
 
-        await app.RunAsync("encrypt");
+        await App.RunAsync(["encrypt"]);
 
         //
 
-        var file1content = await Fs.File.ReadAllTextAsync(file1Path);
-        file1content.GetJsonValue<string>("$.field1").Should().Be("value 1");
-        file1content.GetJsonValue<string>("$.field2_secret").Should().NotBe("secret value 2");
+        var jsonTester1 = JsonTester.FromFile(Fs, file1Path);
+        jsonTester1.GetJsonValue<string>("$.field1").Should().Be("value 1");
+        jsonTester1.GetJsonValue<string>("$.field2_secret").Should().NotBe("secret value 2");
 
-        var file2Content = await Fs.File.ReadAllTextAsync(file2Path);
-        file2Content.GetJsonValue<string>("$.field3").Should().Be("value 3");
-        file2Content.GetJsonValue<string>("$.field4_secret").Should().NotBe("secret value 4");
+        var jsonTester2 = JsonTester.FromFile(Fs, file2Path);
+        jsonTester2.GetJsonValue<string>("$.field3").Should().Be("value 3");
+        jsonTester2.GetJsonValue<string>("$.field4_secret").Should().NotBe("secret value 4");
     }
 
     [Fact]
     public async Task Should_not_encrypt_without_valid_public_key()
     {
-        var file1Path = $"{cwd}/file_secrets.json".AsPath();
+        var file1Path = Fs.SafePath(cwd, "file_secrets.json");
         var content1 = """
             {
                 "field_secret": "secret value",
@@ -63,13 +62,12 @@ public class EncryptionTest : BaseTest
             """;
         Fs.AddFile(file1Path, new MockFileData(content1));
 
-        var app = CreateApp();
-        await app.RunAsync("init");
-        Fs.EditJsonFile<string>("sigaba.json", "$.publicKey", value => (value + "x")); // messing with the key so that it is invalid
+        await App.RunAsync(["init"]);
+        JsonTester.EditJsonFileInPlace<string>(Fs, "sigaba.json", "$.publicKey", value => (value + "x")); // messing with the key so that it is invalid
 
         //
 
-        var action = () => app.RunAsync("encrypt");
+        var action = () => App.RunAsync(["encrypt"]);
 
         await action.Should().ThrowAsync<Exception>();
     }

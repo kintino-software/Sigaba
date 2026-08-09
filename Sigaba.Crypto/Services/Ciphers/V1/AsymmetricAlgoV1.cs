@@ -18,7 +18,7 @@ internal static class AsymmetricAlgoV1
         return (new PublicKey(publicKeyBytes), new PrivateKey(privateKeyBytes));
     }
 
-    public static EncryptedData Encrypt(PlainData plainData, PublicKey publicKey)
+    public static EncryptedData Encrypt(IPlainData plainData, PublicKey publicKey)
     {
         using var recipientECDHPublicKey = ECDiffieHellman.Create();
         recipientECDHPublicKey.ImportSubjectPublicKeyInfo(publicKey.Bytes, out _);
@@ -36,7 +36,7 @@ internal static class AsymmetricAlgoV1
         return new EncryptedData(MergeDataNonceTagPublicKey(encryptedData, nonce, tag, ephemeral.ExportSubjectPublicKeyInfo()));
     }
 
-    public static PlainData Decrypt(EncryptedData encryptedData, PrivateKey privateKey)
+    public static PlainData Decrypt(IEncryptedData encryptedData, PrivateKey privateKey)
     {
         SplitDataNonceTagPublicKey(encryptedData.Bytes, out var data, out var nonce, out var tag, out var publicKeyBytes);
 

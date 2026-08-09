@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console.Cli;
 
-namespace Sigaba.Cli.Adaptors.SpectreConsole;
+namespace Sigaba.Cli.Adaptors;
 
-public sealed class TypeRegistrar(IServiceCollection services) : ITypeRegistrar
+public sealed class SpectreTypeRegistrar(IServiceCollection services) : ITypeRegistrar
 {
     public ITypeResolver Build() => new TypeResolver(services.BuildServiceProvider());
 

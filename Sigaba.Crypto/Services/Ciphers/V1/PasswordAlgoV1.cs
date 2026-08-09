@@ -18,7 +18,7 @@ internal static class PasswordAlgoV1
     const int ArgonMemorySize = 65536; // 64 MB
     const int ArgonParallelism = 4;
 
-    public static EncryptedData Encrypt(PlainData plainData, string password)
+    public static EncryptedData Encrypt(IPlainData plainData, string password)
     {
         var salt = RandomNumberGenerator.GetBytes(SaltSizeInBytes);
         var key = DeriveKey(password, salt);
@@ -33,7 +33,7 @@ internal static class PasswordAlgoV1
         return new EncryptedData(MergeSaltNonceTagCiphertext(salt, nonce, tag, ciphertext));
     }
 
-    public static PlainData Decrypt(EncryptedData encryptedData, string password)
+    public static PlainData Decrypt(IEncryptedData encryptedData, string password)
     {
         SplitSaltNonceTagCiphertext(encryptedData.Bytes, out var salt, out var nonce, out var tag, out var ciphertext);
 
