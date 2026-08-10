@@ -2,13 +2,12 @@
 using Sigaba.Documents.Models;
 using Sigaba.Documents.Services;
 using Sigaba.Primitives;
-using System.IO.Abstractions;
 
 namespace Sigaba.Documents;
 
-internal class FileCipher(IFileSystem fs, ICipher cipher) : IFileCipher
+internal class FileCipher(ICipher cipher) : IFileCipher
 {
-    async ValueTask IFileCipher.CipherFile(string filePath, PublicKey publicKey, Predicate<string> fieldFilter)
+    async ValueTask IFileCipher.CipherFile(FilePath filePath, PublicKey publicKey, Predicate<string> fieldFilter)
     {
         var document = await LoadDocumentModelFromFileAsync(filePath);
         var fieldNames = document.GetFieldNames().Where(f => fieldFilter(f)).ToList();
@@ -35,7 +34,7 @@ internal class FileCipher(IFileSystem fs, ICipher cipher) : IFileCipher
         await SaveChangedDocumentAsync(document, filePath);
     }
 
-    async ValueTask IFileCipher.DecipherFile(string filePath, PrivateKey privateKey)
+    async ValueTask IFileCipher.DecipherFile(FilePath filePath, PrivateKey privateKey)
     {
         var document = await LoadDocumentModelFromFileAsync(filePath);
 
@@ -43,7 +42,7 @@ internal class FileCipher(IFileSystem fs, ICipher cipher) : IFileCipher
         {
             if (!document.TryGetValue<string>(field, out var value) ||  // field is not a string, it means that is not encrypted
                 value is null ||                                        // field is null, also means is not encrypted
-                !IsEncryptedFieldValue(value))              // field is not encrypted
+                !IsEncryptedFieldValue(value))                          // field is not encrypted
             {
                 continue;
             }
@@ -62,18 +61,18 @@ internal class FileCipher(IFileSystem fs, ICipher cipher) : IFileCipher
 
     // helpers
 
-    private async Task<IDocumentModel> LoadDocumentModelFromFileAsync(string filePath)
+    private static async Task<IDocumentModel> LoadDocumentModelFromFileAsync(FilePath filePath)
     {
-        var document = DocumentModelFactory.GetDocumentModelByFileExtension(fs.Path.GetExtension(filePath));
-        var content = await fs.File.ReadAllTextAsync(filePath);
+        var document = DocumentModelFactory.GetDocumentModelByFilePath(filePath);
+        var content = await filePath.ReadAsync();
         document.Parse(content);
         return document;
     }
 
-    private async Task SaveChangedDocumentAsync(IDocumentModel document, string filePath)
+    private static async Task SaveChangedDocumentAsync(IDocumentModel document, FilePath filePath)
     {
         var newContent = document.Serialize();
-        await fs.File.WriteAllTextAsync(filePath, newContent);
+        await filePath.WriteAsync(newContent, overwrite: true);
     }
 
 

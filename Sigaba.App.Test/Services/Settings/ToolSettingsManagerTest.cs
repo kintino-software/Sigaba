@@ -2,39 +2,41 @@
 
 namespace Sigaba.App.Services.Settings;
 
-public class ToolSettingsManagerTest : BaseTest
+public class SigabaFileManagerTest(Fixture fixture) : BaseTest
 {
-    private ISigabaFileManager CreateService()
+    private static ISigabaFileManager CreateService()
     {
-        return new SigabaFileManager(Fs);
+        return new SigabaFileManager();
     }
 
-    //[Fact]
-    //public async Task Should_create_from_any_serialized_settings_version()
-    //{
-    //    var allVersionTypes = InterfacesInspector.GetAllImplementationsOf<IToolSettings>();
-    //    allVersionTypes.Should().NotBeEmpty("it should have at least one implementation of IToolSettings");
-    //    List<Type> testedInstances = [];
-    //    string[] serializations =
-    //    [
-    //        ToolSettingsV1.CreateDefault().Serialize(),
-    //    ];
+    [Fact]
+    public async Task Should_save_sigaba_file()
+    {
+        var service = CreateService();
+        var instances = fixture.AllImplementationsInstancesOfSigabaFile;
+        foreach (var instance in instances)
+        {
+            var filePath = Fs.CreateFile($"{Guid.NewGuid()}.json");
 
-    //    var service = CreateService();
+            var action = () => service.SaveAsync(instance, filePath);
 
-    //    foreach (var serializedContent in serializations)
-    //    {
-    //        var serialized = serializedContent;
-    //        Fs.AddFile(Constants.ToolSettingsFileName, serialized);
+            await action.Should().NotThrowAsync();
+        }
+    }
 
-    //        var loaded = await service.LoadAsync();
-    //        testedInstances.Add(loaded.GetType());
+    [Fact]
+    public async Task Should_load_sigaba_file()
+    {
+        var service = CreateService();
+        var instances = fixture.AllImplementationsInstancesOfSigabaFile;
+        foreach (var instance in instances)
+        {
+            var filePath = Fs.CreateFile($"{Guid.NewGuid()}.json");
+            await service.SaveAsync(instance, filePath);
 
-    //        loaded.Should().NotBeNull();
-    //    }
+            var actual = await service.LoadAsync(filePath);
 
-    //    testedInstances.Should().BeEquivalentTo(allVersionTypes, "it should check all implementations of IToolSettings");
-    //}
-
+            actual.Should().BeEquivalentTo(instance);
+        }
+    }
 }
-

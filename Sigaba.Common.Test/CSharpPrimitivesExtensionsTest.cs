@@ -1,6 +1,6 @@
 ﻿namespace Sigaba;
 
-public class PrimitivesExtensionsTest
+public class CSharpPrimitivesExtensionsTest
 {
     [Fact]
     public void Should_convert_bytes_to_string_and_back()

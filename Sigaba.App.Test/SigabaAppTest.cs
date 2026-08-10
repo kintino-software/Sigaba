@@ -17,8 +17,8 @@ public class SigabaAppTest : BaseTest
 
     private ISigabaApp CreateService()
     {
-        sigabaFileManager.LoadAsync(Arg.Any<string>()).Returns(sigabaFile);
-        return new SigabaApp(Fs, cipher, sigabaFileManager, privateKeyManager, fileCipher);
+        sigabaFileManager.LoadAsync(Arg.Any<FilePath>()).Returns(sigabaFile);
+        return new SigabaApp(cipher, sigabaFileManager, privateKeyManager, fileCipher);
     }
 
     // InitAsync
@@ -26,20 +26,21 @@ public class SigabaAppTest : BaseTest
     [Fact]
     public async Task Should_initialize_context()
     {
-        var publicKey = new PublicKey([1]);
-        var privateKey = new PrivateKey([2]);
+        var publicKey = PublicKey.Any();
+        var privateKey = PrivateKey.Any();
         cipher.GenerateKeys().Returns((publicKey, privateKey));
+        var sigabaFileOutputDir = Fs.CreateDir("a/b/c");
         var service = CreateService();
 
         await service.InitAsync(new()
         {
             PrivateKeyPassword = "password",
-            SigabaFileOutputDir = "a/b/c",
+            SigabaFileOutputDir = sigabaFileOutputDir,
         });
 
         cipher.Received().GenerateKeys();
         sigabaFileManager.Received().CreateDefault(publicKey);
-        await sigabaFileManager.Received().SaveAsync(Arg.Any<ISigabaFile>(), "a/b/c");
+        await sigabaFileManager.Received().SaveAsync(Arg.Any<ISigabaFile>(), sigabaFileOutputDir.CombineAsFile(Constants.SigabaFileName));
         await privateKeyManager.Received().SaveAsync(Arg.Any<Guid>(), privateKey, "password");
     }
 
@@ -48,11 +49,11 @@ public class SigabaAppTest : BaseTest
     [Fact]
     public async Task Should_cipher_files()
     {
-        var file1 = "a/file1.txt".AsPath();
-        var file2 = "a/b/file2.txt".AsPath();
-        var rootFolder = "a/".AsPath();
-        Fs.AddEmptyFile($"{rootFolder}/{Constants.SigabaFileName}".AsPath());
-        sigabaFile.GetTargetFiles(Fs, rootFolder).Returns([file1, file2]);
+        var file1 = Fs.CreateFile("a/file1.txt");
+        var file2 = Fs.CreateFile("a/b/file2.txt");
+        var rootFolder = Fs.CreateDir("a/");
+        Fs.AddFilePath(rootFolder.CombineAsFile(Constants.SigabaFileName).Path);
+        sigabaFile.GetTargetFiles(rootFolder).Returns([file1, file2]);
         var service = CreateService();
 
         await service.CipherFilesAsync(rootFolder);

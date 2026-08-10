@@ -1,8 +1,10 @@
-﻿namespace Sigaba.App.Services.PrivateKeys;
+﻿using Sigaba.Primitives;
+
+namespace Sigaba.App.Services.PrivateKeys;
 
 internal interface IPrivateKeyLocationResolver
 {
-    string ResolveCurrentLocation(Guid projectId);
+    FilePath ResolveCurrentLocation(Guid projectId);
 
-    string GetDefaultFilePath(Guid projectId);
+    FilePath GetDefaultFilePath(Guid projectId);
 }

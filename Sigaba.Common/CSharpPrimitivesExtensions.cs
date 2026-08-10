@@ -2,7 +2,7 @@
 
 namespace Sigaba;
 
-public static class PrimitivesExtensions
+public static class CSharpPrimitivesExtensions
 {
     extension(string str)
     {

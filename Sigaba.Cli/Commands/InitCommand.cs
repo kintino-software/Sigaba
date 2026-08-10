@@ -33,7 +33,7 @@ internal class InitCommand(ISigabaApp app, IFileSystem fs, InteractiveInit inter
         await app.InitAsync(new()
         {
             PrivateKeyPassword = privateKeyPassword,
-            SigabaFileOutputDir = fs.Directory.GetCurrentDirectory(),
+            SigabaFileOutputDir = fs.CreateCwdDir(),
 
         });
         return 0;

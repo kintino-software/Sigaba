@@ -2,26 +2,23 @@
 using Sigaba.App.Services.SigabaFiles;
 using Sigaba.Crypto;
 using Sigaba.Documents;
-using System.IO.Abstractions;
+using Sigaba.Primitives;
 
 namespace Sigaba.App;
 
 internal partial class SigabaApp(
-    IFileSystem fs,
     ICipher cipher,
     ISigabaFileManager sigabaFileManager,
     IPrivateKeyManager privateKeyManager,
     IFileCipher fileCipher)
 {
-    private Task<ISigabaFile> GetNearestSigabaFile(string startingDir, out string sigabaFileDir)
+    private Task<ISigabaFile> GetNearestSigabaFile(DirPath startingDir, out FilePath sigabaFilePath)
     {
-        var sigabaFilePath = fs.GetNearestFileWithNameGoingUp(startingDir, Constants.SigabaFileName)
-            ?? throw new InvalidOperationException($"Could not find {Constants.SigabaFileName} in {startingDir} or any parent directory.");
+        if (!startingDir.TryGetNearestFileWithNameGoingUp(Constants.SigabaFileName, out var filePath))
+            throw new InvalidOperationException($"Could not find {Constants.SigabaFileName} in {startingDir} or any parent directory.");
 
-        sigabaFileDir = fs.Path.GetDirectoryName(sigabaFilePath)
-            ?? throw new InvalidOperationException($"Could not determine directory for {sigabaFilePath}.");
-
-        return sigabaFileManager.LoadAsync(sigabaFilePath);
+        sigabaFilePath = filePath;
+        return sigabaFileManager.LoadAsync(filePath);
     }
 }
 
@@ -34,38 +31,35 @@ internal partial class SigabaApp : ISigabaApp
         var sigabaFile = sigabaFileManager.CreateDefault(publicKey);
 
         await privateKeyManager.SaveAsync(sigabaFile.ProjectId, privateKey, options.PrivateKeyPassword);
-        await sigabaFileManager.SaveAsync(sigabaFile, fs.Path.Combine(options.SigabaFileOutputDir, Constants.SigabaFileName));
+        await sigabaFileManager.SaveAsync(sigabaFile, options.SigabaFileOutputDir.CombineAsFile(Constants.SigabaFileName));
     }
 
-    async Task ISigabaApp.CipherFilesAsync(string referenceFolderPath)
+    async Task ISigabaApp.CipherFilesAsync(DirPath referenceFolderPath)
     {
-        var sigabaFile = await GetNearestSigabaFile(referenceFolderPath, out var sigabaFileDir);
+        var sigabaFile = await GetNearestSigabaFile(referenceFolderPath, out var sigabaFilePath);
 
-        foreach (var filePath in sigabaFile.GetTargetFiles(fs, sigabaFileDir))
+        foreach (var filePath in sigabaFile.GetTargetFiles(sigabaFilePath.Parent()))
         {
             await fileCipher.CipherFile(filePath, sigabaFile.PublicKey, sigabaFile.FieldNamePredicate);
         }
     }
 
-    async Task ISigabaApp.DecipherFilesAsync(string referenceFolderPath, string password)
+    async Task ISigabaApp.DecipherFilesAsync(DirPath referenceFolderPath, string password)
     {
-        var sigabaFile = await GetNearestSigabaFile(referenceFolderPath, out var sigabaFileDir);
+        var sigabaFile = await GetNearestSigabaFile(referenceFolderPath, out var sigabaFilePath);
         var privateKey = await privateKeyManager.LoadAsync(sigabaFile.ProjectId, password);
 
-        foreach (var filePath in sigabaFile.GetTargetFiles(fs, sigabaFileDir))
+        foreach (var filePath in sigabaFile.GetTargetFiles(sigabaFilePath.Parent()))
         {
             await fileCipher.DecipherFile(filePath, privateKey);
         }
     }
 
-    async Task ISigabaApp.EditFileAsync(ITextEditor textEditor, string editingFilePath)
+    async Task ISigabaApp.EditFileAsync(ITextEditor textEditor, FilePath editingFilePath)
     {
-        var sigabaFile = await GetNearestSigabaFile(
-            fs.Path.GetDirectoryName(editingFilePath)
-                ?? throw new InvalidOperationException($"The file '{editingFilePath}' is not in a valid directory."),
-            out var sigabaFileDir);
+        var sigabaFile = await GetNearestSigabaFile(editingFilePath.Parent(), out var sigabaFilePath);
 
-        if (!sigabaFile.GetTargetFiles(fs, sigabaFileDir).Contains(editingFilePath))
+        if (!sigabaFile.GetTargetFiles(sigabaFilePath.Parent()).Contains(editingFilePath))
             throw new InvalidOperationException(
                 $"The file '{editingFilePath}' is not part of Sigaba target files. Make sure you have the correct filter in {Constants.SigabaFileName}.");
 

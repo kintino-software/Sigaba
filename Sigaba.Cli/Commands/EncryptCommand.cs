@@ -8,7 +8,7 @@ internal class EncryptCommand(ISigabaApp app, IFileSystem fs) : AsyncCommand
 {
     protected override async Task<int> ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
-        await app.CipherFilesAsync(fs.Directory.GetCurrentDirectory());
+        await app.CipherFilesAsync(fs.CreateCwdDir());
         return 0;
     }
 }

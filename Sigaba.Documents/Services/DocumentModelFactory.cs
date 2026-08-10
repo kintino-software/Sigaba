@@ -1,13 +1,14 @@
 ﻿using Sigaba.Documents.Models;
 using Sigaba.Documents.Services.Json;
+using Sigaba.Primitives;
 
 namespace Sigaba.Documents.Services;
 
 internal static class DocumentModelFactory
 {
-    public static IDocumentModel GetDocumentModelByFileExtension(string extensionWithDot)
+    public static IDocumentModel GetDocumentModelByFilePath(FilePath filePath)
     {
-        extensionWithDot = extensionWithDot.ToLower();
+        var extensionWithDot = filePath.ExtensionWithDot.ToLower();
 
         return extensionWithDot switch
         {

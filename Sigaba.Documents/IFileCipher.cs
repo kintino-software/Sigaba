@@ -4,6 +4,6 @@ namespace Sigaba.Documents;
 
 public interface IFileCipher
 {
-    ValueTask CipherFile(string filePath, PublicKey publicKey, Predicate<string> fieldFilter);
-    ValueTask DecipherFile(string filePath, PrivateKey privateKey);
+    ValueTask CipherFile(FilePath filePath, PublicKey publicKey, Predicate<string> fieldFilter);
+    ValueTask DecipherFile(FilePath filePath, PrivateKey privateKey);
 }

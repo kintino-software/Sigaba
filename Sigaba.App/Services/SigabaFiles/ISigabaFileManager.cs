@@ -4,7 +4,7 @@ namespace Sigaba.App.Services.SigabaFiles;
 
 internal interface ISigabaFileManager
 {
-    Task<ISigabaFile> LoadAsync(string filePath);
-    Task SaveAsync(ISigabaFile sigabaFile, string filePath);
+    Task<ISigabaFile> LoadAsync(FilePath filePath);
+    Task SaveAsync(ISigabaFile sigabaFile, FilePath filePath);
     ISigabaFile CreateDefault(PublicKey publicKey);
 }

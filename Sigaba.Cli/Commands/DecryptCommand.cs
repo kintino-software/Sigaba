@@ -16,7 +16,8 @@ internal class DecryptCommand(ISigabaApp app, IFileSystem fs) : AsyncCommand<Dec
 
     protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
-        await app.DecipherFilesAsync(fs.Directory.GetCurrentDirectory(), settings.Password);
+
+        await app.DecipherFilesAsync(fs.CreateCwdDir(), settings.Password);
         return 0;
     }
 }

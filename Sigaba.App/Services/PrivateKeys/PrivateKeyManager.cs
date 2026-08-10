@@ -1,12 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using Sigaba.Crypto;
 using Sigaba.Primitives;
-using System.IO.Abstractions;
 
 namespace Sigaba.App.Services.PrivateKeys;
 
 internal sealed class PrivateKeyManager(
-    IFileSystem fs,
     ICipher cipher,
     IPrivateKeyLocationResolver privateKeyLocationResolver,
     ILogger<PrivateKeyManager> logger) : IPrivateKeyManager
@@ -17,7 +15,7 @@ internal sealed class PrivateKeyManager(
 
         var encryptedPrivateKey = cipher.EncryptWithPassword(privateKey, password);
         var fileContent = encryptedPrivateKey.ToBase64();
-        await fs.SafeWriteFile(filePath, fileContent);
+        await filePath.WriteAsync(fileContent, overwrite: true);
 
         logger.LogInformation("Private key saved to: {filePath}", filePath);
     }
@@ -26,7 +24,7 @@ internal sealed class PrivateKeyManager(
     {
         var filePath = privateKeyLocationResolver.ResolveCurrentLocation(projectId);
 
-        var privateKeyContent = await fs.File.ReadAllTextAsync(filePath);
+        var privateKeyContent = await filePath.ReadAsync();
         var encryptedPrivateKey = EncryptedData.FromBase64(privateKeyContent);
         var plainPrivateKey = cipher.DecryptWithPassword(encryptedPrivateKey, password);
 

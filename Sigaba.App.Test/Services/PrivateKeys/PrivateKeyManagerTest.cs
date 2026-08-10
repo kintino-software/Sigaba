@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Sigaba.App.Services.SigabaFiles;
 using Sigaba.Crypto;
 using Sigaba.Primitives;
 
@@ -13,7 +12,7 @@ public class PrivateKeyManagerTest : BaseTest
 
     private IPrivateKeyManager CreateService()
     {
-        return new PrivateKeyManager(Fs, cipher, locationResolver, logger);
+        return new PrivateKeyManager(cipher, locationResolver, logger);
     }
 
     private static PrivateKey CreatePrivateKey(params byte[] data)
@@ -27,8 +26,8 @@ public class PrivateKeyManagerTest : BaseTest
     public async Task SaveAsync_should_save_private_key_default_folder()
     {
         var projectId = Guid.NewGuid();
-        var defaultFilePath = "a/b/file.txt".AsPath();
-        locationResolver.GetDefaultFilePath(projectId).Returns(defaultFilePath);
+        var filePath = Fs.CreateFile("a/b/file.txt");
+        locationResolver.GetDefaultFilePath(projectId).Returns(filePath);
         var service = CreateService();
         var privateKey = CreatePrivateKey(1, 2, 3);
         cipher.EncryptWithPassword(privateKey, "password").Returns(new EncryptedData([4, 4, 4]));
@@ -36,8 +35,8 @@ public class PrivateKeyManagerTest : BaseTest
         await service.SaveAsync(projectId, privateKey, "password");
 
         cipher.Received().EncryptWithPassword(privateKey, "password");
-        Fs.File.Exists(defaultFilePath).Should().BeTrue();
-        logger.VerifyLog(LogLevel.Information, $"Private key saved to: {defaultFilePath}");
+        filePath.Exists.Should().BeTrue();
+        logger.VerifyLog(LogLevel.Information, $"Private key saved to: {filePath.Path}");
     }
 
     // LoadAsync
@@ -47,11 +46,8 @@ public class PrivateKeyManagerTest : BaseTest
     {
         var projectIdArg = Guid.NewGuid();
         var passwordArg = "password";
-
-        var filePathFromService = "a/b/file.txt".AsPath();
-        locationResolver.ResolveCurrentLocation(projectIdArg).Returns(filePathFromService);
-
-        Fs.AddEmptyFile(filePathFromService);
+        var existingPrivateKeyFilePath = Fs.AddFilePath("a/b/file.txt");
+        locationResolver.ResolveCurrentLocation(projectIdArg).Returns(existingPrivateKeyFilePath);
 
         var plainKeyFromService = new PlainData([2]);
         cipher.DecryptWithPassword(Arg.Any<EncryptedData>(), passwordArg).Returns(plainKeyFromService);

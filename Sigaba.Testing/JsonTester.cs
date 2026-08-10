@@ -1,4 +1,5 @@
 ﻿using Json.Path;
+using Sigaba.Primitives;
 using System.IO.Abstractions;
 using System.Text;
 using System.Text.Json;
@@ -21,9 +22,9 @@ public class JsonTester
 
     public static JsonTester FromString(string jsonContent) => new(jsonContent);
 
-    public static JsonTester FromFile(IFileSystem fs, string filePath)
+    public static JsonTester FromFile(FilePath filePath)
     {
-        var jsonContent = fs.File.ReadAllText(filePath);
+        var jsonContent = filePath.Read();
         return new JsonTester(jsonContent);
     }
 

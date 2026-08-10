@@ -1,12 +1,11 @@
 ﻿using Sigaba.App.Services.SigabaFiles.V1;
 using Sigaba.Primitives;
-using System.IO.Abstractions;
 
 namespace Sigaba.App.Services.SigabaFiles;
 
-internal partial class SigabaFileManager(IFileSystem fs) : ISigabaFileManager
+internal partial class SigabaFileManager : ISigabaFileManager
 {
-    async Task ISigabaFileManager.SaveAsync(ISigabaFile sigabaFile, string filePath)
+    async Task ISigabaFileManager.SaveAsync(ISigabaFile sigabaFile, FilePath filePath)
     {
         var content = sigabaFile switch
         {
@@ -14,12 +13,12 @@ internal partial class SigabaFileManager(IFileSystem fs) : ISigabaFileManager
             _ => throw new NotSupportedException($"ToolSettings version {sigabaFile.Version} is not supported.")
         };
 
-        await fs.File.WriteAllTextAsync(filePath, content);
+        await filePath.WriteAsync(content, overwrite: false); // not allowed to overwrite
     }
 
-    async Task<ISigabaFile> ISigabaFileManager.LoadAsync(string filePath)
+    async Task<ISigabaFile> ISigabaFileManager.LoadAsync(FilePath filePath)
     {
-        var content = await fs.File.ReadAllTextAsync(filePath);
+        var content = await filePath.ReadAsync();
         var version = JsonHelper.ReadVersionFromJson(content);
         return version switch
         {
