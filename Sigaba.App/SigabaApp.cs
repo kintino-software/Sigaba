@@ -35,7 +35,6 @@ internal partial class SigabaApp : ISigabaApp
 
         await privateKeyManager.SaveAsync(sigabaFile.ProjectId, privateKey, options.PrivateKeyPassword);
         await sigabaFileManager.SaveAsync(sigabaFile, fs.Path.Combine(options.SigabaFileOutputDir, Constants.SigabaFileName));
-
     }
 
     async Task ISigabaApp.CipherFilesAsync(string referenceFolderPath)

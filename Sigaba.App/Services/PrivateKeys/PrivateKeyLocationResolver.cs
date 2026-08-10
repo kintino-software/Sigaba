@@ -11,7 +11,7 @@ internal sealed partial class PrivateKeyLocationResolver(
 {
     private string CombinePathWithSystemFolderWithId(Guid projectId)
     {
-        var systemFolderWithId = fs.Path.Combine(Constants.SigabaSystemDir, projectId.ToString("N"));
+        var systemFolderWithId = fs.Path.Combine(Constants.SigabaSystemDir, projectId.ToString("N"), Constants.PrivateKeyFileName);
         return systemFolderWithId;
     }
 
