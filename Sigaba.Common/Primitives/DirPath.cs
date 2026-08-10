@@ -4,15 +4,9 @@ using System.IO.Abstractions;
 
 namespace Sigaba.Primitives;
 
-public class DirPath : BasePath
+public class DirPath(IFileSystem fs, params string[] parts) : BasePath(fs, parts)
 {
-    public IFileSystem Fs { get; }
     public bool Exists { get => Fs.Directory.Exists(Path); }
-
-    internal DirPath(IFileSystem fs, params string[] parts) : base(parts)
-    {
-        this.Fs = fs;
-    }
 
     public DirPath? Parent()
     {

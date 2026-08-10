@@ -16,7 +16,7 @@ internal class EditCommand(ISigabaApp app, IFileSystem fs, ITextEditor textEdito
 
     protected override async Task<int> ExecuteAsync(CommandContext context, EditCommandSettings settings, CancellationToken cancellationToken)
     {
-        var cwd = fs.CreateCwdDir();
+        var cwd = fs.NewCwdDirPath();
         var filePath = cwd.CombineAsFile(settings.File);
         await app.EditFileAsync(textEditor, filePath);
         return 0;

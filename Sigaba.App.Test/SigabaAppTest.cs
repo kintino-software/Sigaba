@@ -29,7 +29,7 @@ public class SigabaAppTest : BaseTest
         var publicKey = PublicKey.Any();
         var privateKey = PrivateKey.Any();
         cipher.GenerateKeys().Returns((publicKey, privateKey));
-        var sigabaFileOutputDir = Fs.CreateDir("a/b/c");
+        var sigabaFileOutputDir = Fs.NewDirPath("a/b/c");
         var service = CreateService();
 
         await service.InitAsync(new()
@@ -49,9 +49,9 @@ public class SigabaAppTest : BaseTest
     [Fact]
     public async Task Should_cipher_files()
     {
-        var file1 = Fs.CreateFile("a/file1.txt");
-        var file2 = Fs.CreateFile("a/b/file2.txt");
-        var rootFolder = Fs.CreateDir("a/");
+        var file1 = Fs.NewFilePath("a/file1.txt");
+        var file2 = Fs.NewFilePath("a/b/file2.txt");
+        var rootFolder = Fs.NewDirPath("a/");
         Fs.AddFilePath(rootFolder.CombineAsFile(Constants.SigabaFileName).Path);
         sigabaFile.GetTargetFiles(rootFolder).Returns([file1, file2]);
         var service = CreateService();

@@ -7,9 +7,11 @@ public static class FilesystemExtensions
 {
     extension(IFileSystem fs)
     {
-        public FilePath CreateFile(params string[] parts) => new(fs, parts);
+        public FilePath NewFilePath(params string[] parts) => new(fs, parts);
 
-        public DirPath CreateDir(params string[] parts) => new(fs, parts);
-        public DirPath CreateCwdDir() => new(fs, fs.Directory.GetCurrentDirectory());
+        public DirPath NewDirPath(params string[] parts) => new(fs, parts);
+
+        public DirPath NewCwdDirPath() => new(fs, fs.Directory.GetCurrentDirectory());
     }
+
 }

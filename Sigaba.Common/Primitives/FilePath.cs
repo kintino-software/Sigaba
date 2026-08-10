@@ -3,16 +3,10 @@ using System.IO.Abstractions;
 
 namespace Sigaba.Primitives;
 
-public class FilePath : BasePath
+public class FilePath(IFileSystem fs, params string[] parts) : BasePath(fs, parts)
 {
-    public IFileSystem Fs { get; }
     public bool Exists { get => Fs.File.Exists(Path); }
     public string ExtensionWithDot { get => Fs.Path.GetExtension(Path) ?? throw new Exception($"Cannot get extension for file path '{Path}'."); }
-
-    internal FilePath(IFileSystem fs, params string[] parts) : base(parts)
-    {
-        this.Fs = fs;
-    }
 
     public DirPath Parent()
     {

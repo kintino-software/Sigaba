@@ -28,14 +28,14 @@ public static class FileSystemExtensions
 
         public FilePath AddFilePath(string path, string content = null)
         {
-            var filePath = fs.CreateFile(path);
+            var filePath = fs.NewFilePath(path);
             fs.AddFile(filePath.Path, new MockFileData(content ?? string.Empty));
             return filePath;
         }
 
         public DirPath AddDirPath(string path)
         {
-            var dirPath = fs.CreateDir(path);
+            var dirPath = fs.NewDirPath(path);
             fs.AddDirectory(dirPath.Path);
             return dirPath;
         }

@@ -26,7 +26,7 @@ public class PrivateKeyManagerTest : BaseTest
     public async Task SaveAsync_should_save_private_key_default_folder()
     {
         var projectId = Guid.NewGuid();
-        var filePath = Fs.CreateFile("a/b/file.txt");
+        var filePath = Fs.NewFilePath("a/b/file.txt");
         locationResolver.GetDefaultFilePath(projectId).Returns(filePath);
         var service = CreateService();
         var privateKey = CreatePrivateKey(1, 2, 3);

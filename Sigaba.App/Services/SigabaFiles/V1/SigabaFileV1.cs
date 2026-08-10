@@ -79,7 +79,7 @@ internal partial class SigabaFileV1 : ISigabaFile
         matcher.AddIncludePatterns(includeGlob);
         matcher.AddExcludePatterns(excludeGlob);
         var matches = matcher.GetResultsInFullPath(rootFolder.Fs, rootFolder.Path);
-        return matches.Select(f => rootFolder.Fs.CreateFile(f));
+        return matches.Select(f => rootFolder.Fs.NewFilePath(f));
     }
 
 }

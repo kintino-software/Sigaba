@@ -12,7 +12,7 @@ internal sealed partial class PrivateKeyLocationResolver(
 {
     FilePath IPrivateKeyLocationResolver.GetDefaultFilePath(Guid projectId)
     {
-        return fs.CreateDir($"{Constants.SigabaSystemDir}/{projectId:N}").CombineAsFile(Constants.PrivateKeyFileName);
+        return fs.NewDirPath($"{Constants.SigabaSystemDir}/{projectId:N}").CombineAsFile(Constants.PrivateKeyFileName);
     }
 
     FilePath IPrivateKeyLocationResolver.ResolveCurrentLocation(Guid projectId)
@@ -26,7 +26,7 @@ internal sealed partial class PrivateKeyLocationResolver(
 
         foreach (var dir in dirStrings.Where(x => !string.IsNullOrEmpty(x)).Cast<string>())
         {
-            var filePath = fs.CreateDir(dir).CombineAsFile(Constants.PrivateKeyFileName);
+            var filePath = fs.NewDirPath(dir).CombineAsFile(Constants.PrivateKeyFileName);
             logger.LogDebug("Checking {filePath} for private key...", filePath);
             if (filePath.Exists)
             {

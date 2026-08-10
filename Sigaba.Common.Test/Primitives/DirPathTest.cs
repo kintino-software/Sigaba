@@ -2,27 +2,30 @@
 
 namespace Sigaba.Primitives;
 
-public class DirPathTest
+using Xsf = MockUnixSupport;
+
+public sealed class DirPathTest
 {
     private readonly MockFileSystem fs = new();
 
     // instantiation
 
     [Theory]
-    [InlineData("a")]
-    [InlineData("a/b")]
-    [InlineData("a\\b")]
-    [InlineData("a\\b/c\\d/e")]
-    [InlineData("a|b")] // variadic
-    [InlineData("a|b|c|d")] // variadic
-    public void Should_instantiate(string path)
+    [InlineData("a", "a")]
+    [InlineData("a/b", "a|b")]
+    [InlineData("a\\b", "a|b")]
+    [InlineData("\\a\\b", "a|b")]
+    [InlineData("a\\b/c\\d/e", "a|b|c|d|e")]
+    [InlineData("a|b", "a|b")] // variadic
+    [InlineData("a|b|c|d", "a|b|c|d")] // variadic
+    public void Should_instantiate(string path, string expectedPath)
     {
-        var parts = path.Split('/');
-        var obj = new DirPath(fs, parts);
+        // split the path by '|' to simulate variadic parameters
+        var obj = new DirPath(fs, path.Split('|'));
 
         obj.Should().NotBeNull();
         obj.Fs.Should().Be(fs);
-        obj.Path.Should().Be(fs.Path.Combine(parts));
+        obj.Path.Should().Be(fs.Path.Combine(expectedPath.Split('|')));
     }
 
     [Fact]
@@ -57,6 +60,20 @@ public class DirPathTest
 
         existing.Exists.Should().BeTrue();
         nonExisting.Exists.Should().BeFalse();
+    }
+
+    // IsRooted
+
+    [Theory]
+    [InlineData("C:/a/b/c", true)]
+    [InlineData("/a/b/c", true)]
+    [InlineData("\\a\\b\\c", true)]
+    [InlineData("a/b/c", false)]
+    [InlineData("C/a/b/c", false)]
+    public void Should_know_if_it_is_rooted_or_not(string path, bool expectedIsRooted)
+    {
+        var dir = new DirPath(fs, Xsf.Path(path));
+        dir.IsRooted.Should().Be(expectedIsRooted);
     }
 
     // Parent
@@ -157,6 +174,7 @@ public class DirPathTest
         result.Should().BeFalse();
         file.Should().BeNull();
     }
+
 
 }
 

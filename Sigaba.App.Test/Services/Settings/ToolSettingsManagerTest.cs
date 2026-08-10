@@ -16,7 +16,7 @@ public class SigabaFileManagerTest(Fixture fixture) : BaseTest
         var instances = fixture.AllImplementationsInstancesOfSigabaFile;
         foreach (var instance in instances)
         {
-            var filePath = Fs.CreateFile($"{Guid.NewGuid()}.json");
+            var filePath = Fs.NewFilePath($"{Guid.NewGuid()}.json");
 
             var action = () => service.SaveAsync(instance, filePath);
 
@@ -31,7 +31,7 @@ public class SigabaFileManagerTest(Fixture fixture) : BaseTest
         var instances = fixture.AllImplementationsInstancesOfSigabaFile;
         foreach (var instance in instances)
         {
-            var filePath = Fs.CreateFile($"{Guid.NewGuid()}.json");
+            var filePath = Fs.NewFilePath($"{Guid.NewGuid()}.json");
             await service.SaveAsync(instance, filePath);
 
             var actual = await service.LoadAsync(filePath);

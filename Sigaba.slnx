@@ -31,5 +31,6 @@
     <File Path=".runsettings" />
     <File Path="global.json" />
     <File Path="readme.md" />
+    <File Path="testEnvironments.json" />
   </Folder>
 </Solution>
