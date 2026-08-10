@@ -1,4 +1,4 @@
-﻿namespace Sigaba.App.Services.Settings;
+﻿namespace Sigaba.App.TestHelpers;
 
 internal static class InterfacesInspector
 {
