@@ -6,7 +6,6 @@ public abstract class BasePath(IFileSystem fs, params string[] parts) : IEquatab
 {
     public IFileSystem Fs { get; } = fs;
     public string Path { get; } = SanitizeParts(parts);
-    public bool IsRooted => Fs.Path.IsPathRooted(Path);
 
     private static string SanitizeParts(string[] parts)
     {

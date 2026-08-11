@@ -62,19 +62,6 @@ public sealed class DirPathTest
         nonExisting.Exists.Should().BeFalse();
     }
 
-    // IsRooted
-
-    [Theory]
-    [InlineData("C:/a/b/c", true)]
-    [InlineData("/a/b/c", true)]
-    [InlineData("\\a\\b\\c", true)]
-    [InlineData("a/b/c", false)]
-    [InlineData("C/a/b/c", false)]
-    public void Should_know_if_it_is_rooted_or_not(string path, bool expectedIsRooted)
-    {
-        var dir = new DirPath(fs, Xsf.Path(path));
-        dir.IsRooted.Should().Be(expectedIsRooted);
-    }
 
     // Parent
 

@@ -1,4 +1,5 @@
-﻿using System.IO.Abstractions.TestingHelpers;
+﻿using System.ComponentModel;
+using System.IO.Abstractions.TestingHelpers;
 
 namespace Sigaba.Cli.Cases;
 
