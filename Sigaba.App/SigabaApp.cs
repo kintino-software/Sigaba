@@ -30,7 +30,7 @@ internal partial class SigabaApp : ISigabaApp
 
         var sigabaFile = sigabaFileManager.CreateDefault(publicKey);
 
-        await privateKeyManager.SaveAsync(sigabaFile.ProjectId, privateKey, options.PrivateKeyPassword);
+        await privateKeyManager.SaveAsync(sigabaFile.ProjectId, privateKey, options.PrivateKeyPassword, options.SigabaFileOutputDir);
         await sigabaFileManager.SaveAsync(sigabaFile, options.SigabaFileOutputDir.CombineAsFile(Constants.SigabaFileName));
     }
 
@@ -44,10 +44,10 @@ internal partial class SigabaApp : ISigabaApp
         }
     }
 
-    async Task ISigabaApp.DecipherFilesAsync(DirPath referenceFolderPath, string password)
+    async Task ISigabaApp.DecipherFilesAsync(DirPath referenceFolderPath, string password, DirPath? privateKeyPreferedLocation)
     {
         var sigabaFile = await GetNearestSigabaFile(referenceFolderPath, out var sigabaFilePath);
-        var privateKey = await privateKeyManager.LoadAsync(sigabaFile.ProjectId, password);
+        var privateKey = await privateKeyManager.LoadAsync(sigabaFile.ProjectId, password, privateKeyPreferedLocation);
 
         foreach (var filePath in sigabaFile.GetTargetFiles(sigabaFilePath.Parent()))
         {

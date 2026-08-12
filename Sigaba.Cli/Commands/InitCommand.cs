@@ -1,12 +1,12 @@
 ﻿using Sigaba.App;
-using Sigaba.Cli.Interactive;
+using Spectre.Console;
 using Spectre.Console.Cli;
 using System.ComponentModel;
 using System.IO.Abstractions;
 
 namespace Sigaba.Cli.Commands;
 
-internal class InitCommand(ISigabaApp app, IFileSystem fs, InteractiveInit interactiveInit) : AsyncCommand<InitCommand.Settings>
+internal class InitCommand(ISigabaApp app, IFileSystem fs, IAnsiConsole console) : AsyncCommand<InitCommand.Settings>
 {
     public class Settings : CommandSettings
     {
@@ -25,17 +25,44 @@ internal class InitCommand(ISigabaApp app, IFileSystem fs, InteractiveInit inter
 
     protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
-        string? privateKeyPassword = null;
-        string? privateKeyDir = null;
+        if (settings.NonInteractive)
+        {
+            await ExecuteNonInteractiveAsync(settings);
+        }
+        else
+        {
+            await ExecuteInteractiveAsync();
+        }
+        return 0;
+    }
 
-        interactiveInit.Run().Deconstruct(out privateKeyPassword, out privateKeyDir);
+    private async Task ExecuteNonInteractiveAsync(Settings settings)
+    {
+        if (string.IsNullOrWhiteSpace(settings.Password))
+        {
+            console.WriteLine("Error: Password is required in non-interactive mode.");
+            return;
+        }
 
         await app.InitAsync(new()
         {
-            PrivateKeyPassword = privateKeyPassword,
+            PrivateKeyPassword = settings.Password,
             SigabaFileOutputDir = fs.NewCwdDirPath(),
-
+            PrivateKeySaveLocation = string.IsNullOrWhiteSpace(settings.PrivateKeyOutputDir) ? null : fs.NewDirPath(settings.PrivateKeyOutputDir)
         });
-        return 0;
     }
+
+    private async Task ExecuteInteractiveAsync()
+    {
+        var password = console.PromptForPasswordDefinition("Enter a password to protect the private key:");
+        var privateKeyDir = console.PromptForInput("Enter the output directory for the private key (leave empty to save to default location):");
+
+        await app.InitAsync(new()
+        {
+            PrivateKeyPassword = password,
+            SigabaFileOutputDir = fs.NewCwdDirPath(),
+            PrivateKeySaveLocation = string.IsNullOrWhiteSpace(privateKeyDir) ? null : fs.NewDirPath(privateKeyDir)
+        });
+    }
+
 }

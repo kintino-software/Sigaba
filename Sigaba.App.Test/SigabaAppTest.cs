@@ -36,12 +36,13 @@ public class SigabaAppTest : BaseTest
         {
             PrivateKeyPassword = "password",
             SigabaFileOutputDir = sigabaFileOutputDir,
+            PrivateKeySaveLocation = Fs.NewDirPath("dir")
         });
 
         cipher.Received().GenerateKeys();
         sigabaFileManager.Received().CreateDefault(publicKey);
         await sigabaFileManager.Received().SaveAsync(Arg.Any<ISigabaFile>(), sigabaFileOutputDir.CombineAsFile(Constants.SigabaFileName));
-        await privateKeyManager.Received().SaveAsync(Arg.Any<Guid>(), privateKey, "password");
+        await privateKeyManager.Received().SaveAsync(Arg.Any<Guid>(), privateKey, "password", Arg.Any<DirPath>());
     }
 
     // CipherFilesAsync

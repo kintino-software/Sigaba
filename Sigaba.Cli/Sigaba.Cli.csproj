@@ -1,5 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <AssemblyName>Sigaba</AssemblyName>
@@ -10,7 +9,6 @@
     <Nullable>enable</Nullable>
     <NoWarn>CA1873;IDE0290</NoWarn>
   </PropertyGroup>
-
   <PropertyGroup>
     <PackageId>Sigaba</PackageId>
     <Version>0.0.0-alpha</Version>
@@ -31,6 +29,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Sigaba.Cli.IntegrationTest" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Using Include="Sigaba.Cli.Adaptors" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <Content Include="../README.md" Pack="true" PackagePath="\">
       <Visible>false</Visible>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -40,12 +47,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
-  <ItemGroup>
-    <InternalsVisibleTo Include="Sigaba.Cli.IntegrationTest" />
-    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
-  </ItemGroup>
-
+  
   <ItemGroup>
     <PackageReference Include="CliWrap" Version="3.10.4" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.10" />
@@ -54,9 +56,8 @@
     <PackageReference Include="Spectre.Console.Cli" Version="0.55.0" />
     <PackageReference Include="System.IO.Abstractions" Version="22.2.0" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <ProjectReference Include="..\Sigaba.App\Sigaba.App.csproj" />
   </ItemGroup>
-
 </Project>

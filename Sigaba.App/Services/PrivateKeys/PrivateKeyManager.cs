@@ -6,22 +6,15 @@ using Sigaba.Services;
 
 namespace Sigaba.App.Services.PrivateKeys;
 
-internal partial class PrivateKeyManager(
+internal class PrivateKeyManager(
     ICipher cipher,
     IPrivateKeyLocationResolver privateKeyLocationResolver,
-    ILogger<PrivateKeyManager> logger)
-{
-    
-   
-
-}
-
-internal partial class PrivateKeyManager : IPrivateKeyManager
+    ILogger<PrivateKeyManager> logger) : IPrivateKeyManager
 {
     async Task IPrivateKeyManager.SaveAsync(Guid projectId, PrivateKey privateKey, string password, DirPath? customLocation)
     {
         var destination = privateKeyLocationResolver.GetSavePath(projectId, customLocation);
-        if(destination.Exists)
+        if (destination.Exists)
             throw new InvalidOperationException($"Private key already exists at: {destination}");
 
         var encryptedPrivateKey = cipher.EncryptWithPassword(privateKey, password);

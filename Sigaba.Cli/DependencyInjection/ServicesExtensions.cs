@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sigaba.App;
-using Sigaba.Cli.Interactive;
 using Sigaba.Cli.Services;
 using Spectre.Console;
 
@@ -20,8 +19,6 @@ internal static class ServicesExtensions
                     cfg.ColorBehavior = Microsoft.Extensions.Logging.Console.LoggerColorBehavior.Enabled;
                     cfg.TimestampFormat = "[yyyy-MM-dd HH:mm:ss] ";
                 }));
-
-        services.AddSingleton<InteractiveInit>();
 
         return services;
     }
