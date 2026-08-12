@@ -5,36 +5,74 @@ using System.IO.Abstractions;
 
 namespace Sigaba.App.Services.PrivateKeys;
 
-internal sealed partial class PrivateKeyLocationResolver(
+internal partial class PrivateKeyLocationResolver(
     IFileSystem fs,
     IEnvironmentVariables env,
-    ILogger<PrivateKeyLocationResolver> logger) : IPrivateKeyLocationResolver
+    ILogger<PrivateKeyLocationResolver> logger)
 {
-    FilePath IPrivateKeyLocationResolver.GetDefaultFilePath(Guid projectId)
+    private FilePath GetPathFromSystemFolderWithId(Guid guid)
     {
-        return fs.NewDirPath($"{Constants.SigabaSystemDir}/{projectId:N}").CombineAsFile(Constants.PrivateKeyFileName);
+        return fs.NewFilePath($"{Constants.SigabaSystemDir}/{guid:N}/{Constants.PrivateKeyFileName}");
     }
 
-    FilePath IPrivateKeyLocationResolver.ResolveCurrentLocation(Guid projectId)
+    private FilePath? GetPathFromEnvVar()
     {
-        string?[] dirStrings = [
-            fs.Directory.GetCurrentDirectory(),
-            env.GetEnvironmentVariable(Constants.PrivateKeyDirEnvVarKey),
-            $"{Constants.SigabaSystemDir}/{projectId:N}",
-            Constants.SigabaSystemDir
-        ];
+        var envVar = env.GetEnvironmentVariable(Constants.PrivateKeyDirEnvVarKey);
+        if (string.IsNullOrEmpty(envVar))
+            return null;
 
-        foreach (var dir in dirStrings.Where(x => !string.IsNullOrEmpty(x)).Cast<string>())
+        return fs.NewFilePath($"{envVar}/{Constants.PrivateKeyFileName}");
+    }
+
+    private FilePath GetPathFromCurrentDir()
+    {
+        return fs.NewFilePath($"{fs.Directory.GetCurrentDirectory()}/{Constants.PrivateKeyFileName}");
+    }
+
+    private static FilePath GetPathFromCustomLocation(DirPath customLocation)
+    {
+        return customLocation.CombineAsFile(Constants.PrivateKeyFileName);
+    }
+
+    private IEnumerable<FilePath> GetFallbackLocations(Guid projectId)
+    {
+        // #1: if the env var is set, the user explicitly wants to use that path, so we should check it first
+        var envVarPath = GetPathFromEnvVar(); 
+        if (envVarPath != null)
+            yield return envVarPath;
+        
+        // #2: the file is in the cwd, so looks like the user is running the app from the project folder, so we should check it next
+        yield return GetPathFromCurrentDir();
+        
+        // #3: the file is in the system folder with the project id. as it is a very specific location, we should check it next
+        yield return GetPathFromSystemFolderWithId(projectId);
+        
+    }
+}
+
+internal partial class PrivateKeyLocationResolver : IPrivateKeyLocationResolver
+{
+    FilePath IPrivateKeyLocationResolver.GetLoadPath(Guid projectId, DirPath? customLocation)
+    {
+        if(customLocation != null)
         {
-            var filePath = fs.NewDirPath(dir).CombineAsFile(Constants.PrivateKeyFileName);
-            logger.LogDebug("Checking {filePath} for private key...", filePath);
-            if (filePath.Exists)
-            {
-                logger.LogInformation("Found private key at {filePath}", filePath);
-                return filePath;
-            }
+            var path = GetPathFromCustomLocation(customLocation);
+            if(!path.Exists)
+                throw new FileNotFoundException($"The private key file was not found in the custom location: {path}");
+            return path;
         }
 
-        throw new Exception("Private key file not found in any of the expected locations.");
+        foreach (var path in GetFallbackLocations(projectId))
+        {
+            logger.LogInformation("Checking for private key in fallback location: {path}", path);
+            if (path.Exists)
+                return path;
+        }
+        throw new FileNotFoundException("Private key not found in any of the fallback locations.");
+    }
+
+    FilePath IPrivateKeyLocationResolver.GetSavePath(Guid projectId, DirPath? customLocation)
+    {
+        return customLocation == null ? GetPathFromSystemFolderWithId(projectId) : GetPathFromSystemFolderWithId(projectId);
     }
 }

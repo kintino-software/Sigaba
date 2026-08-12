@@ -4,7 +4,7 @@ namespace Sigaba.App.Services.PrivateKeys;
 
 internal interface IPrivateKeyLocationResolver
 {
-    FilePath ResolveCurrentLocation(Guid projectId);
+    FilePath GetSavePath(Guid projectId, DirPath? customLocation);
+    FilePath GetLoadPath(Guid projectId, DirPath? customLocation);
 
-    FilePath GetDefaultFilePath(Guid projectId);
 }

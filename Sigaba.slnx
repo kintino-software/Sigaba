@@ -34,5 +34,4 @@
     <File Path="testEnvironments.json" />
   </Folder>
   <File Path="Directory.Build.props" />
-  <File Path="Directory.Build.props" />
 </Solution>
