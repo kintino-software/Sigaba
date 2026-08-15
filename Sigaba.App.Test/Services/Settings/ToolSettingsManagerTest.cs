@@ -9,34 +9,43 @@ public class SigabaFileManagerTest(Fixture fixture) : BaseTest
         return new SigabaFileManager();
     }
 
+    // SaveAsync
+
     [Fact]
     public async Task Should_save_sigaba_file()
     {
+        var projectRootArg = Fs.AddDirPath("projectRoot");
         var service = CreateService();
         var instances = fixture.AllImplementationsInstancesOfSigabaFile;
+
         foreach (var instance in instances)
         {
             var filePath = Fs.NewFilePath($"{Guid.NewGuid()}.json");
 
-            var action = () => service.SaveAsync(instance, filePath);
+            var action = () => service.SaveAsync(instance, projectRootArg);
 
             await action.Should().NotThrowAsync();
         }
     }
 
+    // LoadAsync
+
     [Fact]
     public async Task Should_load_sigaba_file()
     {
+        var projectRootArg = Fs.AddDirPath("projectRoot");
         var service = CreateService();
         var instances = fixture.AllImplementationsInstancesOfSigabaFile;
+
         foreach (var instance in instances)
         {
-            var filePath = Fs.NewFilePath($"{Guid.NewGuid()}.json");
-            await service.SaveAsync(instance, filePath);
+            var saveResult = await service.SaveAsync(instance, projectRootArg);
 
-            var actual = await service.LoadAsync(filePath);
+            var (actualSigabaFile, actualFilePath) = await service.LoadAsync(projectRootArg);
 
-            actual.Should().BeEquivalentTo(instance);
+            actualSigabaFile.Should().BeEquivalentTo(instance);
+            actualFilePath.Should().Be(saveResult.OutputPath);
+
         }
     }
 }

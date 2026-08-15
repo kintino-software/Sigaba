@@ -3,9 +3,9 @@ using Sigaba.Primitives;
 
 namespace Sigaba.App.Services.SigabaFiles;
 
-internal partial class SigabaFileManager : ISigabaFileManager
+internal class SigabaFileManager : ISigabaFileManager
 {
-    async Task ISigabaFileManager.SaveAsync(ISigabaFile sigabaFile, FilePath filePath)
+    async Task<SigabaFileSaveResult> ISigabaFileManager.SaveAsync(ISigabaFile sigabaFile, DirPath projectRoot)
     {
         var content = sigabaFile switch
         {
@@ -13,21 +13,29 @@ internal partial class SigabaFileManager : ISigabaFileManager
             _ => throw new NotSupportedException($"ToolSettings version {sigabaFile.Version} is not supported.")
         };
 
+        var filePath = projectRoot.CombineAsFile(Constants.SigabaFileName);
+        if (filePath.Exists)
+            throw new InvalidOperationException($"File '{filePath}' already exists. Overwriting is not allowed.");
+
         await filePath.WriteAsync(content, overwrite: false); // not allowed to overwrite
+
+        return new SigabaFileSaveResult(filePath);
     }
 
-    async Task<ISigabaFile?> ISigabaFileManager.LoadAsync(FilePath filePath)
+    async Task<SigabaFileLoadResult> ISigabaFileManager.LoadAsync(DirPath referenceFolder)
     {
-        if (!filePath.Exists)
-            return null;
+        if (!referenceFolder.TryGetNearestFileWithNameGoingUp(Constants.SigabaFileName, out var sigabaFilePath))
+            throw new InvalidOperationException($"Could not find '{Constants.SigabaFileName}' in '{referenceFolder}' or it's parents.");
 
-        var content = await filePath.ReadAsync();
+        var content = await sigabaFilePath.ReadAsync();
         var version = JsonHelper.ReadVersionFromJson(content);
-        return version switch
+        ISigabaFile sigabaFile = version switch
         {
             1 => SigabaFileV1.Deserialize(content),
             _ => throw new NotSupportedException($"ToolSettings version {version} is not supported.")
         };
+
+        return new SigabaFileLoadResult(sigabaFile, sigabaFilePath);
     }
 
     ISigabaFile ISigabaFileManager.CreateDefault(PublicKey publicKey)
