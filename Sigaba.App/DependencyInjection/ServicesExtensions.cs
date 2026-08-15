@@ -22,8 +22,9 @@ public static class ServicesExtensions
 
         // local
         services
-            .AddSingleton<ISigabaFileManager, SigabaFileManager>()
             .AddSingleton<IPrivateKeyManager, PrivateKeyManager>()
+            .AddSingleton<IPrivateKeyPathResolver, PrivateKeyPathResolver>()
+            .AddSingleton<ISigabaFileManager, SigabaFileManager>()
             .AddSingleton<ISigabaApp, SigabaApp>();
 
         return services;

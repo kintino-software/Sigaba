@@ -11,7 +11,7 @@ internal partial class PrivateKeyManager(ICipher cipher, IPrivateKeyPathResolver
         {
             throw new InvalidOperationException($"Private key already exists at {path}.");
         }
-        var encryptedPrivateKey = cipher.EncryptWithPassword(privateKey, password);
+        var encryptedPrivateKey = cipher.EncryptWithPassword(new PlainData(privateKey.Bytes), password);
         var content = encryptedPrivateKey.ToBase64();
         await path.WriteAsync(content, overwrite: false, createFolders: true);
     }

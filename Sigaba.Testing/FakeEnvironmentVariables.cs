@@ -8,7 +8,11 @@ public class FakeEnvironmentVariables : IEnvironmentVariables
 
     public string GetEnvironmentVariable(string variableName)
     {
-        return variables[variableName];
+        if (variables.TryGetValue(variableName, out var value))
+        {
+            return value;
+        }
+        return null;
     }
 
     public void SetEnvironmentVariable(string variableName, string value)

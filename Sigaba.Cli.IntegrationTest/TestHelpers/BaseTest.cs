@@ -32,5 +32,4 @@ public abstract class BaseTest
         }));
         App.Configure(cfg => CommandAppSetup.Configurator(cfg, null));
     }
-
 }

@@ -43,7 +43,7 @@ public class PrivateKeyManagerTest : BaseTest
 
         await service.SaveAsync(privateKeyArg, projectIdArg, passwordArg);
 
-        cipher.Received().EncryptWithPassword(privateKeyArg, passwordArg);
+        cipher.Received().EncryptWithPassword(new PlainData(privateKeyArg.Bytes), passwordArg);
         filePath.Exists.Should().BeTrue();
     }
 
