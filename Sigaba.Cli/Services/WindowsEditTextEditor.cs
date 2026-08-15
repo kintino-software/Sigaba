@@ -1,6 +1,6 @@
 ﻿using Sigaba.App;
 using Sigaba.Primitives;
-using System.Text;
+using System.Diagnostics;
 
 namespace Sigaba.Cli.Services;
 
@@ -8,17 +8,14 @@ internal class WindowsEditTextEditor : ITextEditor
 {
     public async Task EditFile(FilePath filePath)
     {
-        var sb = new StringBuilder();
-        var result = await CliWrap.Cli.Wrap("edit")
-            .WithArguments(filePath.Path)
-            .WithValidation(CliWrap.CommandResultValidation.None)
-            .WithStandardOutputPipe(CliWrap.PipeTarget.ToStringBuilder(sb))
-            .WithStandardErrorPipe(CliWrap.PipeTarget.ToStringBuilder(sb))
-            .ExecuteAsync();
-
-        if (!result.IsSuccess)
+        try
         {
-            throw new InvalidOperationException(sb.ToString());
+            var process = Process.Start("edit", $"\"{filePath.Path}\"");
+            await process.WaitForExitAsync();
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("Error editing file.", ex);
         }
     }
 }

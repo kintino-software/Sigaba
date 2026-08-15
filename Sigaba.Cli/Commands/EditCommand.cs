@@ -9,7 +9,7 @@ internal class EditCommand(ISigabaApp app, IFileSystem fs, ITextEditor textEdito
 {
     public class EditCommandSettings : CommandSettings
     {
-        [CommandOption("-f|--file")]
+        [CommandArgument(0, "<file>")]
         [Description("The path to the file to edit.")]
         public string File { get; init; } = null!;
     }

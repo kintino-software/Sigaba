@@ -16,16 +16,15 @@ public static class CommandAppSetup
         services.AddCliApp();
         additionalServiceSetup?.Invoke(services);
         return new SpectreTypeRegistrar(services);
-
     }
 
     public static void Configurator(IConfigurator config, Action<IConfigurator>? additionalConfig = null)
     {
         config.PropagateExceptions();
         config.AddCommand<InitCommand>("init").WithDescription("Sets up the initial configuration.");
-        config.AddCommand<EncryptCommand>("encrypt").WithDescription("Encrypts the specified configuration.");
-        config.AddCommand<DecryptCommand>("decrypt").WithDescription("Decrypts the specified configuration.");
-        config.AddCommand<EditCommand>("edit").WithDescription("Edits the specified configuration.");
+        config.AddCommand<EncryptCommand>("encrypt").WithDescription("Encrypts all files defined in the configuration.");
+        config.AddCommand<DecryptCommand>("decrypt").WithDescription("Decrypts all files defined in the configuration.");
+        config.AddCommand<EditCommand>("edit").WithDescription("Opens the specified file and encrypts it after editing.");
         additionalConfig?.Invoke(config);
     }
 
