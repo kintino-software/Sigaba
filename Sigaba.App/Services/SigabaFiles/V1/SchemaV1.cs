@@ -17,7 +17,7 @@ public record SchemaV1
     [JsonPropertyName("version")]
     public int Version { get; } = 1;
     [JsonPropertyName("projectId")]
-    public required Guid ProjectId { get; init; }
+    public required string ProjectId { get; init; }
     [JsonPropertyName("publicKey")]
     public required string PublicKeyBase64 { get; init; }
 

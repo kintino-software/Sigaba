@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Sigaba.Crypto;
+﻿using Sigaba.Crypto;
 using Sigaba.Primitives;
 
 namespace Sigaba.App.Services.PrivateKeys;
@@ -8,54 +7,64 @@ public class PrivateKeyManagerTest : BaseTest
 {
     private readonly ICipher cipher = Substitute.For<ICipher>();
     private readonly LoggerMock<PrivateKeyManager> logger = new();
-    private readonly IPrivateKeyLocationResolver locationResolver = Substitute.For<IPrivateKeyLocationResolver>();
 
     private IPrivateKeyManager CreateService()
     {
-        return new PrivateKeyManager(cipher, locationResolver, logger);
-    }
+        cipher.EncryptWithPassword(default, default).ReturnsForAnyArgs(EncryptedData.Any());
+        cipher.DecryptWithPassword(default, default).ReturnsForAnyArgs(PlainData.Any());
 
-    private static PrivateKey CreatePrivateKey(params byte[] data)
-    {
-        return new PrivateKey(data);
+        return new PrivateKeyManager(cipher);
     }
 
     // SaveAsync
 
     [Fact]
-    public async Task SaveAsync_should_save_private_key_default_folder()
+    public async Task Should_save_to_file_system()
     {
-        var projectIdArg = Guid.NewGuid();
         var privateKeyArg = PrivateKey.Any();
+        var filePathArg = Fs.NewFilePath("dir/private.key");
         var passwordArg = "password";
-        DirPath customLocationArg = Fs.NewDirPath("dir");
-        var returnedFilePath = Fs.NewFilePath("private.key");
         var service = CreateService();
-        cipher.EncryptWithPassword(privateKeyArg, passwordArg).Returns(EncryptedData.Any());
 
-        await service.SaveAsync(projectIdArg, privateKeyArg, passwordArg, customLocationArg);
+        await service.SaveAsync(privateKeyArg, filePathArg, passwordArg);
 
         cipher.Received().EncryptWithPassword(privateKeyArg, passwordArg);
-        returnedFilePath.Exists.Should().BeTrue();
-        logger.VerifyLog(LogLevel.Information, $"Private key saved to: {returnedFilePath.Path}");
+        Fs.FileExists(filePathArg.Path).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Should_throw_when_saving_to_existing_file()
+    {
+        var privateKeyArg = PrivateKey.Any();
+        var filePathArg = Fs.NewFilePath("dir/private.key");
+        var passwordArg = "password";
+        var service = CreateService();
+
+        Fs.AddEmptyFile(filePathArg.Path);
+        var action = () => service.SaveAsync(privateKeyArg, filePathArg, passwordArg);
+
+        await action.Should().ThrowAsync<InvalidOperationException>().WithMessage($"Private key already exists at:*");
     }
 
     // LoadAsync
 
     [Fact]
-    public async Task LoadAsync_should_return_privateKey_when_it_exists()
+    public async Task Should_load_private_key_from_file_system()
     {
-        locationResolver.GetLoadPath(default, default).ReturnsForAnyArgs(Fs.NewFilePath("dir/private.key"));
-        cipher.DecryptWithPassword(default, default).Returns(PlainData.Any());
+        var filePathArg = Fs.NewFilePath("dir/private.key");
+        var passwordArg = "password";
         var service = CreateService();
+        await service.SaveAsync(PrivateKey.Any(), filePathArg, passwordArg);
 
         //
 
-        var actual = await service.LoadAsync(Guid.NewGuid(), "password", Fs.NewDirPath("dir"));
+        var actual = await service.LoadAsync(filePathArg, passwordArg);
 
         //
 
         actual.Should().NotBeNull();
+        cipher.Received().DecryptWithPassword(Arg.Any<EncryptedData>(), passwordArg);
+
 
     }
 

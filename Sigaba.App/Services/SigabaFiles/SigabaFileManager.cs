@@ -16,8 +16,11 @@ internal partial class SigabaFileManager : ISigabaFileManager
         await filePath.WriteAsync(content, overwrite: false); // not allowed to overwrite
     }
 
-    async Task<ISigabaFile> ISigabaFileManager.LoadAsync(FilePath filePath)
+    async Task<ISigabaFile?> ISigabaFileManager.LoadAsync(FilePath filePath)
     {
+        if (!filePath.Exists)
+            return null;
+
         var content = await filePath.ReadAsync();
         var version = JsonHelper.ReadVersionFromJson(content);
         return version switch

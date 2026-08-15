@@ -4,6 +4,7 @@ using Sigaba.App.Services.SigabaFiles;
 using Sigaba.Crypto;
 using Sigaba.Documents;
 using Sigaba.Primitives;
+using Sigaba.Services;
 
 namespace Sigaba.App;
 
@@ -14,11 +15,14 @@ public class SigabaAppTest : BaseTest
     private readonly ISigabaFileManager sigabaFileManager = Substitute.For<ISigabaFileManager>();
     private readonly IPrivateKeyManager privateKeyManager = Substitute.For<IPrivateKeyManager>();
     private readonly ISigabaFile sigabaFile = Substitute.For<ISigabaFile>();
+    private readonly IEnvironmentVariables env = Substitute.For<IEnvironmentVariables>();
 
     private ISigabaApp CreateService()
     {
         sigabaFileManager.LoadAsync(Arg.Any<FilePath>()).Returns(sigabaFile);
-        return new SigabaApp(cipher, sigabaFileManager, privateKeyManager, fileCipher);
+        cipher.GenerateKeys().Returns((PublicKey.Any(), PrivateKey.Any()));
+
+        return new SigabaApp(Fs, env, cipher, sigabaFileManager, privateKeyManager, fileCipher);
     }
 
     // InitAsync
@@ -26,23 +30,15 @@ public class SigabaAppTest : BaseTest
     [Fact]
     public async Task Should_initialize_context()
     {
-        var publicKey = PublicKey.Any();
-        var privateKey = PrivateKey.Any();
-        cipher.GenerateKeys().Returns((publicKey, privateKey));
-        var sigabaFileOutputDir = Fs.NewDirPath("a/b/c");
+        var optionsArg = new InitializationOptions(Fs.NewDirPath(Fs.Directory.GetCurrentDirectory()), "password");
         var service = CreateService();
 
-        await service.InitAsync(new()
-        {
-            PrivateKeyPassword = "password",
-            SigabaFileOutputDir = sigabaFileOutputDir,
-            PrivateKeySaveLocation = Fs.NewDirPath("dir")
-        });
+        await service.InitAsync(optionsArg);
 
         cipher.Received().GenerateKeys();
-        sigabaFileManager.Received().CreateDefault(publicKey);
-        await sigabaFileManager.Received().SaveAsync(Arg.Any<ISigabaFile>(), sigabaFileOutputDir.CombineAsFile(Constants.SigabaFileName));
-        await privateKeyManager.Received().SaveAsync(Arg.Any<Guid>(), privateKey, "password", Arg.Any<DirPath>());
+        sigabaFileManager.Received().CreateDefault(Arg.Any<PublicKey>());
+        await sigabaFileManager.Received().SaveAsync(Arg.Any<ISigabaFile>(), Arg.Any<FilePath>());
+
     }
 
     // CipherFilesAsync

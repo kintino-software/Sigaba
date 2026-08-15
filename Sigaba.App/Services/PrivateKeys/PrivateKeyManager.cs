@@ -1,38 +1,29 @@
-﻿using System.IO.Abstractions;
-using Microsoft.Extensions.Logging;
-using Sigaba.Crypto;
+﻿using Sigaba.Crypto;
 using Sigaba.Primitives;
-using Sigaba.Services;
 
 namespace Sigaba.App.Services.PrivateKeys;
 
-internal class PrivateKeyManager(
-    ICipher cipher,
-    IPrivateKeyLocationResolver privateKeyLocationResolver,
-    ILogger<PrivateKeyManager> logger) : IPrivateKeyManager
+internal class PrivateKeyManager(ICipher cipher) : IPrivateKeyManager
 {
-    async Task IPrivateKeyManager.SaveAsync(Guid projectId, PrivateKey privateKey, string password, DirPath? customLocation)
+    async Task IPrivateKeyManager.SaveAsync(PrivateKey privateKey, FilePath path, string password)
     {
-        var destination = privateKeyLocationResolver.GetSavePath(projectId, customLocation);
-        if (destination.Exists)
-            throw new InvalidOperationException($"Private key already exists at: {destination}");
+        if (path.Exists)
+            throw new InvalidOperationException($"Private key already exists at: {path}");
 
         var encryptedPrivateKey = cipher.EncryptWithPassword(privateKey, password);
         var content = encryptedPrivateKey.ToBase64();
-        await destination.WriteAsync(content, overwrite: false, createFolders: true);
-
-        logger.LogInformation("Private key saved to: {destination}", destination);
+        await path.WriteAsync(content, overwrite: false, createFolders: true);
     }
 
-    async Task<PrivateKey> IPrivateKeyManager.LoadAsync(Guid projectId, string password, DirPath? customLocation)
+    async Task<PrivateKey?> IPrivateKeyManager.LoadAsync(FilePath path, string password)
     {
-        var filePath = privateKeyLocationResolver.GetLoadPath(projectId, customLocation);
+        if (!path.Exists)
+            return null;
 
-        var privateKeyContent = await filePath.ReadAsync();
+        var privateKeyContent = await path.ReadAsync();
         var encryptedPrivateKey = EncryptedData.FromBase64(privateKeyContent);
         var plainPrivateKey = cipher.DecryptWithPassword(encryptedPrivateKey, password);
 
-        logger.LogInformation("Private key loaded from: {filePath}", filePath);
         return new PrivateKey(plainPrivateKey);
     }
 }

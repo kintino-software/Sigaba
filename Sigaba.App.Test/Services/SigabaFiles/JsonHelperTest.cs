@@ -32,7 +32,6 @@ public class JsonHelperTest
     public void ReadVersionFromJson_should_return_minus_1_when_json_is_malformed()
     {
         var json = """
-            
                 malformed json
             }
             """;

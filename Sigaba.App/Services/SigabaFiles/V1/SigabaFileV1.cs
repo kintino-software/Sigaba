@@ -10,7 +10,7 @@ internal partial class SigabaFileV1(
     string fieldRegexPattern,
     string[] includeGlob,
     string[] excludeGlob,
-    Guid projectId,
+    string projectId,
     PublicKey publicKey)
 {
     private readonly Lazy<Regex> lazyFieldNameRegex = new(() => new Regex(fieldRegexPattern, RegexOptions.IgnoreCase));
@@ -36,7 +36,7 @@ internal partial class SigabaFileV1(
     public static SigabaFileV1 CreateDefault(PublicKey publicKey)
     {
         return new SigabaFileV1(
-            projectId: Guid.NewGuid(),
+            projectId: Guid.NewGuid().ToString("N"),
             publicKey: publicKey,
             fieldRegexPattern: @"^.*_secret$",
             includeGlob: ["**/*.secrets.json"],
@@ -64,7 +64,7 @@ internal partial class SigabaFileV1 : ISigabaFile
 {
     int ISigabaFile.Version { get; } = 1;
 
-    Guid ISigabaFile.ProjectId { get => projectId; }
+    string ISigabaFile.ProjectId { get => projectId; }
 
     PublicKey ISigabaFile.PublicKey { get => this.currentPublicKey; set => this.currentPublicKey = value; }
 
