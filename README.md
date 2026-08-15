@@ -31,14 +31,14 @@ The tool uses asymmetric encryption, which means that you can share a public key
 
 ## Features
 
-1. Encrypts any kind of value: strings, numbers, booleans, arrays and even nulls (but it does not work with nested objects - see below).
+1. Encrypts any kind of values (strings, numbers, booleans, arrays and even nulls) except objects. You can encrypt objects property values, but not entire objects (see more below).
 2. Preserves comments and formatting after decryption and encryption.
 3. Allows users with the public key to update the secret values and re-encrypt them, but not decrypt them.
 4. Scans file deep into the folder structure, so you will have a single configuration file for multiple projects or folders.
 
 ## Installation
 
-To install Sigaba, you can use the following command:
+Install as a dotnet tool:
 
 ```bash
 dotnet tool install --global Sigaba
@@ -52,23 +52,20 @@ Initialize Sigaba in your project or solution directory, run on terminal:
 
 ```bash
 sigaba init
+# or
+sigaba init --non-interactive -p <password>
 ```
 
-It will create 3 files in the working directory: ```sigaba.json```, ```public.key``` and ```private.key```:
+It will create 2 files: ```sigaba.json``` and ```private.key```:
 
 - **sigaba.json**:
+  - placed in the current working directory, i.e. the folder where you run the command.
   - contains the tool configuration (see more below).
   - required to perform encryption/decryption, so the tool won't work without it.
   - sets the starting point where the tool will search for files to encrypt/decrypt.
-- **public.key**:
-  - the public key needed to encrypt or re-encrypt the sensitive content.
-  - has to be in the same folder as ```sigaba.json``` file.
-  - you cannot decrypt content with this file, only encrypt or re-encrypt.
-  - generally is a good idea to NOT commit this file and share it only with people you want to.
 - **private.key**:
+  - placed in the user profile folder, i.e. ```%USERPROFILE%\.sigaba\private.key``` on Windows or ```~/.sigaba/private.key``` on Linux and MacOS.
   - the private key needed to decrypt all files. In another words, the file that will transform encrypted content to plain content.
-  - has to be in the same folder as ```sigaba.json``` file.
-  - **DO NOT commit** this file, as it can expose all your sensitive content.
   - It's generally good practice to allow only an automated system to access the private key through a secure mechanism. For example, in Azure Devops, you can upload the private key as a secure file and use it during a deployment pipeline.
 
 ### Encryption
@@ -86,20 +83,21 @@ The tool will look for the files and fields according to the configuration file 
 To decrypt the encrypted files, use:
 
 ```bash
-sigaba decrypt
+sigaba decrypt -p <password>
 ```
 
 The tool will look for the files and fields according to the configuration file and decrypt them.
 
 ## Configuration
 
-To configure the tool, open and edit ```sigaba.json``` file.
+To configure the tool, open and edit ```sigaba.json``` file and edit any field on the ```configuration``` section.
 
-The file will contain the following fields:
+**Do not modify the fields outside the ```configuration``` section or the tool will not work correctly**
+
+The section will contain the following fields:
 
 | Name       | Type         |                                                                                                                                       |
 | ---------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| version    | number       | **Do not changet it!** Keeps track of the configuration file version.                                                                 |
 | fieldRegex | string       | The regex pattern used to select the fields to be encrypted/decrypted. The pattern is matched against the field name, not its value.  |
 | include    | string array | A glob pattern to filter which file will be encrypted/decrypted.                                                                      |
 | exclude    | string array | A glob pattern to filter which file will NOT be encrypted/decrypted.                                                                  |
@@ -110,19 +108,21 @@ With the following configuration:
 
 ```json
 {
-    "version": 1,
-    
+  "version": 1,
+  "projectId": "b5f2a6d1b4124bc38012c2a70c575646",
+  "publicKey": "ATBZMBMGByqGSM49Ag==",
+  
+  "configuration": {
     "fieldRegex": "^.*_secret$",
-    
-    "include": [ 
-      "**/*.secrets.json" 
+    "include": [
+      "**/*.secrets.json"
     ],
-    
-    "exclude":[
+    "exclude": [
       "**node_modules/**",
       "**/bin/**",
       "**/obj/**"
     ]
+  }
 }
 ```
 
@@ -143,7 +143,7 @@ Currently, the tool cannot handle multiple (nested) ```sigaba.json``` files in t
 
 ### JSON files
 
-1. Although the tool can reach any field in the document hiearchy, it cannot encrypt entire json objects. So if you have:
+Although the tool can reach any field in the document hiearchy, it cannot encrypt entire json objects. So if you have:
 
     ```json
     {
