@@ -5,7 +5,11 @@ on:
   workflow_dispatch:
 env:
   major: 0
+<<<<<<< HEAD
   minor: 2
+=======
+  minor: 1
+>>>>>>> origin/master
   tag: "" # Set this to "-beta" or "-rc" for pre-release versions
 jobs:
   publish:
