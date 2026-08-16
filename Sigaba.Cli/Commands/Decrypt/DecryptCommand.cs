@@ -14,11 +14,16 @@ internal class DecryptCommand(ISigabaApp app, IFileSystem fs, IAnsiConsole conso
     {
         [CommandOption("-p|--password <PASSWORD>")]
         [Description("The password to decrypt the private key.")]
-        public string Password { get; set; } = string.Empty;
+        public required string? Password { get; set; }
     }
 
     protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(settings.Password))
+        {
+            throw new Exception("Password is required to decrypt files.");
+        }
+
         var result = await stopWatch.MeasureAsync(() => app.DecipherFilesAsync(
             fs.NewCwdDirPath(),
             settings.Password));
