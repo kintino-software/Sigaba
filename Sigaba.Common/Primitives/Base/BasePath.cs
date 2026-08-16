@@ -2,21 +2,15 @@
 
 namespace Sigaba.Primitives.Base;
 
-public abstract class BasePath(IFileSystem fs, params string[] parts) : IEquatable<BasePath>
+public abstract class BasePath : IEquatable<BasePath>
 {
-    public IFileSystem Fs { get; } = fs;
-    public string Path { get; } = SanitizeParts(parts);
+    public IFileSystem Fs { get; }
+    public string Path { get; }
 
-    private static string SanitizeParts(string[] parts)
+    protected BasePath(IFileSystem fs, params string[] parts)
     {
-        // as we want to accept both forward and backward slashes in the entire app boundary,
-        // we need to split the parts by both types of slashes and then combine them using Path.Combine
-        // to ensure the correct path separator is used for the current platform.
-        var sanitizedParts = parts.SelectMany(part => part.Split(['\\', '/'], StringSplitOptions.RemoveEmptyEntries));
-        var combined = System.IO.Path.Combine([.. sanitizedParts]);
-        if (string.IsNullOrWhiteSpace(combined))
-            throw new ArgumentException("Path cannot be null or whitespace.", nameof(parts));
-        return combined;
+        Fs = fs;
+        Path = Fs.Path.Combine(parts);
     }
 
     // equality

@@ -27,14 +27,18 @@ public class SigabaAppTest : BaseTest
 
     private void SetupPrivateKeyManager()
     {
-        privateKeyManager.LoadAsync(default, default, default).ReturnsForAnyArgs(new PrivateKeyLoadResult(PrivateKey.Any(), Fs.NewFilePath("b/private.key")));
-        privateKeyManager.SaveAsync(default, default, default).ReturnsForAnyArgs(new PrivateKeySaveResult(Fs.NewFilePath("b/private.key")));
+        privateKeyManager.LoadAsync(default, default, default).ReturnsForAnyArgs(
+            new PrivateKeyLoadResult(PrivateKey.Any(), Fs.NewFilePath("b", "private.key")));
+        privateKeyManager.SaveAsync(default, default, default).ReturnsForAnyArgs(
+            new PrivateKeySaveResult(Fs.NewFilePath("b", "private.key")));
     }
 
     private void SetupSigabaFileManager()
     {
-        sigabaFileManager.LoadAsync(default).ReturnsForAnyArgs(new SigabaFileLoadResult(sigabaFile, Fs.NewFilePath("a/sigaba.json")));
-        sigabaFileManager.SaveAsync(default, default).ReturnsForAnyArgs(new SigabaFileSaveResult(Fs.NewFilePath("a/sigaba.json")));
+        sigabaFileManager.LoadAsync(default).ReturnsForAnyArgs(
+            new SigabaFileLoadResult(sigabaFile, Fs.NewFilePath("a", "sigaba.json")));
+        sigabaFileManager.SaveAsync(default, default).ReturnsForAnyArgs(
+            new SigabaFileSaveResult(Fs.NewFilePath("a", "sigaba.json")));
     }
 
     // InitAsync
@@ -66,8 +70,8 @@ public class SigabaAppTest : BaseTest
         var service = CreateService();
         FilePath[] files =
             [
-                Fs.AddFilePath("a/b/file1.txt"),
-                Fs.AddFilePath("a/b/file2.txt"),
+                Fs.AddFilePath2(null, "a", "b", "file1.txt"),
+                Fs.AddFilePath2(null, "a", "b", "file2.txt"),
             ];
         sigabaFile.GetTargetFiles(default).ReturnsForAnyArgs(files);
         SetupSigabaFileManager();
@@ -89,8 +93,8 @@ public class SigabaAppTest : BaseTest
         var service = CreateService();
         FilePath[] files =
             [
-                Fs.AddFilePath("a/b/file1.txt"),
-                Fs.AddFilePath("a/b/file2.txt"),
+                Fs.AddFilePath2(null, "a", "b", "file1.txt"),
+                Fs.AddFilePath2(null, "a", "b", "file2.txt"),
             ];
         sigabaFile.GetTargetFiles(default).ReturnsForAnyArgs(files);
         SetupSigabaFileManager();
@@ -107,7 +111,7 @@ public class SigabaAppTest : BaseTest
     [Fact]
     public async Task Should_edit_files()
     {
-        var filePathArg = Fs.NewFilePath("a/b/file1.txt");
+        var filePathArg = Fs.NewFilePath("a", "b", "file1.txt");
         var textEditorArg = Substitute.For<ITextEditor>();
         var service = CreateService();
         sigabaFile.GetTargetFiles(default).ReturnsForAnyArgs([filePathArg]);
@@ -122,10 +126,10 @@ public class SigabaAppTest : BaseTest
     [Fact]
     public async Task Should_throw_when_editing_file_outside_of_a_sigaba_file_context()
     {
-        var filePathArg = Fs.NewFilePath("a/b/file1.txt");
+        var filePathArg = Fs.NewFilePath("a", "b", "file1.txt");
         var textEditorArg = Substitute.For<ITextEditor>();
         var service = CreateService();
-        sigabaFile.GetTargetFiles(default).ReturnsForAnyArgs([Fs.NewFilePath("a/b/other-file.txt")]);
+        sigabaFile.GetTargetFiles(default).ReturnsForAnyArgs([Fs.NewFilePath("a", "b", "other-file.txt")]);
         SetupSigabaFileManager();
 
         var action = () => service.EditFileAsync(textEditorArg, filePathArg);

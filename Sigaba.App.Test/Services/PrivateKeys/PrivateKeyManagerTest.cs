@@ -23,7 +23,7 @@ public class PrivateKeyManagerTest : BaseTest
 
     private void SetupPathResolver(out FilePath resolvedPath)
     {
-        var path = Fs.NewFilePath("dir/private.key");
+        var path = Fs.NewFilePath("dir", "private.key");
         resolvedPath = path;
         pathResolver.GetDefaultSavePath(default).ReturnsForAnyArgs(path);
         pathResolver.GetPossibleLoadingPaths(default, default).ReturnsForAnyArgs([path]);

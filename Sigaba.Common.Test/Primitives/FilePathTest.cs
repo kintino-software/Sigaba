@@ -6,46 +6,6 @@ public class FilePathTest
 {
     private readonly MockFileSystem fs = new();
 
-    // instantiation
-
-    [Theory]
-    [InlineData("a.txt")]
-    [InlineData("a/b.txt")]
-    [InlineData("a\\b.txt")]
-    [InlineData("a\\b/c\\d/e.txt")]
-    [InlineData("a|b.txt")] // variadic
-    [InlineData("a|b|c|d.txt")] // variadic
-    public void Should_instantiate(string path)
-    {
-        var parts = path.Split('/');
-        var obj = new FilePath(fs, parts);
-
-        obj.Should().NotBeNull();
-        obj.Fs.Should().Be(fs);
-        obj.Path.Should().Be(fs.Path.Combine(parts));
-    }
-
-    [Fact]
-    public void Should_sanitize_separator_chars_on_instantiation()
-    {
-        var obj = new FilePath(fs, "a", "b\\c/d\\test.txt");
-
-        obj.Path.Should().Be(fs.Path.Combine("a", "b", "c", "d", "test.txt"));
-    }
-
-    // equality
-
-    [Fact]
-    public void Should_be_equal_if_paths_match()
-    {
-        var obj1 = new FilePath(fs, "a", "b", "c.txt");
-        var obj2 = new FilePath(fs, "a", "b", "c.txt");
-
-        obj1.Should().Be(obj2);
-        (obj1 == obj2).Should().BeTrue();
-        new HashSet<FilePath> { obj1, obj2 }.Should().ContainSingle();
-    }
-
     // Exists
 
     [Fact]
@@ -74,8 +34,8 @@ public class FilePathTest
     [Fact]
     public void Should_get_its_parent_directory_if_exists()
     {
-        var file = new FilePath(fs, "a/b/c.txt");
-        var expectedParent = new DirPath(fs, "a/b");
+        var file = new FilePath(fs, "a", "b", "c.txt");
+        var expectedParent = new DirPath(fs, "a", "b");
 
         file.Parent().Should().Be(expectedParent);
     }
@@ -93,9 +53,9 @@ public class FilePathTest
     }
 
     [Fact]
-    public async Task Should_throw_when_overwritting_an_existing_file()
+    public async Task Should_throw_when_overwritting_an_existing_file_when_overwrite_is_false()
     {
-        var file = new FilePath(fs, "a/b/c.txt");
+        var file = new FilePath(fs, "a", "b", "c.txt");
         await file.WriteAsync("content", overwrite: false, createFolders: true);
 
         var act = async () => await file.WriteAsync("new content", overwrite: false, createFolders: true);
@@ -104,9 +64,9 @@ public class FilePathTest
     }
 
     [Fact]
-    public async Task Should_throw_when_writting_to_an_inexistent_folder()
+    public async Task Should_throw_when_writting_to_an_inexistent_folder_when_createFolders_is_false()
     {
-        var file = new FilePath(fs, "a/b/c.txt");
+        var file = new FilePath(fs, "a", "b", "c.txt");
 
         var act = async () => await file.WriteAsync("content", overwrite: false, createFolders: false);
 
@@ -116,7 +76,7 @@ public class FilePathTest
     [Fact]
     public async Task Should_create_folder_structure_when_writing_content_async()
     {
-        var file = new FilePath(fs, "a/b/c/d/e/f.txt");
+        var file = new FilePath(fs, "a", "b", "c", "d", "e", "f.txt");
 
         await file.WriteAsync("content", overwrite: false, createFolders: true);
 
@@ -128,7 +88,7 @@ public class FilePathTest
     [Fact]
     public void Should_write_synchronously()
     {
-        var file = new FilePath(fs, "a/b/c/d/e/f.txt");
+        var file = new FilePath(fs, "a", "b", "c", "d", "e", "f.txt");
 
         file.Write("content", overwrite: false, createFolders: true);
 

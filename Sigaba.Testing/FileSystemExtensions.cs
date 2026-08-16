@@ -9,7 +9,7 @@ public static class FileSystemExtensions
     {
         public string RootDir { get => fs.Path.GetPathRoot(fs.AllPaths.First()); }
 
-        public string SafePath(params string[] paths)
+        public string Combine(params string[] paths)
         {
             for (int i = 0; i < paths.Length; i++)
             {
@@ -18,17 +18,24 @@ public static class FileSystemExtensions
             return fs.Path.Combine(fs.RootDir, Path.Combine(paths));
         }
 
-        public string SafeSetCwd(params string[] paths)
+        /// <summary>
+        /// Sets the current working directory to the specified path(s). If the directory does not exist, it will be created. The method returns the full path of the new current working directory.
+        /// </summary>
+        /// <param name="segments">The path segments to combine into the new current working directory.</param>
+        /// <returns>The full path of the new current working directory.</returns>
+        public string SetCwd(params string[] segments)
         {
-            var cwd = fs.SafePath(paths);
-            fs.AddDirectory(cwd);
-            fs.Directory.SetCurrentDirectory(cwd);
+            var cwd = fs.Combine(segments);
+            if (!fs.Directory.Exists(cwd))
+                fs.Directory.CreateDirectory(cwd);
+            if (fs.Directory.GetCurrentDirectory() != cwd)
+                fs.Directory.SetCurrentDirectory(cwd);
             return cwd;
         }
 
-        public FilePath AddFilePath(string path, string content = null)
+        public FilePath AddFilePath2(string content, params string[] segments)
         {
-            var filePath = fs.NewFilePath(path);
+            var filePath = fs.NewFilePath(segments);
             fs.AddFile(filePath.Path, new MockFileData(content ?? string.Empty));
             return filePath;
         }
