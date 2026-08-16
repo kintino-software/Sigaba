@@ -1,6 +1,6 @@
 ﻿using System.IO.Abstractions.TestingHelpers;
 
-namespace Sigaba.Primitives;
+namespace Sigaba.Primitives.FileSystem;
 
 public class FilePathTest
 {

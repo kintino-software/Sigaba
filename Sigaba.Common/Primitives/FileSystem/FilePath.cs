@@ -1,7 +1,7 @@
-﻿using Sigaba.Primitives.Base;
+﻿using Sigaba.Primitives.FileSystem.Base;
 using System.IO.Abstractions;
 
-namespace Sigaba.Primitives;
+namespace Sigaba.Primitives.FileSystem;
 
 public class FilePath(IFileSystem fs, params string[] parts) : BasePath(fs, parts)
 {

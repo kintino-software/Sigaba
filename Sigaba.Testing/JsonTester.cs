@@ -1,5 +1,5 @@
 ﻿using Json.Path;
-using Sigaba.Primitives;
+using Sigaba.Primitives.FileSystem;
 using System.IO.Abstractions;
 using System.Text;
 using System.Text.Json;

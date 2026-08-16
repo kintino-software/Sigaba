@@ -1,7 +1,7 @@
 ﻿using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 
-namespace Sigaba.Primitives.Base;
+namespace Sigaba.Primitives.FileSystem.Base;
 
 public class BasePathTest
 {

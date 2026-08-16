@@ -1,4 +1,4 @@
-﻿namespace Sigaba.Primitives.Base;
+﻿namespace Sigaba.Primitives.Crypto.Base;
 
 public interface IByteLike
 {

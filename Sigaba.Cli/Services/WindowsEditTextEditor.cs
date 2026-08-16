@@ -1,5 +1,5 @@
 ﻿using Sigaba.App;
-using Sigaba.Primitives;
+using Sigaba.Primitives.FileSystem;
 using System.Diagnostics;
 
 namespace Sigaba.Cli.Services;

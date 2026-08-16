@@ -1,4 +1,5 @@
-﻿using Sigaba.Primitives.Base;
+﻿using Sigaba.Primitives.FileSystem;
+using Sigaba.Primitives.FileSystem.Base;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
 

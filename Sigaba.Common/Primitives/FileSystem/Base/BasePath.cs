@@ -1,6 +1,6 @@
 ﻿using System.IO.Abstractions;
 
-namespace Sigaba.Primitives.Base;
+namespace Sigaba.Primitives.FileSystem.Base;
 
 public abstract class BasePath : IEquatable<BasePath>
 {

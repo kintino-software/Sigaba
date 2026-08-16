@@ -1,6 +1,6 @@
 ﻿using Sigaba.Documents.Models;
 using Sigaba.Documents.Services.Json;
-using Sigaba.Primitives;
+using Sigaba.Primitives.FileSystem;
 
 namespace Sigaba.Documents.Services;
 
