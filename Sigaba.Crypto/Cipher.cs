@@ -1,6 +1,6 @@
 ﻿using Sigaba.Crypto.Services;
 using Sigaba.Crypto.Services.Ciphers;
-using Sigaba.Primitives;
+using Sigaba.Primitives.Crypto;
 
 namespace Sigaba.Crypto;
 

@@ -3,7 +3,7 @@ using Sigaba.App.Services.PrivateKeys;
 using Sigaba.App.Services.SigabaFiles;
 using Sigaba.Crypto;
 using Sigaba.Documents;
-using Sigaba.Primitives;
+using Sigaba.Primitives.Crypto;
 using Sigaba.Primitives.FileSystem;
 
 namespace Sigaba.App;
@@ -71,8 +71,8 @@ public class SigabaAppTest : BaseTest
         var service = CreateService();
         FilePath[] files =
             [
-                Fs.AddFilePath2(null, "a", "b", "file1.txt"),
-                Fs.AddFilePath2(null, "a", "b", "file2.txt"),
+                Fs.AddMockFilePath(null, "a", "b", "file1.txt"),
+                Fs.AddMockFilePath(null, "a", "b", "file2.txt"),
             ];
         sigabaFile.GetTargetFiles(default).ReturnsForAnyArgs(files);
         SetupSigabaFileManager();
@@ -94,8 +94,8 @@ public class SigabaAppTest : BaseTest
         var service = CreateService();
         FilePath[] files =
             [
-                Fs.AddFilePath2(null, "a", "b", "file1.txt"),
-                Fs.AddFilePath2(null, "a", "b", "file2.txt"),
+                Fs.AddMockFilePath(null, "a", "b", "file1.txt"),
+                Fs.AddMockFilePath(null, "a", "b", "file2.txt"),
             ];
         sigabaFile.GetTargetFiles(default).ReturnsForAnyArgs(files);
         SetupSigabaFileManager();

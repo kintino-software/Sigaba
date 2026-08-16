@@ -1,5 +1,5 @@
 ﻿using Sigaba.Crypto;
-using Sigaba.Primitives;
+using Sigaba.Primitives.Crypto;
 
 namespace Sigaba.Documents.TestHelpers;
 

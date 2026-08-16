@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.FileSystemGlobbing;
 using Sigaba.Primitives;
+using Sigaba.Primitives.Crypto;
 using Sigaba.Primitives.FileSystem;
 using System.Text.Json;
 using System.Text.RegularExpressions;

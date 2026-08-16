@@ -112,6 +112,19 @@ public sealed class DirPathTest
         file.Should().BeNull();
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData(null)]
+    public void Should_throw_when_get_nearest_file_with_an_invalid_name(string invalidName)
+    {
+        var dir = new DirPath(fs, "a");
+
+        var action = () => dir.TryGetNearestFileWithNameGoingUp(invalidName, out var file);
+
+        action.Should().Throw<ArgumentException>();
+    }
+
 
 }
 

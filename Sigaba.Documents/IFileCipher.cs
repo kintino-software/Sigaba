@@ -1,4 +1,4 @@
-﻿using Sigaba.Primitives;
+﻿using Sigaba.Primitives.Crypto;
 using Sigaba.Primitives.FileSystem;
 
 namespace Sigaba.Documents;

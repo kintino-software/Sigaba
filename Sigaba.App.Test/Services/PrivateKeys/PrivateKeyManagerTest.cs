@@ -1,5 +1,5 @@
 ﻿using Sigaba.Crypto;
-using Sigaba.Primitives;
+using Sigaba.Primitives.Crypto;
 using Sigaba.Primitives.FileSystem;
 
 namespace Sigaba.App.Services.PrivateKeys;
@@ -8,8 +8,6 @@ public class PrivateKeyManagerTest : BaseTest
 {
     private readonly ICipher cipher = Substitute.For<ICipher>();
     private readonly IPrivateKeyPathResolver pathResolver = Substitute.For<IPrivateKeyPathResolver>();
-    private readonly LoggerMock<PrivateKeyManager> logger = new();
-
 
     private IPrivateKeyManager CreateService()
     {

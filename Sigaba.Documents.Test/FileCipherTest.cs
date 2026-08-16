@@ -1,5 +1,5 @@
 ﻿using Sigaba.Documents.TestHelpers;
-using Sigaba.Primitives;
+using Sigaba.Primitives.Crypto;
 using System.IO.Abstractions.TestingHelpers;
 
 namespace Sigaba.Documents;
@@ -31,7 +31,7 @@ public class FileCipherTest
             }
         }
         """;
-        var filePath = fs.AddFilePath2(jsonDocument, "test.json");
+        var filePath = fs.AddMockFilePath(jsonDocument, "test.json");
 
         await service.CipherFile(filePath, PublicKey.Any(), fieldFilter);
 
@@ -60,7 +60,7 @@ public class FileCipherTest
             }
         }
         """;
-        var filePath = fs.AddFilePath2(originalJson, "test.json");
+        var filePath = fs.AddMockFilePath(originalJson, "test.json");
 
         await service.CipherFile(filePath, cipher.ThePublicKey, fieldFilter);
         await service.DecipherFile(filePath, cipher.ThePrivateKey);
@@ -89,7 +89,7 @@ public class FileCipherTest
             },
         }
         """;
-        var filePath = fs.AddFilePath2(originalJson, "test.json");
+        var filePath = fs.AddMockFilePath(originalJson, "test.json");
 
         await service.CipherFile(filePath, PublicKey.Any(), fieldFilter);
         await service.DecipherFile(filePath, PrivateKey.Any());

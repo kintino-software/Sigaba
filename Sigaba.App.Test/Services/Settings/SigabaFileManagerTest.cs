@@ -14,7 +14,7 @@ public class SigabaFileManagerTest(Fixture fixture) : BaseTest
     [Fact]
     public async Task Should_save_sigaba_file()
     {
-        var projectRootArg = Fs.AddDirPath("projectRoot");
+        var projectRootArg = Fs.AddMockDirPath("projectRoot");
         var service = CreateService();
         var instances = fixture.AllImplementationsInstancesOfSigabaFile;
 
@@ -33,7 +33,7 @@ public class SigabaFileManagerTest(Fixture fixture) : BaseTest
     [Fact]
     public async Task Should_load_sigaba_file()
     {
-        var projectRootArg = Fs.AddDirPath("projectRoot");
+        var projectRootArg = Fs.AddMockDirPath("projectRoot");
         var service = CreateService();
         var instances = fixture.AllImplementationsInstancesOfSigabaFile;
 

@@ -1,12 +1,16 @@
 ﻿using Json.Path;
 using Sigaba.Primitives.FileSystem;
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace Sigaba;
 
+/// <summary>
+/// A utility class for testing JSON content, allowing for parsing, validation, and editing of JSON data.
+/// </summary>
+[ExcludeFromCodeCoverage]
 public class JsonTester
 {
     private readonly string jsonContent;
@@ -20,14 +24,31 @@ public class JsonTester
             documentOptions: new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip }));
     }
 
+    /// <summary>
+    /// Creates a <see cref="JsonTester"/> from a JSON string.
+    /// </summary>
+    /// <param name="jsonContent">The JSON content as a string.</param>
+    /// <returns>A new instance of <see cref="JsonTester"/>.</returns>
     public static JsonTester FromString(string jsonContent) => new(jsonContent);
 
+    /// <summary>
+    /// Creates a <see cref="JsonTester"/> from a <see cref="FilePath"/>.
+    /// </summary>
+    /// <param name="filePath">The file path to read the JSON content from.</param>
+    /// <returns>A new instance of <see cref="JsonTester"/>.</returns>
     public static JsonTester FromFile(FilePath filePath)
     {
         var jsonContent = filePath.Read();
         return new JsonTester(jsonContent);
     }
 
+    /// <summary>
+    /// Gets a value from the JSON document using a JSONPath query.
+    /// </summary>
+    /// <typeparam name="T">The type of the value to retrieve.</typeparam>
+    /// <param name="jsonPath">The JSONPath query string.</param>
+    /// <returns>The value retrieved from the JSON document.</returns>
+    /// <exception cref="Exception">Thrown if the JSONPath query does not match any value or if the value is not a valid JSON value.</exception>
     public T GetJsonValue<T>(string jsonPath)
     {
         var jsonPathResult = JsonPath.Parse(jsonPath).Evaluate(lazyJsonNode.Value);
@@ -41,18 +62,14 @@ public class JsonTester
         return jsonValue.GetValue<T>();
     }
 
-    public void AssertIsValidJson(bool allowTrailingCommas = true, JsonCommentHandling commentHandling = JsonCommentHandling.Allow)
-    {
-        var reader = new Utf8JsonReader(
-            Encoding.UTF8.GetBytes(jsonContent),
-            new JsonReaderOptions
-            {
-                CommentHandling = commentHandling,
-                AllowTrailingCommas = allowTrailingCommas,
-            });
-        while (reader.Read()) { /* just reading to validate */ }
-    }
-
+    /// <summary>
+    /// Edits a JSON file applying a transformation function to the value at the specified JSONPath query, then saves the file again.
+    /// </summary>
+    /// <typeparam name="T">The type of the value to edit.</typeparam>
+    /// <param name="fs">The file system abstraction.</param>
+    /// <param name="filePath">The path to the JSON file.</param>
+    /// <param name="jsonPathQuery">The JSONPath query string.</param>
+    /// <param name="editFunc">The transformation function to apply to the value.</param>
     public static void EditJsonFileInPlace<T>(IFileSystem fs, string filePath, string jsonPathQuery, Func<T, T> editFunc)
     {
         if (!fs.File.Exists(filePath))

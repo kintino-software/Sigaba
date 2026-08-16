@@ -1,5 +1,5 @@
 ﻿using Konscious.Security.Cryptography;
-using Sigaba.Primitives;
+using Sigaba.Primitives.Crypto;
 using System.Security.Cryptography;
 using System.Text;
 

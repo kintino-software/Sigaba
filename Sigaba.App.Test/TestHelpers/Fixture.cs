@@ -1,6 +1,6 @@
 ﻿using Sigaba.App.Services.SigabaFiles;
 using Sigaba.App.Services.SigabaFiles.V1;
-using Sigaba.Primitives;
+using Sigaba.Primitives.Crypto;
 
 namespace Sigaba.App.TestHelpers;
 

@@ -1,4 +1,4 @@
-﻿using Sigaba.Primitives;
+﻿using Sigaba.Primitives.Crypto;
 
 namespace Sigaba.Crypto.Services;
 

@@ -15,7 +15,7 @@ public abstract class BaseTest
 {
     protected MockFileSystem Fs { get; } = new();
     protected ITextEditor TextEditor { get; } = Substitute.For<ITextEditor>();
-    protected FakeEnvironmentVariables EnvironmentVariables { get; } = new();
+    protected IEnvironmentVariables EnvironmentVariables { get; } = Substitute.For<IEnvironmentVariables>();
     protected TestConsole AnsiConsole { get; } = new();
     protected CommandAppTester App { get; }
 
