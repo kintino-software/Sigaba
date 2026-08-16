@@ -9,77 +9,77 @@ namespace Sigaba;
 
 public class JsonTester
 {
-    private readonly string jsonContent;
-    private readonly Lazy<JsonNode> lazyJsonNode;
+  private readonly string jsonContent;
+  private readonly Lazy<JsonNode> lazyJsonNode;
 
-    private JsonTester(string jsonContent)
+  private JsonTester(string jsonContent)
+  {
+    this.jsonContent = jsonContent;
+    lazyJsonNode = new Lazy<JsonNode>(() => JsonNode.Parse(
+        jsonContent,
+        documentOptions: new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip }));
+  }
+
+  public static JsonTester FromString(string jsonContent) => new(jsonContent);
+
+  public static JsonTester FromFile(FilePath filePath)
+  {
+    var jsonContent = filePath.Read();
+    return new JsonTester(jsonContent);
+  }
+
+  public T GetJsonValue<T>(string jsonPath)
+  {
+    var jsonPathResult = JsonPath.Parse(jsonPath).Evaluate(lazyJsonNode.Value);
+    if (jsonPathResult.Matches.Count == 0)
     {
-        this.jsonContent = jsonContent;
-        lazyJsonNode = new Lazy<JsonNode>(() => JsonNode.Parse(
-            jsonContent,
-            documentOptions: new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip }));
+      throw new Exception($"Could not parse '{jsonPath}' from json content:\n{jsonContent}.");
     }
+    var match = jsonPathResult.Matches[0];
+    var jsonValue = match.Value.AsValue()
+        ?? throw new Exception($"The value at '{jsonPath}' is not a valid JSON value.");
+    return jsonValue.GetValue<T>();
+  }
 
-    public static JsonTester FromString(string jsonContent) => new(jsonContent);
-
-    public static JsonTester FromFile(FilePath filePath)
-    {
-        var jsonContent = filePath.Read();
-        return new JsonTester(jsonContent);
-    }
-
-    public T GetJsonValue<T>(string jsonPath)
-    {
-        var jsonPathResult = JsonPath.Parse(jsonPath).Evaluate(lazyJsonNode.Value);
-        if (jsonPathResult.Matches.Count == 0)
+  public void AssertIsValidJson(bool allowTrailingCommas = true, JsonCommentHandling commentHandling = JsonCommentHandling.Allow)
+  {
+    var reader = new Utf8JsonReader(
+        Encoding.UTF8.GetBytes(jsonContent),
+        new JsonReaderOptions
         {
-            throw new Exception($"Could not parse '{jsonPath}' from json content:\n{jsonContent}.");
-        }
-        var match = jsonPathResult.Matches[0];
-        var jsonValue = match.Value.AsValue()
-            ?? throw new Exception($"The value at '{jsonPath}' is not a valid JSON value.");
-        return jsonValue.GetValue<T>();
-    }
+          CommentHandling = commentHandling,
+          AllowTrailingCommas = allowTrailingCommas,
+        });
+    while (reader.Read()) { /* just reading to validate */ }
+  }
 
-    public void AssertIsValidJson(bool allowTrailingCommas = true, JsonCommentHandling commentHandling = JsonCommentHandling.Allow)
+  public static void EditJsonFileInPlace<T>(IFileSystem fs, string filePath, string jsonPathQuery, Func<T, T> editFunc)
+  {
+    if (!fs.File.Exists(filePath))
     {
-        var reader = new Utf8JsonReader(
-            Encoding.UTF8.GetBytes(jsonContent),
-            new JsonReaderOptions
-            {
-                CommentHandling = commentHandling,
-                AllowTrailingCommas = allowTrailingCommas,
-            });
-        while (reader.Read()) { /* just reading to validate */ }
+      throw new FileNotFoundException($"The file '{filePath}' was not found.");
     }
 
-    public static void EditJsonFileInPlace<T>(IFileSystem fs, string filePath, string jsonPathQuery, Func<T, T> editFunc)
+    var content = fs.File.ReadAllText(filePath);
+    var rootNode = JsonNode.Parse(content);
+    var jsonPathResult = JsonPath.Parse(jsonPathQuery).Evaluate(rootNode);
+
+    if (jsonPathResult.Matches.Count == 0)
     {
-        if (!fs.File.Exists(filePath))
-        {
-            throw new FileNotFoundException($"The file '{filePath}' was not found.");
-        }
-
-        var content = fs.File.ReadAllText(filePath);
-        var rootNode = JsonNode.Parse(content);
-        var jsonPathResult = JsonPath.Parse(jsonPathQuery).Evaluate(rootNode);
-
-        if (jsonPathResult.Matches.Count == 0)
-        {
-            throw new Exception($"Could not parse '{jsonPathQuery}' from json content:\n{content}.");
-        }
-
-        foreach (var match in jsonPathResult.Matches)
-        {
-            var jsonValue = match.Value.AsValue()
-                ?? throw new Exception($"The value at '{jsonPathQuery}' is not a valid JSON value.");
-            var currentValue = jsonValue.GetValue<T>();
-            var newValue = editFunc(currentValue);
-
-            jsonValue.ReplaceWith(JsonValue.Create(newValue));
-        }
-
-        fs.File.WriteAllText(filePath, rootNode.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+      throw new Exception($"Could not parse '{jsonPathQuery}' from json content:\n{content}.");
     }
+
+    foreach (var match in jsonPathResult.Matches)
+    {
+      var jsonValue = match.Value.AsValue()
+          ?? throw new Exception($"The value at '{jsonPathQuery}' is not a valid JSON value.");
+      var currentValue = jsonValue.GetValue<T>();
+      var newValue = editFunc(currentValue);
+
+      jsonValue.ReplaceWith(JsonValue.Create(newValue));
+    }
+
+    fs.File.WriteAllText(filePath, rootNode.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+  }
 }
 

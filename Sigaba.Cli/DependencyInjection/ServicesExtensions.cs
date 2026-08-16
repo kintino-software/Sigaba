@@ -8,18 +8,18 @@ namespace Sigaba.Cli.DependencyInjection;
 
 internal static class ServicesExtensions
 {
-    public static IServiceCollection AddCliApp(this IServiceCollection services)
-    {
-        services
-            .AddSingleton<ITextEditor, WindowsEditTextEditor>()
-            .AddSingleton<IAnsiConsole>(_ => AnsiConsole.Console)
-            .AddLogging(cfg => cfg.AddSimpleConsole(cfg =>
-                {
-                    cfg.IncludeScopes = false;
-                    cfg.ColorBehavior = Microsoft.Extensions.Logging.Console.LoggerColorBehavior.Enabled;
-                    cfg.TimestampFormat = "[yyyy-MM-dd HH:mm:ss] ";
-                }));
+  public static IServiceCollection AddCliApp(this IServiceCollection services)
+  {
+    services
+        .AddSingleton<ITextEditor, WindowsEditTextEditor>()
+        .AddSingleton<IAnsiConsole>(_ => AnsiConsole.Console)
+        .AddLogging(cfg => cfg.AddSimpleConsole(cfg =>
+            {
+              cfg.IncludeScopes = false;
+              cfg.ColorBehavior = Microsoft.Extensions.Logging.Console.LoggerColorBehavior.Enabled;
+              cfg.TimestampFormat = "[yyyy-MM-dd HH:mm:ss] ";
+            }));
 
-        return services;
-    }
+    return services;
+  }
 }

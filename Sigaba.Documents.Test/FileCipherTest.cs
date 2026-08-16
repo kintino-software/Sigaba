@@ -5,22 +5,22 @@ namespace Sigaba.Documents;
 
 public class FileCipherTest
 {
-    private readonly MockFileSystem fs = new();
-    private readonly FakeCipher cipher = new FakeCipher().CheckKeysAndPasswords(false);
-    private readonly Predicate<string> fieldFilter = (f) => f.Contains("_secret");
+  private readonly MockFileSystem fs = new();
+  private readonly FakeCipher cipher = new FakeCipher().CheckKeysAndPasswords(false);
+  private readonly Predicate<string> fieldFilter = (f) => f.Contains("_secret");
 
-    private IFileCipher CreateService()
-    {
-        return new FileCipher(cipher);
-    }
+  private IFileCipher CreateService()
+  {
+    return new FileCipher(cipher);
+  }
 
-    // CipherFile
+  // CipherFile
 
-    [Fact]
-    public async Task Should_encrypt_json_documents()
-    {
-        var service = CreateService();
-        var jsonDocument = """
+  [Fact]
+  public async Task Should_encrypt_json_documents()
+  {
+    var service = CreateService();
+    var jsonDocument = """
         {
             "a_secret": "a value",
             "b": 2,
@@ -30,24 +30,24 @@ public class FileCipherTest
             }
         }
         """;
-        var filePath = fs.AddFilePath2(jsonDocument, "test.json");
+    var filePath = fs.AddFilePath2(jsonDocument, "test.json");
 
-        await service.CipherFile(filePath, PublicKey.Any(), fieldFilter);
+    await service.CipherFile(filePath, PublicKey.Any(), fieldFilter);
 
-        var jsonTester = JsonTester.FromFile(filePath);
-        jsonTester.GetJsonValue<string>("$.a_secret").Should().NotBe("a value");
-        jsonTester.GetJsonValue<int>("$.b").Should().Be(2);
-        jsonTester.GetJsonValue<string>("$.c.d_secret").Should().NotBe("d value");
-        jsonTester.GetJsonValue<string>("$.c.e").Should().Be("e value");
-    }
+    var jsonTester = JsonTester.FromFile(filePath);
+    jsonTester.GetJsonValue<string>("$.a_secret").Should().NotBe("a value");
+    jsonTester.GetJsonValue<int>("$.b").Should().Be(2);
+    jsonTester.GetJsonValue<string>("$.c.d_secret").Should().NotBe("d value");
+    jsonTester.GetJsonValue<string>("$.c.e").Should().Be("e value");
+  }
 
-    // DecipherFile
+  // DecipherFile
 
-    [Fact]
-    public async Task Should_decipher_json_documents()
-    {
-        var service = CreateService();
-        var originalJson = """
+  [Fact]
+  public async Task Should_decipher_json_documents()
+  {
+    var service = CreateService();
+    var originalJson = """
         {
             "name_secret": "John Doe",
             "age": 30,
@@ -59,20 +59,20 @@ public class FileCipherTest
             }
         }
         """;
-        var filePath = fs.AddFilePath2(originalJson, "test.json");
+    var filePath = fs.AddFilePath2(originalJson, "test.json");
 
-        await service.CipherFile(filePath, cipher.ThePublicKey, fieldFilter);
-        await service.DecipherFile(filePath, cipher.ThePrivateKey);
-        var actualJson = fs.GetFile(filePath.Path).TextContents;
+    await service.CipherFile(filePath, cipher.ThePublicKey, fieldFilter);
+    await service.DecipherFile(filePath, cipher.ThePrivateKey);
+    var actualJson = fs.GetFile(filePath.Path).TextContents;
 
-        actualJson.Should().Be(originalJson);
-    }
+    actualJson.Should().Be(originalJson);
+  }
 
-    [Fact]
-    public async Task Should_recover_original_format_when_deciphering_json_documents()
-    {
-        var service = CreateService();
-        var originalJson = """
+  [Fact]
+  public async Task Should_recover_original_format_when_deciphering_json_documents()
+  {
+    var service = CreateService();
+    var originalJson = """
         {
             // comment
             "name_secret": [
@@ -88,13 +88,13 @@ public class FileCipherTest
             },
         }
         """;
-        var filePath = fs.AddFilePath2(originalJson, "test.json");
+    var filePath = fs.AddFilePath2(originalJson, "test.json");
 
-        await service.CipherFile(filePath, PublicKey.Any(), fieldFilter);
-        await service.DecipherFile(filePath, PrivateKey.Any());
-        var result = fs.GetFile(filePath.Path).TextContents;
+    await service.CipherFile(filePath, PublicKey.Any(), fieldFilter);
+    await service.DecipherFile(filePath, PrivateKey.Any());
+    var result = fs.GetFile(filePath.Path).TextContents;
 
-        result.Should().Be(originalJson);
-    }
+    result.Should().Be(originalJson);
+  }
 }
 

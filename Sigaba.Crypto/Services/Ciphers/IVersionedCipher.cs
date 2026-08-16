@@ -2,5 +2,5 @@
 
 internal interface IVersionedCipher : ICipher
 {
-    byte Version { get; }
+  byte Version { get; }
 }

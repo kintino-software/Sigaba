@@ -6,11 +6,11 @@ namespace Sigaba.DependencyInjection;
 
 public static class ServicesExtensions
 {
-    public static IServiceCollection AddCommonModule(this IServiceCollection services)
-    {
-        services.AddSingleton<IFileSystem, FileSystem>();
-        services.AddSingleton<IEnvironmentVariables, SystemEnvironmentVariables>();
+  public static IServiceCollection AddCommonModule(this IServiceCollection services)
+  {
+    services.AddSingleton<IFileSystem, FileSystem>();
+    services.AddSingleton<IEnvironmentVariables, SystemEnvironmentVariables>();
 
-        return services;
-    }
+    return services;
+  }
 }

@@ -4,34 +4,34 @@ namespace Sigaba;
 
 public static class CSharpPrimitivesExtensions
 {
-    extension(string str)
+  extension(string str)
+  {
+    public byte[] ToUTF8Bytes()
     {
-        public byte[] ToUTF8Bytes()
-        {
-            return Encoding.UTF8.GetBytes(str);
-        }
-
-        public byte[] FromBase64String()
-        {
-            return Convert.FromBase64String(str);
-        }
+      return Encoding.UTF8.GetBytes(str);
     }
 
-    extension(byte[] bytes)
+    public byte[] FromBase64String()
     {
-        public string ToUTF8String()
-        {
-            return Encoding.UTF8.GetString(bytes);
-        }
-
-        public string FromUtf8Bytes()
-        {
-            return Encoding.UTF8.GetString(bytes);
-        }
-
-        public string ToBase64String()
-        {
-            return Convert.ToBase64String(bytes);
-        }
+      return Convert.FromBase64String(str);
     }
+  }
+
+  extension(byte[] bytes)
+  {
+    public string ToUTF8String()
+    {
+      return Encoding.UTF8.GetString(bytes);
+    }
+
+    public string FromUtf8Bytes()
+    {
+      return Encoding.UTF8.GetString(bytes);
+    }
+
+    public string ToBase64String()
+    {
+      return Convert.ToBase64String(bytes);
+    }
+  }
 }

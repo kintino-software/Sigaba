@@ -7,6 +7,6 @@ internal record PrivateKeyLoadResult(PrivateKey PrivateKey, FilePath LoadedFileP
 
 internal interface IPrivateKeyManager
 {
-    Task<PrivateKeySaveResult> SaveAsync(PrivateKey privateKey, string projectId, string password);
-    Task<PrivateKeyLoadResult> LoadAsync(DirPath projectRoot, string projectId, string password);
+  Task<PrivateKeySaveResult> SaveAsync(PrivateKey privateKey, string projectId, string password);
+  Task<PrivateKeyLoadResult> LoadAsync(DirPath projectRoot, string projectId, string password);
 }

@@ -13,23 +13,23 @@ namespace Sigaba.Cli.TestHelpers;
 
 public abstract class BaseTest
 {
-    protected MockFileSystem Fs { get; } = new();
-    protected ITextEditor TextEditor { get; } = Substitute.For<ITextEditor>();
-    protected FakeEnvironmentVariables EnvironmentVariables { get; } = new();
-    protected TestConsole AnsiConsole { get; } = new();
-    protected CommandAppTester App { get; }
+  protected MockFileSystem Fs { get; } = new();
+  protected ITextEditor TextEditor { get; } = Substitute.For<ITextEditor>();
+  protected FakeEnvironmentVariables EnvironmentVariables { get; } = new();
+  protected TestConsole AnsiConsole { get; } = new();
+  protected CommandAppTester App { get; }
 
-    protected BaseTest()
+  protected BaseTest()
+  {
+    App = new CommandAppTester(CommandAppSetup.CreateTypeRegistrar(services =>
     {
-        App = new CommandAppTester(CommandAppSetup.CreateTypeRegistrar(services =>
-        {
-            services
-                .Replace(ServiceDescriptor.Singleton<IAnsiConsole>(AnsiConsole))
-                .Replace(ServiceDescriptor.Singleton<IFileSystem>(Fs))
-                .Replace(ServiceDescriptor.Singleton<IEnvironmentVariables>(EnvironmentVariables))
-                .Replace(ServiceDescriptor.Singleton<ITextEditor>(TextEditor));
+      services
+              .Replace(ServiceDescriptor.Singleton<IAnsiConsole>(AnsiConsole))
+              .Replace(ServiceDescriptor.Singleton<IFileSystem>(Fs))
+              .Replace(ServiceDescriptor.Singleton<IEnvironmentVariables>(EnvironmentVariables))
+              .Replace(ServiceDescriptor.Singleton<ITextEditor>(TextEditor));
 
-        }));
-        App.Configure(cfg => CommandAppSetup.Configurator(cfg, null));
-    }
+    }));
+    App.Configure(cfg => CommandAppSetup.Configurator(cfg, null));
+  }
 }

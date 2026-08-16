@@ -4,48 +4,48 @@ namespace Sigaba.App.Services.Settings;
 
 public class SigabaFileManagerTest(Fixture fixture) : BaseTest
 {
-    private static ISigabaFileManager CreateService()
+  private static ISigabaFileManager CreateService()
+  {
+    return new SigabaFileManager();
+  }
+
+  // SaveAsync
+
+  [Fact]
+  public async Task Should_save_sigaba_file()
+  {
+    var projectRootArg = Fs.AddDirPath("projectRoot");
+    var service = CreateService();
+    var instances = fixture.AllImplementationsInstancesOfSigabaFile;
+
+    foreach (var instance in instances)
     {
-        return new SigabaFileManager();
+      var filePath = Fs.NewFilePath($"{Guid.NewGuid()}.json");
+
+      var action = () => service.SaveAsync(instance, projectRootArg);
+
+      await action.Should().NotThrowAsync();
     }
+  }
 
-    // SaveAsync
+  // LoadAsync
 
-    [Fact]
-    public async Task Should_save_sigaba_file()
+  [Fact]
+  public async Task Should_load_sigaba_file()
+  {
+    var projectRootArg = Fs.AddDirPath("projectRoot");
+    var service = CreateService();
+    var instances = fixture.AllImplementationsInstancesOfSigabaFile;
+
+    foreach (var instance in instances)
     {
-        var projectRootArg = Fs.AddDirPath("projectRoot");
-        var service = CreateService();
-        var instances = fixture.AllImplementationsInstancesOfSigabaFile;
+      var saveResult = await service.SaveAsync(instance, projectRootArg);
 
-        foreach (var instance in instances)
-        {
-            var filePath = Fs.NewFilePath($"{Guid.NewGuid()}.json");
+      var (actualSigabaFile, actualFilePath) = await service.LoadAsync(projectRootArg);
 
-            var action = () => service.SaveAsync(instance, projectRootArg);
+      actualSigabaFile.Should().BeEquivalentTo(instance);
+      actualFilePath.Should().Be(saveResult.OutputPath);
 
-            await action.Should().NotThrowAsync();
-        }
     }
-
-    // LoadAsync
-
-    [Fact]
-    public async Task Should_load_sigaba_file()
-    {
-        var projectRootArg = Fs.AddDirPath("projectRoot");
-        var service = CreateService();
-        var instances = fixture.AllImplementationsInstancesOfSigabaFile;
-
-        foreach (var instance in instances)
-        {
-            var saveResult = await service.SaveAsync(instance, projectRootArg);
-
-            var (actualSigabaFile, actualFilePath) = await service.LoadAsync(projectRootArg);
-
-            actualSigabaFile.Should().BeEquivalentTo(instance);
-            actualFilePath.Should().Be(saveResult.OutputPath);
-
-        }
-    }
+  }
 }

@@ -9,11 +9,11 @@ namespace Sigaba.App;
 /// </summary>
 public interface ITextEditor
 {
-    /// <summary>
-    /// Edits the specified file.
-    /// </summary>
-    /// <param name="filePath">The path of the file to edit.</param>
-    /// <returns>A task that represents the asynchronous operation. 
-    /// The task should be completed when the editor is closed, saving or not the file changes.</returns>
-    Task EditFile(FilePath filePath);
+  /// <summary>
+  /// Edits the specified file.
+  /// </summary>
+  /// <param name="filePath">The path of the file to edit.</param>
+  /// <returns>A task that represents the asynchronous operation. 
+  /// The task should be completed when the editor is closed, saving or not the file changes.</returns>
+  Task EditFile(FilePath filePath);
 }

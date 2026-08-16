@@ -7,19 +7,19 @@ namespace Sigaba.Cli.Commands;
 
 internal class DecryptCommand(ISigabaApp app, IFileSystem fs) : AsyncCommand<DecryptCommand.Settings>
 {
-    public class Settings : CommandSettings
-    {
-        [CommandOption("-p|--password <PASSWORD>")]
-        [Description("The password to decrypt the private key.")]
-        public string Password { get; set; } = string.Empty;
-    }
+  public class Settings : CommandSettings
+  {
+    [CommandOption("-p|--password <PASSWORD>")]
+    [Description("The password to decrypt the private key.")]
+    public string Password { get; set; } = string.Empty;
+  }
 
-    protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
-    {
-        await app.DecipherFilesAsync(
-            fs.NewCwdDirPath(),
-            settings.Password);
+  protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
+  {
+    await app.DecipherFilesAsync(
+        fs.NewCwdDirPath(),
+        settings.Password);
 
-        return 0;
-    }
+    return 0;
+  }
 }
