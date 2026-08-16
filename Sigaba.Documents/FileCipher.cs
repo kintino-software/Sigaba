@@ -4,6 +4,7 @@ using Sigaba.Documents.Services;
 using Sigaba.Primitives.Crypto;
 using Sigaba.Primitives.FileSystem;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace Sigaba.Documents;
 
@@ -81,7 +82,7 @@ internal partial class FileCipher(ICipher cipher)
 
     private string EncryptFieldValue(string rawValue, PublicKey publicKey)
     {
-        var rawValueBytes = rawValue.ToUTF8Bytes(); // 1. raw -> bytes
+        var rawValueBytes = Encoding.UTF8.GetBytes(rawValue); // 1. raw -> utf8 bytes
         var plainData = new PlainData(rawValueBytes); // 2. bytes -> PlainData
         var encryptedData = cipher.EncryptWithKey(plainData, publicKey); // 3. PlainData -> EncryptedData
         var encryptedDataBase64 = encryptedData.ToBase64(); // 4. EncryptedData -> Base64 string
@@ -96,7 +97,7 @@ internal partial class FileCipher(ICipher cipher)
         var encryptedData = EncryptedData.FromBase64(encryptedDataBase64); // 4. EncryptedData <- Base64 string
         var plainData = cipher.DecryptWithKey(encryptedData, privateKey); // 3. PlainData <- EncryptedData
         var rawValueBytes = plainData.Bytes; // 2. bytes <- PlainData
-        var rawValue = rawValueBytes.FromUtf8Bytes(); // 1. raw <- bytes
+        var rawValue = Encoding.UTF8.GetString(rawValueBytes); // 1. raw <- utf8 bytes
         return rawValue;
     }
 }
