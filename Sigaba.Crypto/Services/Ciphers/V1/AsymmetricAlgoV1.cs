@@ -3,78 +3,98 @@ using System.Security.Cryptography;
 
 namespace Sigaba.Crypto.Services.Ciphers.V1;
 
+using NSec = NSec.Cryptography;
+
 internal static class AsymmetricAlgoV1
 {
-    private readonly static ECCurve curve = ECCurve.NamedCurves.nistP256;
-    private const int NonceSizeInBytes = 12; // 96 bits
-    private const int TagSizeInBytes = 16; // 128 bits
-    private const int AesKeySizeInBytes = 32; // 256 bits
+    private readonly static NSec.KeyAgreementAlgorithm keyAgreementAlgorithm = NSec.KeyAgreementAlgorithm.X25519;
+    private readonly static NSec.AeadAlgorithm aeadAlgorithm = NSec.AeadAlgorithm.ChaCha20Poly1305;
+    private readonly static byte[] hkdfInfo = "Sigaba.Crypto.V1.X25519.ChaCha20Poly1305"u8.ToArray();
 
     public static (PublicKey, PrivateKey) GenerateKeys()
     {
-        using var ecc = ECDiffieHellman.Create(curve);
-        var privateKeyBytes = ecc.ExportPkcs8PrivateKey();
-        var publicKeyBytes = ecc.ExportSubjectPublicKeyInfo();
+        using var key = NSec.Key.Create(keyAgreementAlgorithm, new NSec.KeyCreationParameters
+        {
+            ExportPolicy = NSec.KeyExportPolicies.AllowPlaintextExport
+        });
+        var privateKeyBytes = key.Export(NSec.KeyBlobFormat.RawPrivateKey);
+        var publicKeyBytes = key.PublicKey.Export(NSec.KeyBlobFormat.RawPublicKey);
         return (new PublicKey(publicKeyBytes), new PrivateKey(privateKeyBytes));
     }
 
     public static EncryptedData Encrypt(IPlainData plainData, PublicKey publicKey)
     {
-        using var recipientECDHPublicKey = ECDiffieHellman.Create();
-        recipientECDHPublicKey.ImportSubjectPublicKeyInfo(publicKey.Bytes, out _);
+        // Import recipient's public key
+        var recipientPublicKey = NSec.PublicKey.Import(keyAgreementAlgorithm, publicKey.Bytes, NSec.KeyBlobFormat.RawPublicKey);
 
-        using var ephemeral = ECDiffieHellman.Create(curve);
-        var sharedSecret = ephemeral.DeriveRawSecretAgreement(recipientECDHPublicKey.PublicKey);
-        var aesKey = HKDF.DeriveKey(HashAlgorithmName.SHA256, sharedSecret, AesKeySizeInBytes);
+        // Generate ephemeral key pair
+        using var ephemeralKey = NSec.Key.Create(keyAgreementAlgorithm);
+        var ephemeralPublicKeyBytes = ephemeralKey.PublicKey.Export(NSec.KeyBlobFormat.RawPublicKey);
 
-        var encryptedData = new byte[plainData.Bytes.Length];
-        var nonce = RNG.GetBytes(NonceSizeInBytes);
-        var tag = new byte[TagSizeInBytes];
-        using var aes = new AesGcm(aesKey, tag.Length);
-        aes.Encrypt(nonce, plainData.Bytes, encryptedData, tag);
+        // Perform X25519 key agreement to get shared secret
+        using var sharedSecret = keyAgreementAlgorithm.Agree(ephemeralKey, recipientPublicKey)
+            ?? throw new CryptographicException("Key agreement failed");
 
-        return new EncryptedData(MergeDataNonceTagPublicKey(encryptedData, nonce, tag, ephemeral.ExportSubjectPublicKeyInfo()));
+        // Derive encryption key using HKDF from shared secret
+        using var encryptionKey = NSec.KeyDerivationAlgorithm.HkdfSha256.DeriveKey(
+            sharedSecret,
+            salt: null,
+            info: hkdfInfo,
+            aeadAlgorithm);
+
+        // Encrypt plaintext using ChaCha20-Poly1305, with ephemeral public key as AAD
+        // Using zero nonce is safe here because we derive a unique key for each message
+        var nonce = new byte[aeadAlgorithm.NonceSize];
+        var ciphertext = aeadAlgorithm.Encrypt(encryptionKey, nonce, ephemeralPublicKeyBytes, plainData.Bytes);
+
+        // Format: [ephemeralPublicKey (32 bytes)][ciphertext (includes tag)]
+        var result = new byte[ephemeralPublicKeyBytes.Length + ciphertext.Length];
+        Buffer.BlockCopy(ephemeralPublicKeyBytes, 0, result, 0, ephemeralPublicKeyBytes.Length);
+        Buffer.BlockCopy(ciphertext, 0, result, ephemeralPublicKeyBytes.Length, ciphertext.Length);
+
+        return new EncryptedData(result);
     }
 
     public static PlainData Decrypt(IEncryptedData encryptedData, PrivateKey privateKey)
     {
-        SplitDataNonceTagPublicKey(encryptedData.Bytes, out var data, out var nonce, out var tag, out var publicKeyBytes);
+        // Format: [ephemeralPublicKey (32 bytes)][ciphertext (includes tag)]
+        const int ephemeralPublicKeySize = 32; // X25519 public key size
 
-        using var ephemeral = ECDiffieHellman.Create();
-        ephemeral.ImportSubjectPublicKeyInfo(publicKeyBytes, out _);
+        if (encryptedData.Bytes.Length < ephemeralPublicKeySize)
+        {
+            throw new CryptographicException("Invalid encrypted data format: too short");
+        }
 
-        using var recipientECDHPrivateKey = ECDiffieHellman.Create();
-        recipientECDHPrivateKey.ImportPkcs8PrivateKey(privateKey.Bytes, out _);
-        var sharedSecret = recipientECDHPrivateKey.DeriveRawSecretAgreement(ephemeral.PublicKey);
+        // Extract ephemeral public key
+        var ephemeralPublicKeyBytes = new byte[ephemeralPublicKeySize];
+        Buffer.BlockCopy(encryptedData.Bytes, 0, ephemeralPublicKeyBytes, 0, ephemeralPublicKeySize);
+        var ephemeralPublicKey = NSec.PublicKey.Import(keyAgreementAlgorithm, ephemeralPublicKeyBytes, NSec.KeyBlobFormat.RawPublicKey);
 
-        var aesKey = HKDF.DeriveKey(HashAlgorithmName.SHA256, sharedSecret, AesKeySizeInBytes);
-        var plainDataBytes = new byte[data.Length];
-        using var aes = new AesGcm(aesKey, tag.Length);
-        aes.Decrypt(nonce, data, tag, plainDataBytes);
+        // Extract ciphertext
+        var ciphertext = new byte[encryptedData.Bytes.Length - ephemeralPublicKeySize];
+        Buffer.BlockCopy(encryptedData.Bytes, ephemeralPublicKeySize, ciphertext, 0, ciphertext.Length);
 
-        return new PlainData(plainDataBytes);
+        // Import recipient's private key
+        using var recipientPrivateKey = NSec.Key.Import(keyAgreementAlgorithm, privateKey.Bytes, NSec.KeyBlobFormat.RawPrivateKey);
+
+        // Perform X25519 key agreement to get shared secret
+        using var sharedSecret = keyAgreementAlgorithm.Agree(recipientPrivateKey, ephemeralPublicKey)
+            ?? throw new CryptographicException("Key agreement failed");
+
+        // Derive decryption key using HKDF from shared secret
+        using var decryptionKey = NSec.KeyDerivationAlgorithm.HkdfSha256.DeriveKey(
+            sharedSecret,
+            salt: null,
+            info: hkdfInfo,
+            aeadAlgorithm);
+
+        // Decrypt ciphertext using ChaCha20-Poly1305, verify ephemeral public key AAD
+        // Using zero nonce is safe here because we derive a unique key for each message
+        var nonce = new byte[aeadAlgorithm.NonceSize];
+        var plaintext = aeadAlgorithm.Decrypt(decryptionKey, nonce, ephemeralPublicKeyBytes, ciphertext)
+            ?? throw new CryptographicException("Decryption failed: authentication tag verification failed");
+
+        return new PlainData(plaintext);
     }
 
-    private static byte[] MergeDataNonceTagPublicKey(byte[] data, byte[] nonce, byte[] tag, byte[] publicKey)
-    {
-        var result = new byte[data.Length + nonce.Length + tag.Length + publicKey.Length];
-        Buffer.BlockCopy(data, 0, result, 0, data.Length);
-        Buffer.BlockCopy(nonce, 0, result, data.Length, nonce.Length);
-        Buffer.BlockCopy(tag, 0, result, data.Length + nonce.Length, tag.Length);
-        Buffer.BlockCopy(publicKey, 0, result, data.Length + nonce.Length + tag.Length, publicKey.Length);
-        return result;
-    }
-
-    private static void SplitDataNonceTagPublicKey(byte[] mergedData, out byte[] data, out byte[] nonce, out byte[] tag, out byte[] publicKey)
-    {
-        int dataLength = mergedData.Length - NonceSizeInBytes - TagSizeInBytes - 91; // 91 is the length of the public key in bytes
-        data = new byte[dataLength];
-        nonce = new byte[NonceSizeInBytes];
-        tag = new byte[TagSizeInBytes];
-        publicKey = new byte[91];
-        Buffer.BlockCopy(mergedData, 0, data, 0, dataLength);
-        Buffer.BlockCopy(mergedData, dataLength, nonce, 0, NonceSizeInBytes);
-        Buffer.BlockCopy(mergedData, dataLength + NonceSizeInBytes, tag, 0, TagSizeInBytes);
-        Buffer.BlockCopy(mergedData, dataLength + NonceSizeInBytes + TagSizeInBytes, publicKey, 0, 91);
-    }
 }

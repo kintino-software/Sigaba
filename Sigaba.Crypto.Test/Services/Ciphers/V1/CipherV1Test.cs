@@ -58,7 +58,7 @@ public class CipherV1Test
     }
 
     [Fact]
-    public void Should_throw_exception_decrypting_with_invalid_private_key()
+    public void Should_throw_when_decrypting_with_invalid_private_key()
     {
         var (publicKey, privateKey) = service.GenerateKeys();
         var original = new PlainData(Encoding.UTF8.GetBytes("This is a secrete message."));

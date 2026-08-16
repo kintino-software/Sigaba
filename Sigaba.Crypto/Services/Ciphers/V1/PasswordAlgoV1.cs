@@ -4,15 +4,18 @@ using System.Security.Cryptography;
 using System.Text;
 
 namespace Sigaba.Crypto.Services.Ciphers.V1;
+
+using NSec = NSec.Cryptography;
+
 /// <summary>
 /// Helper class for CipherV1.
-/// Uses argon2id for key derivation and AES-GCM for encryption/decryption.
+/// Uses Argon2id for key derivation and ChaCha20-Poly1305 for encryption/decryption.
 /// </summary>
 internal static class PasswordAlgoV1
 {
+    private static readonly NSec.AeadAlgorithm aeadAlgorithm = NSec.AeadAlgorithm.ChaCha20Poly1305;
+
     const int SaltSizeInBytes = 16; // 128 bits
-    const int NonceSizeInBytes = 12; // 96 bits
-    const int TagSizeInBytes = 16; // 128 bits
     const int KeySizeInBytes = 32; // 256 bits
     const int Argon2Iterations = 4;
     const int ArgonMemorySize = 65536; // 64 MB
@@ -22,26 +25,55 @@ internal static class PasswordAlgoV1
     {
         var salt = RandomNumberGenerator.GetBytes(SaltSizeInBytes);
         var key = DeriveKey(password, salt);
-        var nonce = RandomNumberGenerator.GetBytes(NonceSizeInBytes);
 
-        var ciphertext = new byte[plainData.Bytes.Length];
-        var tag = new byte[TagSizeInBytes];
+        // Import key into NSec
+        using var encryptionKey = NSec.Key.Import(aeadAlgorithm, key, NSec.KeyBlobFormat.RawSymmetricKey);
 
-        using var aes = new AesGcm(key, TagSizeInBytes);
-        aes.Encrypt(nonce, plainData.Bytes, ciphertext, tag);
+        // ChaCha20-Poly1305 uses a random nonce (must never repeat with same key)
+        var nonce = RandomNumberGenerator.GetBytes(aeadAlgorithm.NonceSize);
 
-        return new EncryptedData(MergeSaltNonceTagCiphertext(salt, nonce, tag, ciphertext));
+        // Encrypt (ciphertext includes authentication tag)
+        var ciphertext = aeadAlgorithm.Encrypt(encryptionKey, nonce, associatedData: null, plainData.Bytes);
+
+        // Format: [salt][nonce][ciphertext+tag]
+        var result = new byte[salt.Length + nonce.Length + ciphertext.Length];
+        Buffer.BlockCopy(salt, 0, result, 0, salt.Length);
+        Buffer.BlockCopy(nonce, 0, result, salt.Length, nonce.Length);
+        Buffer.BlockCopy(ciphertext, 0, result, salt.Length + nonce.Length, ciphertext.Length);
+
+        return new EncryptedData(result);
     }
 
     public static PlainData Decrypt(IEncryptedData encryptedData, string password)
     {
-        SplitSaltNonceTagCiphertext(encryptedData.Bytes, out var salt, out var nonce, out var tag, out var ciphertext);
+        // Format: [salt][nonce][ciphertext+tag]
+        var data = encryptedData.Bytes;
 
+        if (data.Length < SaltSizeInBytes + aeadAlgorithm.NonceSize + aeadAlgorithm.TagSize)
+        {
+            throw new CryptographicException("Invalid encrypted data format: too short");
+        }
+
+        // Extract salt
+        var salt = new byte[SaltSizeInBytes];
+        Buffer.BlockCopy(data, 0, salt, 0, SaltSizeInBytes);
+
+        // Extract nonce
+        var nonce = new byte[aeadAlgorithm.NonceSize];
+        Buffer.BlockCopy(data, SaltSizeInBytes, nonce, 0, aeadAlgorithm.NonceSize);
+
+        // Extract ciphertext
+        var ciphertextLength = data.Length - SaltSizeInBytes - aeadAlgorithm.NonceSize;
+        var ciphertext = new byte[ciphertextLength];
+        Buffer.BlockCopy(data, SaltSizeInBytes + aeadAlgorithm.NonceSize, ciphertext, 0, ciphertextLength);
+
+        // Derive key using Argon2id
         var key = DeriveKey(password, salt);
-        var plaintext = new byte[ciphertext.Length];
+        using var decryptionKey = NSec.Key.Import(aeadAlgorithm, key, NSec.KeyBlobFormat.RawSymmetricKey);
 
-        using var aes = new AesGcm(key, TagSizeInBytes);
-        aes.Decrypt(nonce, ciphertext, tag, plaintext); // throws if password wrong / tampered
+        // Decrypt and verify authentication tag
+        var plaintext = aeadAlgorithm.Decrypt(decryptionKey, nonce, associatedData: null, ciphertext)
+            ?? throw new CryptographicException("Decryption failed: wrong password or data tampered");
 
         return new PlainData(plaintext);
     }
@@ -57,23 +89,4 @@ internal static class PasswordAlgoV1
         };
         return argon2.GetBytes(KeySizeInBytes);
     }
-
-    private static byte[] MergeSaltNonceTagCiphertext(byte[] salt, byte[] nonce, byte[] tag, byte[] ciphertext)
-    {
-        var result = new byte[salt.Length + nonce.Length + tag.Length + ciphertext.Length];
-        Buffer.BlockCopy(salt, 0, result, 0, salt.Length);
-        Buffer.BlockCopy(nonce, 0, result, salt.Length, nonce.Length);
-        Buffer.BlockCopy(tag, 0, result, salt.Length + nonce.Length, tag.Length);
-        Buffer.BlockCopy(ciphertext, 0, result, salt.Length + nonce.Length + tag.Length, ciphertext.Length);
-        return result;
-    }
-
-    private static void SplitSaltNonceTagCiphertext(byte[] mergedData, out byte[] salt, out byte[] nonce, out byte[] tag, out byte[] ciphertext)
-    {
-        salt = mergedData[..SaltSizeInBytes];
-        nonce = mergedData[SaltSizeInBytes..(SaltSizeInBytes + NonceSizeInBytes)];
-        tag = mergedData[(SaltSizeInBytes + NonceSizeInBytes)..(SaltSizeInBytes + NonceSizeInBytes + TagSizeInBytes)];
-        ciphertext = mergedData[(SaltSizeInBytes + NonceSizeInBytes + TagSizeInBytes)..];
-    }
-
 }
