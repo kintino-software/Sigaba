@@ -6,7 +6,7 @@ on:
 env:
   major: 0
   minor: 2
-  tag: "-alpha" # Set this to "-beta" or "-rc" for pre-release versions
+  tag: "" # Set this to "-beta" or "-rc" for pre-release versions
 jobs:
   publish:
     name: Build and Publish to NuGet
