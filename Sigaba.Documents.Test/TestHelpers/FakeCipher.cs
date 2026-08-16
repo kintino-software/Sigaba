@@ -1,7 +1,7 @@
 ﻿using Sigaba.Crypto;
 using Sigaba.Primitives;
 
-namespace Sigaba;
+namespace Sigaba.Documents.TestHelpers;
 
 public class FakeCipher : ICipher
 {

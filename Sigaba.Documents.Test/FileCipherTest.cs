@@ -1,4 +1,5 @@
-﻿using Sigaba.Primitives;
+﻿using Sigaba.Documents.TestHelpers;
+using Sigaba.Primitives;
 using System.IO.Abstractions.TestingHelpers;
 
 namespace Sigaba.Documents;
