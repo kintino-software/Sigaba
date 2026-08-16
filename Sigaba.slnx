@@ -25,6 +25,7 @@
     <Project Path="Sigaba.Cli/Sigaba.Cli.csproj" />
   </Folder>
   <Folder Name="/_Solution items/">
+    <File Path=".editorconfig" />
     <File Path=".github/workflows/cd.yml" />
     <File Path=".github/workflows/ci.yml" />
     <File Path=".gitignore" />

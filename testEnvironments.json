@@ -2,9 +2,15 @@
   "version": "1",
   "environments": [
     {
+<<<<<<< HEAD
+      "name": "WSL-Ubuntu",
+      "type": "wsl",
+      "wslDistribution": "Ubuntu"
+=======
       "name": "WSL-Debian",
       "type": "wsl",
       "wslDistribution": "Debian"
+>>>>>>> origin/master
     }
   ]
 }

@@ -56,8 +56,8 @@ public class EncryptionTest : BaseTest
             "file.secrets.json");
 
         JsonTester.EditJsonFileInPlace<string>(Fs, "sigaba.json", "$.meta.publicKey", value => (value + "x")); // messing with the key so that it is invalid
-        var action = () => App.RunAsync(["encrypt"]);
+        var result = await App.RunAsync(["encrypt"]);
 
-        await action.Should().ThrowAsync<Exception>();
+        result.ExitCode.Should().NotBe(0);
     }
 }

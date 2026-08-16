@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 env:
   major: 0
-  minor: 1
+  minor: 2
   tag: "" # Set this to "-beta" or "-rc" for pre-release versions
 jobs:
   publish:
