@@ -1,6 +1,6 @@
-﻿namespace Sigaba.Crypto.Services;
+﻿namespace Sigaba.Crypto.Adaptors;
 
-public class ByteTaggerTest
+public class ExtensionsTest
 {
     private readonly byte[] bytes = [8, 8, 8];
 
@@ -11,9 +11,10 @@ public class ByteTaggerTest
     {
 
         var tagged = bytes.Tag(16);
-
         tagged[0].Should().Be(16);
     }
+
+    // Untag
 
     [Fact]
     public void Should_get_untagged_data()

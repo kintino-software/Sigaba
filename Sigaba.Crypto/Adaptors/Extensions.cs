@@ -1,8 +1,8 @@
 ﻿using Sigaba.Primitives.Crypto;
 
-namespace Sigaba.Crypto.Services;
+namespace Sigaba.Crypto.Adaptors;
 
-internal static class ByteTaggerExtensions
+internal static class Extensions
 {
     public static byte[] Tag(this byte[] input, byte tag)
     {

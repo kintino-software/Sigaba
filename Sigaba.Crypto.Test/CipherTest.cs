@@ -1,4 +1,4 @@
-﻿using Sigaba.Crypto.Services;
+﻿using Sigaba.Crypto.Adaptors;
 using Sigaba.Crypto.Services.Ciphers;
 using Sigaba.Primitives.Crypto;
 

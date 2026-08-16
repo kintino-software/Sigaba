@@ -1,10 +1,24 @@
-﻿using Sigaba.Crypto.Services;
-using Sigaba.Crypto.Services.Ciphers;
+﻿using Sigaba.Crypto.Services.Ciphers;
 using Sigaba.Primitives.Crypto;
 
 namespace Sigaba.Crypto;
 
-internal class Cipher(IEnumerable<IVersionedCipher> versionedCiphers) : ICipher
+internal partial class Cipher(IEnumerable<IVersionedCipher> versionedCiphers)
+{
+    private IVersionedCipher GetCipherByVersion(int version)
+    {
+        var cipher = versionedCiphers.FirstOrDefault(c => c.Version == version);
+        return cipher ?? throw new InvalidOperationException($"No asymmetric cipher found for version {version}.");
+    }
+
+    private IVersionedCipher GetLatestCipher()
+    {
+        var latestCipher = versionedCiphers.OrderByDescending(c => c.Version).FirstOrDefault();
+        return latestCipher ?? throw new InvalidOperationException("No asymmetric ciphers are available.");
+    }
+}
+
+internal partial class Cipher : ICipher
 {
     (PublicKey, PrivateKey) ICipher.GenerateKeys()
     {
@@ -41,19 +55,4 @@ internal class Cipher(IEnumerable<IVersionedCipher> versionedCiphers) : ICipher
         var versionedCipher = GetCipherByVersion(version);
         return versionedCipher.DecryptWithPassword(encrypted, password);
     }
-
-    // helper methods
-
-    private IVersionedCipher GetCipherByVersion(int version)
-    {
-        var cipher = versionedCiphers.FirstOrDefault(c => c.Version == version);
-        return cipher ?? throw new InvalidOperationException($"No asymmetric cipher found for version {version}.");
-    }
-
-    private IVersionedCipher GetLatestCipher()
-    {
-        var latestCipher = versionedCiphers.OrderByDescending(c => c.Version).FirstOrDefault();
-        return latestCipher ?? throw new InvalidOperationException("No asymmetric ciphers are available.");
-    }
-
 }
