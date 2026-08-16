@@ -8,7 +8,7 @@ internal record SigabaFileLoadResult(ISigabaFile SigabaFile, FilePath SigabaFile
 
 internal interface ISigabaFileManager
 {
-  Task<SigabaFileSaveResult> SaveAsync(ISigabaFile sigabaFile, DirPath projectRoot);
-  Task<SigabaFileLoadResult> LoadAsync(DirPath referenceFolder);
-  ISigabaFile CreateDefault(PublicKey publicKey);
+    Task<SigabaFileSaveResult> SaveAsync(ISigabaFile sigabaFile, DirPath projectRoot);
+    Task<SigabaFileLoadResult> LoadAsync(DirPath referenceFolder);
+    ISigabaFile CreateDefault(PublicKey publicKey);
 }

@@ -2,5 +2,5 @@
 
 public interface IByteLike
 {
-  byte[] Bytes { get; }
+    byte[] Bytes { get; }
 }

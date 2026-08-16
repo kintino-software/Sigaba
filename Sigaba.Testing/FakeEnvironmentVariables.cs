@@ -4,19 +4,19 @@ namespace Sigaba;
 
 public class FakeEnvironmentVariables : IEnvironmentVariables
 {
-  private readonly Dictionary<string, string> variables = [];
+    private readonly Dictionary<string, string> variables = [];
 
-  public string GetEnvironmentVariable(string variableName)
-  {
-    if (variables.TryGetValue(variableName, out var value))
+    public string GetEnvironmentVariable(string variableName)
     {
-      return value;
+        if (variables.TryGetValue(variableName, out var value))
+        {
+            return value;
+        }
+        return null;
     }
-    return null;
-  }
 
-  public void SetEnvironmentVariable(string variableName, string value)
-  {
-    variables[variableName] = value;
-  }
+    public void SetEnvironmentVariable(string variableName, string value)
+    {
+        variables[variableName] = value;
+    }
 }

@@ -6,14 +6,14 @@ namespace Sigaba.Documents.Services;
 
 internal static class DocumentModelFactory
 {
-  public static IDocumentModel GetDocumentModelByFilePath(FilePath filePath)
-  {
-    var extensionWithDot = filePath.ExtensionWithDot.ToLower();
-
-    return extensionWithDot switch
+    public static IDocumentModel GetDocumentModelByFilePath(FilePath filePath)
     {
-      ".json" => new JsonDocumentModel(),
-      _ => throw new NotSupportedException($"File extension '{extensionWithDot}' is not supported.")
-    };
-  }
+        var extensionWithDot = filePath.ExtensionWithDot.ToLower();
+
+        return extensionWithDot switch
+        {
+            ".json" => new JsonDocumentModel(),
+            _ => throw new NotSupportedException($"File extension '{extensionWithDot}' is not supported.")
+        };
+    }
 }

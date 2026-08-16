@@ -6,11 +6,11 @@ namespace Sigaba.Crypto.DependencyInjection;
 
 public static class ServicesExtensions
 {
-  public static IServiceCollection AddCryptoModule(this IServiceCollection services)
-  {
-    return services
-        .AddSingleton<IVersionedCipher, CipherV1>()
-        .AddSingleton<ICipher, Cipher>();
+    public static IServiceCollection AddCryptoModule(this IServiceCollection services)
+    {
+        return services
+            .AddSingleton<IVersionedCipher, CipherV1>()
+            .AddSingleton<ICipher, Cipher>();
 
-  }
+    }
 }

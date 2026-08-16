@@ -5,36 +5,36 @@ namespace Sigaba.Documents.Services.Json;
 
 internal class JsonDocumentModel : IDocumentModel
 {
-  private RawJsonSerializer serializer = null!;
+    private RawJsonSerializer serializer = null!;
 
-  // serialization
+    // serialization
 
-  void IDocumentModel.Parse(string documentContent)
-  {
-    serializer = RawJsonSerializer.Create(documentContent);
-  }
-
-  string IDocumentModel.Serialize() => serializer.Serialize();
-
-  // query
-
-  IEnumerable<string> IDocumentModel.GetFieldNames() => serializer.KeyToPositionMap.Keys;
-
-  string IDocumentModel.GetFieldRawValue(string key)
-  {
-    if (!serializer.TryGetRawValue(key, out var value))
+    void IDocumentModel.Parse(string documentContent)
     {
-      throw new KeyNotFoundException($"Key '{key}' not found in the document.");
+        serializer = RawJsonSerializer.Create(documentContent);
     }
-    return value;
-  }
 
-  bool IDocumentModel.TryGetValue<T>(string key, [MaybeNull] out T value) => serializer.TryGetValue(key, out value);
+    string IDocumentModel.Serialize() => serializer.Serialize();
 
-  // modification
+    // query
 
-  void IDocumentModel.SetFieldValue<T>(string key, [MaybeNull] T value) => serializer.Replace<T>(key, value);
+    IEnumerable<string> IDocumentModel.GetFieldNames() => serializer.KeyToPositionMap.Keys;
 
-  void IDocumentModel.SetFieldRawValue(string key, string rawValue) => serializer.Replace(key, rawValue);
+    string IDocumentModel.GetFieldRawValue(string key)
+    {
+        if (!serializer.TryGetRawValue(key, out var value))
+        {
+            throw new KeyNotFoundException($"Key '{key}' not found in the document.");
+        }
+        return value;
+    }
+
+    bool IDocumentModel.TryGetValue<T>(string key, [MaybeNull] out T value) => serializer.TryGetValue(key, out value);
+
+    // modification
+
+    void IDocumentModel.SetFieldValue<T>(string key, [MaybeNull] T value) => serializer.Replace<T>(key, value);
+
+    void IDocumentModel.SetFieldRawValue(string key, string rawValue) => serializer.Replace(key, rawValue);
 
 }
