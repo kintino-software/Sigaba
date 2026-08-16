@@ -11,8 +11,11 @@ public class DecryptTest : BaseTest
         await App.RunAsync(["init", "-n", "-p", password]);
     }
 
-    [Fact]
-    public async Task Should_decrypt_all_files_in_directory_tree()
+    [Theory]
+    [InlineData("decrypt", "-p")]
+    [InlineData("decrypt", "--password")]
+
+    public async Task Should_decrypt_all_files_in_directory_tree(string command, string passwordOption)
     {
         await InitializeAppAsync();
         var originalContent1 = """
@@ -33,7 +36,7 @@ public class DecryptTest : BaseTest
 
         //
 
-        await App.RunAsync(["decrypt", "-p", password]);
+        await App.RunAsync([command, passwordOption, password]);
 
         //
 

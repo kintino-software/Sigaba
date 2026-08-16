@@ -58,6 +58,12 @@ Then run:
 sigaba decrypt -p <password>
 ```
 
+### Edit and encrypt
+
+```bash
+sigaba edit <path-to-file>
+```
+
 ## Features
 
 1. Encrypts any kind of values (strings, numbers, booleans, arrays and even nulls) except entire objects (see more below).
@@ -122,8 +128,17 @@ The tool will look for the files and fields according to the configuration file 
 
 If any field has changed and it's not encrypted yet, the tool will encrypt it. If any field is already encrypted, the tool will leave it as is.
 
-### Decryption
+### Edit and encrypt
 
+The following command will open the file, allowing you to edit it:
+
+```bash
+sigaba edit <path-to-file>
+```
+
+Once you save the changes and close the editor, the tool will encrypt the file automatically.
+
+### Decryption
 
 To decrypt your files, use:
 
@@ -141,6 +156,7 @@ For decryption, the tool will need:
   - The ```.sigaba``` folder in the user profile, in a subfolder matching the ```projectId``` in the ```sigaba.json``` file. 
  
 Keep in mind those locations above when you are planning to use the tool in a CI/CD pipeline, so that the private key is available for decryption.
+
 
 ## Configuration
 

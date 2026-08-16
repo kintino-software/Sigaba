@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sigaba.App;
-using Sigaba.Cli.Services;
+using Sigaba.Cli.Services.Diagnostics;
+using Sigaba.Cli.Services.TextEditors;
 using Spectre.Console;
 
 namespace Sigaba.Cli.DependencyInjection;
@@ -11,8 +12,9 @@ internal static class ServicesExtensions
     public static IServiceCollection AddCliApp(this IServiceCollection services)
     {
         services
-            .AddSingleton<ITextEditor, WindowsEditTextEditor>()
+            .AddSingleton<ITextEditor, TextEditor>()
             .AddSingleton<IAnsiConsole>(_ => AnsiConsole.Console)
+            .AddSingleton<CliStopWatch>()
             .AddLogging(cfg => cfg.AddSimpleConsole(cfg =>
                 {
                     cfg.IncludeScopes = false;

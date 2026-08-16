@@ -1,4 +1,4 @@
-namespace Sigaba.Cli.Services.ConsoleServices;
+namespace Sigaba.Cli.Adaptors;
 
 public static class AnsiConsoleExtensions
 {

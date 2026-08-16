@@ -8,7 +8,7 @@ public interface ISigabaApp
     Task<InitializationResult> InitAsync(InitializationOptions options);
     Task<CipherResult> CipherFilesAsync(DirPath referenceFolderPath);
     Task<CipherResult> DecipherFilesAsync(DirPath referenceFolderPath, string password);
-    Task EditFileAsync(ITextEditor textEditor, FilePath editingFilePath);
+    Task<EditFileResult> EditFileAsync(ITextEditor textEditor, FilePath editingFilePath);
 }
 
 public record InitializationOptions(DirPath SigabaFileOutputDir, string PrivateKeyPassword);
@@ -16,3 +16,5 @@ public record InitializationOptions(DirPath SigabaFileOutputDir, string PrivateK
 public record InitializationResult(FilePath SigabaFileLocation, FilePath PrivateKeyLocation);
 
 public record CipherResult(IEnumerable<string> PathsOfFilesAffected);
+
+public record EditFileResult(FilePath EditedFilePath);

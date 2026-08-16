@@ -1,12 +1,13 @@
 ﻿using Sigaba.App;
 using Sigaba.Primitives.FileSystem;
+using Spectre.Console;
 using Spectre.Console.Cli;
 using System.ComponentModel;
 using System.IO.Abstractions;
 
-namespace Sigaba.Cli.Commands;
+namespace Sigaba.Cli.Commands.Edit;
 
-internal class EditCommand(ISigabaApp app, IFileSystem fs, ITextEditor textEditor) : AsyncCommand<EditCommand.EditCommandSettings>
+internal class EditCommand(ISigabaApp app, IFileSystem fs, ITextEditor textEditor, IAnsiConsole console) : AsyncCommand<EditCommand.EditCommandSettings>
 {
     public class EditCommandSettings : CommandSettings
     {
@@ -19,7 +20,11 @@ internal class EditCommand(ISigabaApp app, IFileSystem fs, ITextEditor textEdito
     {
         var cwd = fs.NewCwdDirPath();
         var filePath = cwd.CombineAsFile(settings.File);
-        await app.EditFileAsync(textEditor, filePath);
+
+        var result = await app.EditFileAsync(textEditor, filePath);
+
+        console.WriteSuccessLine($"File '{result.EditedFilePath}' edited successfully.");
+
         return 0;
     }
 }

@@ -1,5 +1,4 @@
-﻿using Sigaba.Cli.Services.ConsoleServices;
-using Spectre.Console;
+﻿using Spectre.Console;
 
 namespace Sigaba.Cli.Commands.Init;
 

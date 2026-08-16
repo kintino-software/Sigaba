@@ -1,4 +1,3 @@
-using Sigaba.Cli.Services.ConsoleServices;
 using Spectre.Console;
 
 namespace Sigaba.Cli.Adaptors;
@@ -10,6 +9,7 @@ public static class ConsoleService
         public void WriteAppLogo()
         {
             console.Write(new FigletText("Sigaba"));
+            console.WriteLine();
         }
 
         public void WriteErrorLine(string message)

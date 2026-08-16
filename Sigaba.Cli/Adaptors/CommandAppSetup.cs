@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Sigaba.App.DependencyInjection;
-using Sigaba.Cli.Commands;
+using Sigaba.Cli.Commands.Decrypt;
+using Sigaba.Cli.Commands.Edit;
+using Sigaba.Cli.Commands.Encrypt;
 using Sigaba.Cli.Commands.Init;
 using Sigaba.Cli.DependencyInjection;
 using Spectre.Console.Cli;

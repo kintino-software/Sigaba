@@ -32,6 +32,7 @@ internal class SigabaApp(
         foreach (var filePath in sigabaFile.GetTargetFiles(sigabaFilePath.Parent()))
         {
             await fileCipher.CipherFile(filePath, sigabaFile.PublicKey, sigabaFile.FieldNamePredicate);
+            affectedFiles.Add(filePath.ToString());
         }
 
         return new CipherResult(affectedFiles);
@@ -46,12 +47,13 @@ internal class SigabaApp(
         foreach (var filePath in sigabaFile.GetTargetFiles(sigabaFilePath.Parent()))
         {
             await fileCipher.DecipherFile(filePath, privateKey);
+            affectedFiles.Add(filePath.ToString());
         }
 
         return new CipherResult(affectedFiles);
     }
 
-    async Task ISigabaApp.EditFileAsync(ITextEditor textEditor, FilePath editingFilePath)
+    async Task<EditFileResult> ISigabaApp.EditFileAsync(ITextEditor textEditor, FilePath editingFilePath)
     {
         var (sigabaFile, sigabaFilePath) = await sigabaFileManager.LoadAsync(editingFilePath.Parent());
 
@@ -61,6 +63,8 @@ internal class SigabaApp(
 
         await textEditor.EditFile(editingFilePath);
         await fileCipher.CipherFile(editingFilePath, sigabaFile.PublicKey, sigabaFile.FieldNamePredicate);
+
+        return new EditFileResult(editingFilePath);
     }
 
 }
