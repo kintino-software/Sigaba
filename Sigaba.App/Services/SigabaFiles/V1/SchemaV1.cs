@@ -14,15 +14,21 @@ public record SchemaV1
         public required string[] ExcludeFileGlob { get; init; } = [];
     }
 
-    [JsonPropertyName("version")]
-    public int Version { get; } = 1;
-    [JsonPropertyName("projectId")]
-    public required string ProjectId { get; init; }
-    [JsonPropertyName("publicKey")]
-    public required string PublicKeyBase64 { get; init; }
+    public record MetaSchema
+    {
+        [JsonPropertyName("version")]
+        public int Version { get; } = 1;
+        [JsonPropertyName("projectId")]
+        public required string ProjectId { get; init; }
+        [JsonPropertyName("publicKey")]
+        public required string PublicKeyBase64 { get; init; }
+    }
 
     [JsonPropertyName("configuration")]
     public required ConfigurationSchema Configuration { get; init; }
+
+    [JsonPropertyName("meta")]
+    public required MetaSchema Meta { get; init; }
 
 
 }

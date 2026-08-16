@@ -28,8 +28,11 @@ internal partial class SigabaFileV1(
                 IncludeFileGlob = includeGlob,
                 ExcludeFileGlob = excludeGlob
             },
-            ProjectId = projectId,
-            PublicKeyBase64 = currentPublicKey.ToBase64(),
+            Meta = new SchemaV1.MetaSchema
+            {
+                ProjectId = projectId,
+                PublicKeyBase64 = currentPublicKey.ToBase64()
+            }
         };
 
         return JsonSerializer.Serialize(schema, JsonHelper.JsonSerializerOptions);
@@ -50,15 +53,15 @@ internal partial class SigabaFileV1(
         var schema = JsonSerializer.Deserialize<SchemaV1>(serialized, JsonHelper.JsonSerializerOptions)
             ?? throw new Exception("Failed to deserialize ToolSettingsV1.");
 
-        if (schema.Version != 1)
-            throw new Exception($"Unsupported version: {schema.Version}. Expected version: 1.");
+        if (schema.Meta.Version != 1)
+            throw new Exception($"Unsupported version: {schema.Meta.Version}. Expected version: 1.");
 
         return new SigabaFileV1(
             fieldRegexPattern: schema.Configuration.FieldRegex,
             includeGlob: schema.Configuration.IncludeFileGlob,
             excludeGlob: schema.Configuration.ExcludeFileGlob,
-            projectId: schema.ProjectId,
-            publicKey: PublicKey.FromBase64(schema.PublicKeyBase64));
+            projectId: schema.Meta.ProjectId,
+            publicKey: PublicKey.FromBase64(schema.Meta.PublicKeyBase64));
     }
 }
 

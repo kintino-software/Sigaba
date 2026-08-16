@@ -18,13 +18,15 @@ public class EncryptionTest : BaseTest
                 "field1": "value 1",
                 "field2_secret": "secret value 2",
             }
-            """, "fileA.secrets.json");
+            """,
+            "fileA.secrets.json");
         var file2Path = Fs.AddMockFilePath("""
             {
                 "field3": "value 3",
                 "field4_secret": "secret value 4",
             }
-            """, "subdir1", "subdir2", "fileB.secrets.json");
+            """,
+            "subdir1", "subdir2", "fileB.secrets.json");
 
         //
 
@@ -42,12 +44,18 @@ public class EncryptionTest : BaseTest
     }
 
     [Fact]
-    public async Task Should_not_encrypt_without_valid_public_key()
+    public async Task Should_not_encrypt_with_invalid_public_key()
     {
         await InitializeAppAsync();
-        var file1Path = Fs.AddMockFilePath(null, "file_secrets.json");
+        var file1Path = Fs.AddMockFilePath("""
+            {
+                "field1": "value 1",
+                "field2_secret": "secret value 2",
+            }
+            """,
+            "file.secrets.json");
 
-        JsonTester.EditJsonFileInPlace<string>(Fs, "sigaba.json", "$.publicKey", value => (value + "x")); // messing with the key so that it is invalid
+        JsonTester.EditJsonFileInPlace<string>(Fs, "sigaba.json", "$.meta.publicKey", value => (value + "x")); // messing with the key so that it is invalid
         var action = () => App.RunAsync(["encrypt"]);
 
         await action.Should().ThrowAsync<Exception>();

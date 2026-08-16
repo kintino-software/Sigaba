@@ -5,7 +5,7 @@ namespace Sigaba.Crypto.Services.Ciphers.V1;
 
 internal static class AsymmetricAlgoV1
 {
-    private static ECCurve curve = ECCurve.NamedCurves.nistP256;
+    private readonly static ECCurve curve = ECCurve.NamedCurves.nistP256;
     private const int NonceSizeInBytes = 12; // 96 bits
     private const int TagSizeInBytes = 16; // 128 bits
     private const int AesKeySizeInBytes = 32; // 256 bits
@@ -28,7 +28,7 @@ internal static class AsymmetricAlgoV1
         var aesKey = HKDF.DeriveKey(HashAlgorithmName.SHA256, sharedSecret, AesKeySizeInBytes);
 
         var encryptedData = new byte[plainData.Bytes.Length];
-        var nonce = new byte[NonceSizeInBytes];
+        var nonce = RNG.GetBytes(NonceSizeInBytes);
         var tag = new byte[TagSizeInBytes];
         using var aes = new AesGcm(aesKey, tag.Length);
         aes.Encrypt(nonce, plainData.Bytes, encryptedData, tag);
