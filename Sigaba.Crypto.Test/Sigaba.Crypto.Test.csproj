@@ -39,6 +39,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sigaba.Crypto\Sigaba.Crypto.csproj" />
+    <ProjectReference Include="..\Sigaba.Testing\Sigaba.Testing.csproj" />
   </ItemGroup>
 
   <ItemGroup>
