@@ -1,8 +1,8 @@
 ﻿using System.Text;
 
-namespace Sigaba;
+namespace Sigaba.Documents.Adaptors;
 
-public static class CSharpPrimitivesExtensions
+internal static class Extensions
 {
     extension(string str)
     {
@@ -29,9 +29,5 @@ public static class CSharpPrimitivesExtensions
             return Encoding.UTF8.GetString(bytes);
         }
 
-        public string ToBase64String()
-        {
-            return Convert.ToBase64String(bytes);
-        }
     }
 }

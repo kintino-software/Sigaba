@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <Using Include="Sigaba.Documents.Primitives" />
+    <Using Include="Sigaba.Documents.Adaptors" />
   </ItemGroup>
 
   <ItemGroup>

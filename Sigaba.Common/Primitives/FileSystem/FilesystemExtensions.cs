@@ -1,8 +1,6 @@
-﻿using Sigaba.Primitives;
-using Sigaba.Primitives.FileSystem;
-using System.IO.Abstractions;
+﻿using System.IO.Abstractions;
 
-namespace Sigaba;
+namespace Sigaba.Primitives.FileSystem;
 
 public static class FilesystemExtensions
 {

@@ -1,4 +1,5 @@
 ﻿using Sigaba.App;
+using Sigaba.Primitives.FileSystem;
 using Spectre.Console.Cli;
 using System.IO.Abstractions;
 
