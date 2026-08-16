@@ -1,71 +1,62 @@
-﻿using System.IO.Abstractions.TestingHelpers;
-
-namespace Sigaba.Cli.Cases;
+﻿namespace Sigaba.Cli.Cases;
 
 public class EncryptionTest : BaseTest
 {
-    private readonly string cwd;
+    private readonly string password = "password";
 
-    public EncryptionTest()
+    private async Task InitializeAppAsync()
     {
-        cwd = CreateAndSetCwd("a", "b");
+        await App.RunAsync(["init", "-n", "-p", password]);
     }
 
     [Fact]
     public async Task Should_encrypt_all_files_in_directory_tree()
     {
-        var file1Path = Fs.Path.Combine(cwd, "fileA_secrets.json");
-        var file2Path = Fs.Path.Combine(cwd, "subdir", "fileB_secrets.json");
-        var content1 = """
+        await InitializeAppAsync();
+        var file1Path = Fs.AddMockFilePath("""
             {
                 "field1": "value 1",
                 "field2_secret": "secret value 2",
             }
-            """;
-        var content2 = """
+            """,
+            "fileA.secrets.json");
+        var file2Path = Fs.AddMockFilePath("""
             {
                 "field3": "value 3",
                 "field4_secret": "secret value 4",
             }
-            """;
-        Fs.AddFile(file1Path, new MockFileData(content1));
-        Fs.AddFile(file2Path, new MockFileData(content2));
-
-        var app = CreateApp();
-        await app.RunAsync("init");
+            """,
+            "subdir1", "subdir2", "fileB.secrets.json");
 
         //
 
-        await app.RunAsync("encrypt");
+        await App.RunAsync(["encrypt"]);
 
         //
 
-        Fs.InspectJson(file1Path)
-            .ShouldHavePropertyWithValue("field1", "\"value 1\"")
-            .ShouldHavePropertyWithValueThatIsNot("field2_secret", "\"secret value 2\"");
-        Fs.InspectJson(file2Path)
-            .ShouldHavePropertyWithValue("field3", "\"value 3\"")
-            .ShouldHavePropertyWithValueThatIsNot("field4_secret", "\"secret value 4\"");
+        var jsonTester1 = JsonTester.FromFile(file1Path);
+        jsonTester1.GetJsonValue<string>("$.field1").Should().Be("value 1");
+        jsonTester1.GetJsonValue<string>("$.field2_secret").Should().NotBe("secret value 2");
+
+        var jsonTester2 = JsonTester.FromFile(file2Path);
+        jsonTester2.GetJsonValue<string>("$.field3").Should().Be("value 3");
+        jsonTester2.GetJsonValue<string>("$.field4_secret").Should().NotBe("secret value 4");
     }
 
     [Fact]
-    public async Task Should_not_encrypt_without_public_key()
+    public async Task Should_not_encrypt_with_invalid_public_key()
     {
-        var file1Path = Fs.Path.Combine(cwd, "file_secrets.json");
-        var content1 = """
+        await InitializeAppAsync();
+        var file1Path = Fs.AddMockFilePath("""
             {
-                "field_secret": "secret value",
+                "field1": "value 1",
+                "field2_secret": "secret value 2",
             }
-            """;
-        Fs.AddFile(file1Path, new MockFileData(content1));
+            """,
+            "file.secrets.json");
 
-        var app = CreateApp();
-        await app.RunAsync("init");
-        Fs.RemoveFile("public.key"); // remove public key to simulate missing key
-
-        //
-
-        var action = () => app.RunAsync("encrypt");
+        JsonTester.EditJsonFileInPlace<string>(Fs, "sigaba.json", "$.meta.publicKey", value => (value + "x")); // messing with the key so that it is invalid
+        var action = () => App.RunAsync(["encrypt"]);
 
         await action.Should().ThrowAsync<Exception>();
     }

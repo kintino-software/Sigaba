@@ -1,39 +1,63 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Sigaba</AssemblyName>
     <PackAsTool>true</PackAsTool>
-    <AssemblyName>sigaba</AssemblyName>
     <ToolCommandName>sigaba</ToolCommandName>
-    <PackageOutputPath>./nupkg</PackageOutputPath>
-    <PackageVersion>0.0.0</PackageVersion>
-    <Description>
-      Command-line tool for json project settings encryption/decryption.
-    </Description>
-  </PropertyGroup>
-
-  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <NoWarn>CA1873;IDE0290</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PackageId>Sigaba</PackageId>
+    <Version>0.0.0-alpha</Version>
+    <Description>
+      Sigaba is a command-line tool that encrypts/decrypts selected fields in files that contain sensitive information, such as passwords and connection strings.
+      It is mainly intended to be used on configuration files.
+    </Description>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/kintino-software/Sigaba</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/kintino-software/Sigaba</RepositoryUrl>
+    <Authors>Kintino software</Authors>
+    <Company>Kintino software</Company>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>icon-128x128.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>configuration;encryption;cipher;tool;cli;cryptography;decryption;appsettings</PackageTags>
+    <PackageReleaseNotes>Initial pre-release</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Sigaba.Cli.IntegrationTest" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
-
+  
+  <ItemGroup>
+    <Using Include="Sigaba.Cli.Adaptors" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="../README.md" Pack="true" PackagePath="\">
+      <Visible>false</Visible>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="../assets/icon-128x128.png" Pack="true" PackagePath="\">
+      <Visible>false</Visible>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="CliWrap" Version="3.10.4" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.10" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.10" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.11" />
+    <PackageReference Include="Spectre.Console" Version="0.57.2" />
     <PackageReference Include="Spectre.Console.Cli" Version="0.55.0" />
     <PackageReference Include="System.IO.Abstractions" Version="22.2.0" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <ProjectReference Include="..\Sigaba.App\Sigaba.App.csproj" />
   </ItemGroup>
-
 </Project>

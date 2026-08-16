@@ -4,18 +4,20 @@ namespace Sigaba.Cli.Cases;
 
 public class DecryptTest : BaseTest
 {
-    private readonly string cwd;
+    private readonly string password = "password";
 
-    public DecryptTest()
+    private async Task InitializeAppAsync()
     {
-        cwd = CreateAndSetCwd("a", "b");
+        await App.RunAsync(["init", "-n", "-p", password]);
     }
 
-    [Fact]
-    public async Task Should_decript_all_files_in_directory_tree()
+    [Theory]
+    [InlineData("decrypt", "-p")]
+    [InlineData("decrypt", "--password")]
+
+    public async Task Should_decrypt_all_files_in_directory_tree(string command, string passwordOption)
     {
-        var file1Path = Fs.Path.Combine(cwd, "fileA_secrets.json");
-        var file2Path = Fs.Path.Combine(cwd, "subdir", "fileB_secrets.json");
+        await InitializeAppAsync();
         var originalContent1 = """
             {
                 "field1": "value 1",
@@ -28,43 +30,29 @@ public class DecryptTest : BaseTest
                 "field4_secret": "secret value 4",
             }
             """;
-
-        Fs.AddFile(file1Path, new MockFileData(originalContent1));
-        Fs.AddFile(file2Path, new MockFileData(originalContent2));
-
-        var app = CreateApp();
-        await app.RunAsync("init");
-        await app.RunAsync("encrypt");
+        Fs.AddFile("file1.secrets.json", new MockFileData(originalContent1));
+        Fs.AddFile("file2.secrets.json", new MockFileData(originalContent2));
+        await App.RunAsync(["encrypt"]);
 
         //
 
-        await app.RunAsync("decrypt");
+        await App.RunAsync([command, passwordOption, password]);
 
         //
 
-        Fs.GetFile(file1Path).TextContents.Should().Be(originalContent1);
-        Fs.GetFile(file2Path).TextContents.Should().Be(originalContent2);
+        Fs.GetFile("file1.secrets.json").TextContents.Should().Be(originalContent1);
+        Fs.GetFile("file2.secrets.json").TextContents.Should().Be(originalContent2);
     }
 
     [Fact]
     public async Task Should_not_decript_without_private_key()
     {
-        var file1Path = Fs.Path.Combine(cwd, "file_secrets.json");
-        var originalContent1 = """
-            {
-                "field_secret": "secret value",
-            }
-            """;
-        Fs.AddFile(file1Path, new MockFileData(originalContent1));
-
-        var app = CreateApp();
-        await app.RunAsync("init");
-        Fs.RemoveFile("private.key"); // remove private key to simulate missing key
-        await app.RunAsync("encrypt");
+        await InitializeAppAsync();
 
         //
 
-        var action = () => app.RunAsync("decrypt");
+        Fs.RemoveFile(Fs.AllFiles.First(f => f.EndsWith("private.key"))); // remove private key to simulate missing key
+        var action = () => App.RunAsync(["decrypt", "-p", password]);
 
         //
 

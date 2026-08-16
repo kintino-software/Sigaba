@@ -1,17 +1,18 @@
 ﻿using Sigaba.Documents.TestHelpers;
+using Sigaba.Primitives.Crypto;
 using System.IO.Abstractions.TestingHelpers;
 
 namespace Sigaba.Documents;
 
-public class FileCipherTest : BaseTest
+public class FileCipherTest
 {
     private readonly MockFileSystem fs = new();
-    private readonly FakeCipher cipher = new();
+    private readonly FakeCipher cipher = new FakeCipher().CheckKeysAndPasswords(false);
     private readonly Predicate<string> fieldFilter = (f) => f.Contains("_secret");
 
     private IFileCipher CreateService()
     {
-        return new FileCipher(fs, cipher);
+        return new FileCipher(cipher);
     }
 
     // CipherFile
@@ -30,17 +31,15 @@ public class FileCipherTest : BaseTest
             }
         }
         """;
-        fs.AddFile("test.json", new MockFileData(jsonDocument));
+        var filePath = fs.AddMockFilePath(jsonDocument, "test.json");
 
-        await service.CipherFile("test.json", cipher.CorrectPublicKey, fieldFilter);
+        await service.CipherFile(filePath, PublicKey.Any(), fieldFilter);
 
-        var evaluator = JsonEvaluator.FromFile(fs.GetFile("test.json"));
-        evaluator
-            .AssertValueIs("$.b", 2)
-            .AssertValueIs("$.c.e", "e value");
-        evaluator
-            .AssertValueIsNot("$.a_secret", "a value")
-            .AssertValueIsNot("$.c.d_secret", "d value");
+        var jsonTester = JsonTester.FromFile(filePath);
+        jsonTester.GetJsonValue<string>("$.a_secret").Should().NotBe("a value");
+        jsonTester.GetJsonValue<int>("$.b").Should().Be(2);
+        jsonTester.GetJsonValue<string>("$.c.d_secret").Should().NotBe("d value");
+        jsonTester.GetJsonValue<string>("$.c.e").Should().Be("e value");
     }
 
     // DecipherFile
@@ -61,11 +60,11 @@ public class FileCipherTest : BaseTest
             }
         }
         """;
-        fs.AddFile("test.json", new MockFileData(originalJson));
+        var filePath = fs.AddMockFilePath(originalJson, "test.json");
 
-        await service.CipherFile("test.json", cipher.CorrectPublicKey, fieldFilter);
-        await service.DecipherFile("test.json", cipher.CorrectPrivateKey);
-        var actualJson = fs.GetFile("test.json").TextContents;
+        await service.CipherFile(filePath, cipher.ThePublicKey, fieldFilter);
+        await service.DecipherFile(filePath, cipher.ThePrivateKey);
+        var actualJson = fs.GetFile(filePath.Path).TextContents;
 
         actualJson.Should().Be(originalJson);
     }
@@ -90,14 +89,13 @@ public class FileCipherTest : BaseTest
             },
         }
         """;
-        fs.AddFile("test.json", new MockFileData(originalJson));
+        var filePath = fs.AddMockFilePath(originalJson, "test.json");
 
-        await service.CipherFile("test.json", cipher.CorrectPublicKey, fieldFilter);
-        await service.DecipherFile("test.json", cipher.CorrectPrivateKey);
-        var result = fs.GetFile("test.json").TextContents;
+        await service.CipherFile(filePath, PublicKey.Any(), fieldFilter);
+        await service.DecipherFile(filePath, PrivateKey.Any());
+        var result = fs.GetFile(filePath.Path).TextContents;
 
         result.Should().Be(originalJson);
     }
-
 }
 

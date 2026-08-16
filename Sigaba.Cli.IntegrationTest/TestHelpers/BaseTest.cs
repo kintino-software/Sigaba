@@ -1,30 +1,35 @@
-﻿using Sigaba.App;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Sigaba.App;
+using Sigaba.Cli.Adaptors;
+using Sigaba.Services;
+using Spectre.Console;
+using Spectre.Console.Cli.Testing;
+using Spectre.Console.Testing;
+using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 
 namespace Sigaba.Cli.TestHelpers;
 
 public abstract class BaseTest
 {
-    protected static string RootPath { get; } = OperatingSystem.IsWindows() ? @"C:\" : "/";
     protected MockFileSystem Fs { get; } = new();
     protected ITextEditor TextEditor { get; } = Substitute.For<ITextEditor>();
+    protected IEnvironmentVariables EnvironmentVariables { get; } = Substitute.For<IEnvironmentVariables>();
+    protected TestConsole AnsiConsole { get; } = new();
+    protected CommandAppTester App { get; }
 
     protected BaseTest()
     {
-        Fs.Directory.SetCurrentDirectory(RootPath);
-    }
+        App = new CommandAppTester(CommandAppSetup.CreateTypeRegistrar(services =>
+        {
+            services
+                .Replace(ServiceDescriptor.Singleton<IAnsiConsole>(AnsiConsole))
+                .Replace(ServiceDescriptor.Singleton<IFileSystem>(Fs))
+                .Replace(ServiceDescriptor.Singleton<IEnvironmentVariables>(EnvironmentVariables))
+                .Replace(ServiceDescriptor.Singleton<ITextEditor>(TextEditor));
 
-    protected CliApp CreateApp()
-    {
-        return new CliApp(Fs);
+        }));
+        App.Configure(cfg => CommandAppSetup.Configurator(cfg, null));
     }
-
-    public string CreateAndSetCwd(params string[] dirPaths)
-    {
-        var cwd = Path.Combine(RootPath, Path.Combine(dirPaths));
-        Fs.AddDirectory(cwd);
-        Fs.Directory.SetCurrentDirectory(cwd);
-        return cwd;
-    }
-
 }

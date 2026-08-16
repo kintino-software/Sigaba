@@ -1,33 +1,10 @@
-﻿using Sigaba.Primitives;
+﻿using Sigaba.Crypto.Services.Ciphers;
+using Sigaba.Primitives.Crypto;
 
-namespace Sigaba.Crypto.Services.Ciphers.V1;
+namespace Sigaba.Crypto;
 
-internal class Cipher(IEnumerable<IVersionedCipher> versionedCiphers) : ICipher
+internal partial class Cipher(IEnumerable<IVersionedCipher> versionedCiphers)
 {
-    (PublicKey, PrivateKey) ICipher.GenerateKeys()
-    {
-        var versionedCipher = GetLatestCipher();
-        var version = versionedCipher.Version;
-        var (publicKey, privateKey) = versionedCipher.GenerateKeys();
-        return (publicKey.Tag(version), privateKey.Tag(version));
-    }
-
-    PlainData ICipher.Decrypt(EncryptedData encryptedData, PrivateKey privateKey)
-    {
-        var untaggedPrivateKey = privateKey.Untag(out var version);
-        var versionedCipher = GetCipherByVersion(version);
-        return versionedCipher.Decrypt(encryptedData, untaggedPrivateKey);
-    }
-
-    EncryptedData ICipher.Encrypt(PlainData plainData, PublicKey publicKey)
-    {
-        var untaggedPublicKey = publicKey.Untag(out var version);
-        var versionedCipher = GetCipherByVersion(version);
-        return versionedCipher.Encrypt(plainData, untaggedPublicKey);
-    }
-
-    // helper methods
-
     private IVersionedCipher GetCipherByVersion(int version)
     {
         var cipher = versionedCiphers.FirstOrDefault(c => c.Version == version);
@@ -38,5 +15,44 @@ internal class Cipher(IEnumerable<IVersionedCipher> versionedCiphers) : ICipher
     {
         var latestCipher = versionedCiphers.OrderByDescending(c => c.Version).FirstOrDefault();
         return latestCipher ?? throw new InvalidOperationException("No asymmetric ciphers are available.");
+    }
+}
+
+internal partial class Cipher : ICipher
+{
+    (PublicKey, PrivateKey) ICipher.GenerateKeys()
+    {
+        var versionedCipher = GetLatestCipher();
+        var version = versionedCipher.Version;
+        var (publicKey, privateKey) = versionedCipher.GenerateKeys();
+        return (publicKey.Tag(version), privateKey.Tag(version));
+    }
+
+    PlainData ICipher.DecryptWithKey(EncryptedData encryptedData, PrivateKey privateKey)
+    {
+        var untaggedPrivateKey = privateKey.Untag(out var version);
+        var versionedCipher = GetCipherByVersion(version);
+        return versionedCipher.DecryptWithKey(encryptedData, untaggedPrivateKey);
+    }
+
+    EncryptedData ICipher.EncryptWithKey(PlainData plainData, PublicKey publicKey)
+    {
+        var untaggedPublicKey = publicKey.Untag(out var version);
+        var versionedCipher = GetCipherByVersion(version);
+        return versionedCipher.EncryptWithKey(plainData, untaggedPublicKey);
+    }
+
+    EncryptedData ICipher.EncryptWithPassword(PlainData plainData, string password)
+    {
+        var versionedCipher = GetLatestCipher();
+        var encryptedData = versionedCipher.EncryptWithPassword(plainData, password);
+        return encryptedData.Tag(versionedCipher.Version);
+    }
+
+    PlainData ICipher.DecryptWithPassword(EncryptedData encryptedData, string password)
+    {
+        var encrypted = encryptedData.Untag(out var version);
+        var versionedCipher = GetCipherByVersion(version);
+        return versionedCipher.DecryptWithPassword(encrypted, password);
     }
 }

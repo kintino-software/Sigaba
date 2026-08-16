@@ -7,7 +7,7 @@
           <CodeCoverage>
             <ModulePaths>
               <Include>
-                <ModulePath>.*\\Kintino\.CipherConf\.[^.]+\.dll</ModulePath>
+                <ModulePath>.*\\Sigaba\.[^.]+\.dll</ModulePath>
               </Include>
             </ModulePaths>
           </CodeCoverage>

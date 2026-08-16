@@ -26,22 +26,23 @@
     </PackageReference>
     <PackageReference Include="Json.More.Net" Version="3.0.1" />
     <PackageReference Include="JsonPath.Net" Version="3.0.2" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
-    <PackageReference Include="NSubstitute" Version="6.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
+    <PackageReference Include="NSubstitute" Version="6.2.0" />
     <PackageReference Include="NSubstitute.Analyzers.CSharp" Version="1.0.17">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="22.2.0" />
-    <PackageReference Include="xunit" Version="2.9.3" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+    <PackageReference Include="xunit.runner.visualstudio" Version="4.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="xunit.v3" Version="4.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Sigaba.Documents\Sigaba.Documents.csproj" />
+    <ProjectReference Include="..\Sigaba.Testing\Sigaba.Testing.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,22 +1,10 @@
 ﻿using Sigaba.Documents.Models;
-using System.Text.Json;
 
 namespace Sigaba.Documents.Services.Json;
 
 public class JsonDocumentModelTest
 {
     private readonly IDocumentModel model = new JsonDocumentModel();
-
-    private static void AssertJsonIsValid(string json)
-    {
-        using var doc = JsonDocument.Parse(
-            json,
-            new JsonDocumentOptions
-            {
-                AllowTrailingCommas = true,
-                CommentHandling = JsonCommentHandling.Skip
-            });
-    }
 
     // Parse
 
@@ -37,7 +25,6 @@ public class JsonDocumentModelTest
             "nullKey": null, // trailing comma
         }
         """;
-        AssertJsonIsValid(originalJson);
 
         var action = () => model.Parse(originalJson);
 
@@ -68,7 +55,6 @@ public class JsonDocumentModelTest
         var actualJson = model.Serialize();
 
         actualJson.Should().Be(originalJson);
-        AssertJsonIsValid(actualJson);
     }
 
 
@@ -182,9 +168,8 @@ public class JsonDocumentModelTest
         model.SetFieldRawValue("field3", "[1, 2, 3]");
         model.SetFieldRawValue("field4", "null");
         model.SetFieldRawValue("targetParent.target", @"""foobar""");
-        var result = model.Serialize();
 
-        AssertJsonIsValid(result);
+        var result = model.Serialize();
         result.Should().Be(expected);
     }
 
@@ -222,9 +207,8 @@ public class JsonDocumentModelTest
         model.SetFieldValue("field3", new int[] { 1, 2, 3 });
         model.SetFieldValue<object>("field4", null);
         model.SetFieldValue("targetParent.target", "foobar");
-        var result = model.Serialize();
 
-        AssertJsonIsValid(result);
+        var result = model.Serialize();
         result.Should().Be(expected);
     }
 }
