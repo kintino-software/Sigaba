@@ -101,14 +101,14 @@ Also, the tool will create 2 files: ```sigaba.json``` and ```private.key```:
   - contains the tool configuration (see more below).
   - required to perform encryption/decryption, so the tool won't work without it.
   - sets the topmost folder where the tool will search for files to encrypt/decrypt.
-  - this file should be kept in the source control, so that all team members will have the same configuration. 
+  - this file can be kept in the source control, so that all team members will have the same configuration. 
 - **private.key**:
   - placed in the user profile folder for safety, i.e. ```%USERPROFILE%\.sigaba\private.key``` on Windows or ```~/.sigaba/private.key``` on Linux and MacOS.
-  - it is needed to decrypt all files. In another words, the file that will transform encrypted content to plain content.
-  - The private key content is encrypted with the provided password, so it is useless without it.
-  - once created, move it to a secure location and delete it from the original location.
-  - It's generally good practice to allow only an automated system to access the private key through a secure mechanism. For example, in Azure Devops, you can upload the private key as a secure file and use it during a deployment pipeline.
-  - **Do not check it into source control**!
+  - it is needed to decrypt all files.
+  - the private key content is encrypted with the provided password, so it is useless without it.
+  - once created, move it to a secure location.
+  - **do not check it into source control**!
+  - it's generally good practice to allow only an automated system to access the private key through a secure mechanism. For example, in Azure Devops, you can upload the private key as a secure file and use it during a deployment pipeline.
 
 ### Encryption
 
@@ -125,32 +125,28 @@ If any field has changed and it's not encrypted yet, the tool will encrypt it. I
 ### Decryption
 
 
-To decrypt the encrypted files, use:
+To decrypt your files, use:
 
 ```bash
 sigaba decrypt -p <password>
 ```
 
-The tool will look for the files and fields according to the configuration file and decrypt them.
-
 #### Prerequisites for decryption
 
 For decryption, the tool will need:
-1. the password you defined during initialization. You pass it to the command line as shown above. This password is used to decrypt the private key file.
-1. the private key file ```private.key``` that was created during initialization.
-
-The tool will search for the file ```private.key``` in the following locations, in order:
-1. A directory path defined in the environment variable ```SIGABA_PRIVATE_KEY_DIR```
-2. The current working directory, i.e. the folder where you run the command.
-3. The ```.sigaba``` folder in the user profile, in a subfolder matching the ```projectId``` in the ```sigaba.json``` file. 
-
+- the password you defined during initialization. You pass it to the command line as shown above. This password is used to decrypt the private key file.
+- the private key file ```private.key``` that was created during initialization. The tool will search for it in the following locations, in order:
+  - A directory path defined in the environment variable ```SIGABA_PRIVATE_KEY_DIR```
+  - The current working directory, i.e. the folder where you run the command.
+  - The ```.sigaba``` folder in the user profile, in a subfolder matching the ```projectId``` in the ```sigaba.json``` file. 
+ 
 Keep in mind those locations above when you are planning to use the tool in a CI/CD pipeline, so that the private key is available for decryption.
 
 ## Configuration
 
 To configure the tool, open and edit ```sigaba.json``` file and edit any field on the ```configuration``` section.
 
-**Do not modify the fields outside the ```configuration``` section** or the tool will not work.
+**Do not modify the fields outside the ```configuration``` section**.
 
 The section will contain the following fields:
 
@@ -196,7 +192,7 @@ Currently, the tool cannot handle nested ```sigaba.json``` files in the same fol
 - or you have only one configuration in the project root folder,
 - or multiple configurations, each one in a different project subfolder.
 
-### JSON files
+### Json files
 
 Although the tool can reach any field in the document hiearchy, it cannot encrypt entire json objects. So if you have:
 
