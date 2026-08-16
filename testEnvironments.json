@@ -2,9 +2,9 @@
   "version": "1",
   "environments": [
     {
-      "name": "WSL-Debian",
+      "name": "WSL-Ubuntu",
       "type": "wsl",
-      "wslDistribution": "Debian"
+      "wslDistribution": "Ubuntu"
     }
   ]
 }

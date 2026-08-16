@@ -52,10 +52,10 @@ public class DecryptTest : BaseTest
         //
 
         Fs.RemoveFile(Fs.AllFiles.First(f => f.EndsWith("private.key"))); // remove private key to simulate missing key
-        var action = () => App.RunAsync(["decrypt", "-p", password]);
+        var result = await App.RunAsync(["decrypt", "-p", password]);
 
         //
 
-        await action.Should().ThrowAsync<Exception>();
+        result.ExitCode.Should().NotBe(0);
     }
 }

@@ -5,8 +5,8 @@ on:
   workflow_dispatch:
 env:
   major: 0
-  minor: 1
-  tag: "" # Set this to "-beta" or "-rc" for pre-release versions
+  minor: 2
+  tag: "-alpha" # Set this to "-beta" or "-rc" for pre-release versions
 jobs:
   publish:
     name: Build and Publish to NuGet
