@@ -1,13 +1,13 @@
-﻿using Sigaba.App;
+﻿using Microsoft.Extensions.Logging;
+using Sigaba.App;
 using Sigaba.Primitives.FileSystem;
-using Spectre.Console;
 using Spectre.Console.Cli;
 using System.ComponentModel;
 using System.IO.Abstractions;
 
 namespace Sigaba.Cli.Commands.Edit;
 
-internal class EditCommand(ISigabaApp app, IFileSystem fs, ITextEditor textEditor, IAnsiConsole console) : AsyncCommand<EditCommand.EditCommandSettings>
+internal class EditCommand(ISigabaApp app, IFileSystem fs, ITextEditor textEditor, ILogger<EditCommand> logger) : AsyncCommand<EditCommand.EditCommandSettings>
 {
     public class EditCommandSettings : CommandSettings
     {
@@ -23,7 +23,7 @@ internal class EditCommand(ISigabaApp app, IFileSystem fs, ITextEditor textEdito
 
         var result = await app.EditFileAsync(textEditor, filePath);
 
-        console.WriteSuccessLine($"File '{result.EditedFilePath}' edited successfully.");
+        logger.LogInformation("File '{filePath}' edited successfully.", result.EditedFilePath);
 
         return 0;
     }

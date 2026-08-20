@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Sigaba.App;
 using Sigaba.Cli.Services.Diagnostics;
+using Sigaba.Cli.Services.Logging;
 using Sigaba.Cli.Services.TextEditors;
 using Spectre.Console;
 
@@ -12,15 +13,14 @@ internal static class ServicesExtensions
     public static IServiceCollection AddCliApp(this IServiceCollection services)
     {
         services
+            .AddLogging(builder =>
+            {
+                builder.AddAnsiConsole();
+                builder.SetMinimumLevel(LogLevel.Information);
+            })
             .AddSingleton<ITextEditor, TextEditor>()
             .AddSingleton<IAnsiConsole>(_ => AnsiConsole.Console)
-            .AddSingleton<CliStopWatch>()
-            .AddLogging(cfg => cfg.AddSimpleConsole(cfg =>
-                {
-                    cfg.IncludeScopes = false;
-                    cfg.ColorBehavior = Microsoft.Extensions.Logging.Console.LoggerColorBehavior.Enabled;
-                    cfg.TimestampFormat = "[yyyy-MM-dd HH:mm:ss] ";
-                }));
+            .AddSingleton<CliStopWatch>();
 
         return services;
     }

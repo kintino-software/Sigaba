@@ -6,21 +6,20 @@ internal static class InitInteractiveExtensions
 {
     extension(IAnsiConsole console)
     {
-
         public string PromptForPasswordDefinition(string promptMessage)
         {
             while (true)
             {
-                var password = console.Prompt(new TextPrompt<string>(promptMessage.AsInfo()).Secret());
+                var password = console.Prompt(new TextPrompt<string>(promptMessage).Secret());
 
                 if (string.IsNullOrWhiteSpace(password))
                 {
-                    console.WriteErrorLine("Password cannot be empty. Please try again.");
+                    console.MarkupLine("[red]Password cannot be empty. Please try again.[/]");
                     continue;
                 }
 
                 var confirmPassword = console.Prompt(
-                    new TextPrompt<string>("Confirm the private key password:".AsInfo()).Secret());
+                    new TextPrompt<string>("Confirm the private key password:").Secret());
 
                 if (password == confirmPassword)
                 {
@@ -28,7 +27,7 @@ internal static class InitInteractiveExtensions
                 }
                 else
                 {
-                    console.WriteErrorLine("Passwords do not match. Please try again.");
+                    console.MarkupLine("[red]Passwords do not match. Please try again.[/]");
                 }
             }
         }

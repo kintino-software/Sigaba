@@ -1,23 +1,23 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Sigaba.App.DependencyInjection;
 using Sigaba.Cli.Commands.Decrypt;
 using Sigaba.Cli.Commands.Edit;
 using Sigaba.Cli.Commands.Encrypt;
 using Sigaba.Cli.Commands.Init;
 using Sigaba.Cli.DependencyInjection;
-using Spectre.Console;
 using Spectre.Console.Cli;
 
-namespace Sigaba.Cli.Adaptors;
+namespace Sigaba.Cli;
 
-public static class CommandAppSetup
+public class AnsiConsoleSetup
 {
-    public static ITypeRegistrar CreateTypeRegistrar(Action<IServiceCollection>? additionalServiceSetup = null)
+    public static ITypeRegistrar CreateTypeRegistrar(Action<IServiceCollection>? config = null)
     {
         var services = new ServiceCollection();
         services.AddApp();
         services.AddCliApp();
-        additionalServiceSetup?.Invoke(services);
+        config?.Invoke(services);
         return new SpectreTypeRegistrar(services);
     }
 
@@ -34,9 +34,11 @@ public static class CommandAppSetup
 
     private static int ExceptionHandler(Exception ex, ITypeResolver? resolver)
     {
-        var console = (resolver?.Resolve(typeof(IAnsiConsole)) as IAnsiConsole) ?? AnsiConsole.Console;
-        console?.WriteErrorLine($"Error: {ex.Message}");
+        var logger = (resolver?.Resolve(typeof(ILogger<AnsiConsoleSetup>)) as ILogger<AnsiConsoleSetup>)
+            ?? throw new ArgumentNullException(nameof(resolver));
+
+        logger.LogError("Error: {message}", ex.Message);
+
         return -1;
     }
-
 }

@@ -6,8 +6,8 @@ internal class Program
 {
     static async Task Main(string[] args)
     {
-        var commandApp = new CommandApp(CommandAppSetup.CreateTypeRegistrar());
-        commandApp.Configure(cfg => CommandAppSetup.Configurator(cfg, additionalConfig: null));
+        var commandApp = new CommandApp(AnsiConsoleSetup.CreateTypeRegistrar());
+        commandApp.Configure(cfg => AnsiConsoleSetup.Configurator(cfg, additionalConfig: null));
         await commandApp.RunAsync(args);
     }
 }

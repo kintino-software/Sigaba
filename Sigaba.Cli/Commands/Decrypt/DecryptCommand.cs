@@ -1,14 +1,18 @@
-﻿using Sigaba.App;
+﻿using Microsoft.Extensions.Logging;
+using Sigaba.App;
 using Sigaba.Cli.Services.Diagnostics;
 using Sigaba.Primitives.FileSystem;
-using Spectre.Console;
 using Spectre.Console.Cli;
 using System.ComponentModel;
 using System.IO.Abstractions;
 
 namespace Sigaba.Cli.Commands.Decrypt;
 
-internal class DecryptCommand(ISigabaApp app, IFileSystem fs, IAnsiConsole console, CliStopWatch stopWatch) : AsyncCommand<DecryptCommand.Settings>
+internal class DecryptCommand(
+    ISigabaApp app,
+    IFileSystem fs,
+    CliStopWatch stopWatch,
+    ILogger<DecryptCommand> logger) : AsyncCommand<DecryptCommand.Settings>
 {
     public class Settings : CommandSettings
     {
@@ -28,10 +32,10 @@ internal class DecryptCommand(ISigabaApp app, IFileSystem fs, IAnsiConsole conso
             fs.NewCwdDirPath(),
             settings.Password));
 
-        console.WriteSuccessLine($"{result.PathsOfFilesAffected.Count()} file(s) decrypted:");
+        logger.LogInformation("{count} file(s) decrypted:", result.PathsOfFilesAffected.Count());
         foreach (var file in result.PathsOfFilesAffected)
         {
-            console.WriteSuccessLine($"    {file}");
+            logger.LogInformation("  - {file}", file);
         }
 
         return 0;
