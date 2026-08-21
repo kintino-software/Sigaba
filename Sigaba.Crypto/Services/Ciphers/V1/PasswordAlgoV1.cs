@@ -35,37 +35,17 @@ internal static class PasswordAlgoV1
         // Encrypt (ciphertext includes authentication tag)
         var ciphertext = aeadAlgorithm.Encrypt(encryptionKey, nonce, associatedData: null, plainData.Bytes);
 
-        // Format: [salt][nonce][ciphertext+tag]
-        var result = new byte[salt.Length + nonce.Length + ciphertext.Length];
-        Buffer.BlockCopy(salt, 0, result, 0, salt.Length);
-        Buffer.BlockCopy(nonce, 0, result, salt.Length, nonce.Length);
-        Buffer.BlockCopy(ciphertext, 0, result, salt.Length + nonce.Length, ciphertext.Length);
-
-        return new EncryptedData(result);
+        var merged = ByteMerger
+            .FromSplitedData(salt, nonce, ciphertext)
+            .Merge();
+        return new EncryptedData(merged);
     }
 
     public static PlainData Decrypt(IEncryptedData encryptedData, string password)
     {
-        // Format: [salt][nonce][ciphertext+tag]
-        var data = encryptedData.Bytes;
-
-        if (data.Length < SaltSizeInBytes + aeadAlgorithm.NonceSize + aeadAlgorithm.TagSize)
-        {
-            throw new CryptographicException("Invalid encrypted data format: too short");
-        }
-
-        // Extract salt
-        var salt = new byte[SaltSizeInBytes];
-        Buffer.BlockCopy(data, 0, salt, 0, SaltSizeInBytes);
-
-        // Extract nonce
-        var nonce = new byte[aeadAlgorithm.NonceSize];
-        Buffer.BlockCopy(data, SaltSizeInBytes, nonce, 0, aeadAlgorithm.NonceSize);
-
-        // Extract ciphertext
-        var ciphertextLength = data.Length - SaltSizeInBytes - aeadAlgorithm.NonceSize;
-        var ciphertext = new byte[ciphertextLength];
-        Buffer.BlockCopy(data, SaltSizeInBytes + aeadAlgorithm.NonceSize, ciphertext, 0, ciphertextLength);
+        ByteMerger
+            .FromMergedData(encryptedData.Bytes)
+            .Split(SaltSizeInBytes, aeadAlgorithm.NonceSize, out var salt, out var nonce, out var ciphertext);
 
         // Derive key using Argon2id
         var key = DeriveKey(password, salt);

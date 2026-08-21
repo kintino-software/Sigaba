@@ -36,7 +36,7 @@ public class CipherV1Test
     {
         var action = () => service.EncryptWithKey(PlainData.Any(), PublicKey.Any());
 
-        action.Should().Throw<InvalidOperationException>().WithMessage("Invalid public key.");
+        action.Should().Throw<InvalidOperationException>().WithMessage("Encryption failed.");
     }
 
     // DecryptWithKey

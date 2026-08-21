@@ -1,8 +1,28 @@
 ﻿using Sigaba.Primitives.Crypto;
+using System.Security.Cryptography;
 
 namespace Sigaba.Crypto.Services.Ciphers.V1;
 
-internal class CipherV1 : IVersionedCipher
+internal partial class CipherV1
+{
+    private static T TryExecute<T>(Func<T> action, string errorMessage)
+    {
+        try
+        {
+            return action();
+        }
+        catch (Exception ex) when (ex is FormatException || ex is CryptographicException)
+        {
+            throw new InvalidOperationException(errorMessage);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException(errorMessage, ex);
+        }
+    }
+}
+
+internal partial class CipherV1 : IVersionedCipher
 {
     byte IVersionedCipher.Version { get; } = 1;
 
@@ -13,32 +33,21 @@ internal class CipherV1 : IVersionedCipher
 
     EncryptedData ICipher.EncryptWithKey(PlainData plainData, PublicKey publicKey)
     {
-        try
-        {
-            return AsymmetricAlgoV1.Encrypt(plainData, publicKey);
-        }
-        catch (Exception ex) when (ex is FormatException)
-        {
-            throw new InvalidOperationException("Invalid public key.");
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException("Encryption failed.", ex);
-        }
+        return TryExecute(() => AsymmetricAlgoV1.Encrypt(plainData, publicKey), "Encryption failed.");
     }
 
     PlainData ICipher.DecryptWithKey(EncryptedData encryptedData, PrivateKey privateKey)
     {
-        return AsymmetricAlgoV1.Decrypt(encryptedData, privateKey);
+        return TryExecute(() => AsymmetricAlgoV1.Decrypt(encryptedData, privateKey), "Decryption failed.");
     }
 
     EncryptedData ICipher.EncryptWithPassword(PlainData plainData, string password)
     {
-        return PasswordAlgoV1.Encrypt(plainData, password);
+        return TryExecute(() => PasswordAlgoV1.Encrypt(plainData, password), "Encryption with password failed.");
     }
 
     PlainData ICipher.DecryptWithPassword(EncryptedData encryptedData, string password)
     {
-        return PasswordAlgoV1.Decrypt(encryptedData, password);
+        return TryExecute(() => PasswordAlgoV1.Decrypt(encryptedData, password), "Decryption with password failed.");
     }
 }
