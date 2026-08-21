@@ -13,7 +13,18 @@ internal class CipherV1 : IVersionedCipher
 
     EncryptedData ICipher.EncryptWithKey(PlainData plainData, PublicKey publicKey)
     {
-        return AsymmetricAlgoV1.Encrypt(plainData, publicKey);
+        try
+        {
+            return AsymmetricAlgoV1.Encrypt(plainData, publicKey);
+        }
+        catch (Exception ex) when (ex is FormatException)
+        {
+            throw new InvalidOperationException("Invalid public key.");
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("Encryption failed.", ex);
+        }
     }
 
     PlainData ICipher.DecryptWithKey(EncryptedData encryptedData, PrivateKey privateKey)

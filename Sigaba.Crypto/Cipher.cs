@@ -3,19 +3,32 @@ using Sigaba.Primitives.Crypto;
 
 namespace Sigaba.Crypto;
 
-internal partial class Cipher(IEnumerable<IVersionedCipher> versionedCiphers)
+internal partial class Cipher
 {
-    private IVersionedCipher GetCipherByVersion(int version)
+    private readonly Dictionary<byte, IVersionedCipher> versionToCipherMap;
+    private readonly IVersionedCipher latestVersionCipher;
+
+    public Cipher(IEnumerable<IVersionedCipher> versionedCiphers)
     {
-        var cipher = versionedCiphers.FirstOrDefault(c => c.Version == version);
-        return cipher ?? throw new InvalidOperationException($"No asymmetric cipher found for version {version}.");
+        versionToCipherMap = versionedCiphers
+            .GroupBy(c => c.Version)
+            .Select(g => g.Count() > 1
+                ? throw new ArgumentException($"Multiple asymmetric ciphers found for version {g.Key}.")
+                : g.Single())
+            .ToDictionary(c => c.Version);
+
+        latestVersionCipher = versionedCiphers.OrderByDescending(c => c.Version).FirstOrDefault()
+            ?? throw new ArgumentException("No asymmetric ciphers are available.");
     }
 
-    private IVersionedCipher GetLatestCipher()
+    private IVersionedCipher GetCipherByVersion(byte version)
     {
-        var latestCipher = versionedCiphers.OrderByDescending(c => c.Version).FirstOrDefault();
-        return latestCipher ?? throw new InvalidOperationException("No asymmetric ciphers are available.");
+        return versionToCipherMap.TryGetValue(version, out var cipher)
+            ? cipher
+            : throw new InvalidOperationException($"No asymmetric cipher found for version {version}.");
     }
+
+    private IVersionedCipher GetLatestCipher() => latestVersionCipher;
 }
 
 internal partial class Cipher : ICipher

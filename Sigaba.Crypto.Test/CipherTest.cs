@@ -27,6 +27,29 @@ public class CipherTest
         return service;
     }
 
+    // Instantiation
+
+    [Fact]
+    public void Should_throw_when_instantiating_referencing_ciphers_with_sameVersion()
+    {
+        var ciper1 = Substitute.For<IVersionedCipher>();
+        ciper1.Version.Returns<byte>(1);
+        var otherCipherV1 = Substitute.For<IVersionedCipher>();
+        otherCipherV1.Version.Returns<byte>(1);
+
+        var action = () => _ = new Cipher([ciper1, otherCipherV1]);
+
+        action.Should().Throw<ArgumentException>().WithMessage("Multiple asymmetric ciphers found for version 1.");
+    }
+
+    [Fact]
+    public void Should_throw_when_instantiating_with_no_ciphers()
+    {
+        var action = () => _ = new Cipher(Array.Empty<IVersionedCipher>());
+
+        action.Should().Throw<ArgumentException>().WithMessage("No asymmetric ciphers are available.");
+    }
+
     // GenerateKeys
 
     [Fact]

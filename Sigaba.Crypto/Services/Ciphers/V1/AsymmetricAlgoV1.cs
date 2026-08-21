@@ -58,12 +58,7 @@ internal static class AsymmetricAlgoV1
     public static PlainData Decrypt(IEncryptedData encryptedData, PrivateKey privateKey)
     {
         // Format: [ephemeralPublicKey (32 bytes)][ciphertext (includes tag)]
-        const int ephemeralPublicKeySize = 32; // X25519 public key size
-
-        if (encryptedData.Bytes.Length < ephemeralPublicKeySize)
-        {
-            throw new CryptographicException("Invalid encrypted data format: too short");
-        }
+        int ephemeralPublicKeySize = keyAgreementAlgorithm.PublicKeySize;
 
         // Extract ephemeral public key
         var ephemeralPublicKeyBytes = new byte[ephemeralPublicKeySize];
@@ -96,5 +91,4 @@ internal static class AsymmetricAlgoV1
 
         return new PlainData(plaintext);
     }
-
 }
