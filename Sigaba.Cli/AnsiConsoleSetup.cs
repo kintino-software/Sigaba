@@ -6,22 +6,23 @@ using Sigaba.Cli.Commands.Edit;
 using Sigaba.Cli.Commands.Encrypt;
 using Sigaba.Cli.Commands.Init;
 using Sigaba.Cli.DependencyInjection;
+using Sigaba.Cli.Models;
 using Spectre.Console.Cli;
 
 namespace Sigaba.Cli;
 
-public class AnsiConsoleSetup
+internal static class AnsiConsoleSetup
 {
-    public static ITypeRegistrar CreateTypeRegistrar(Action<IServiceCollection>? config = null)
+    public static ITypeRegistrar CreateTypeRegistrar(IGlobalOptions globalOptions, Action<IServiceCollection>? config = null)
     {
         var services = new ServiceCollection();
         services.AddApp();
-        services.AddCliApp();
+        services.AddCliApp(globalOptions);
         config?.Invoke(services);
         return new SpectreTypeRegistrar(services);
     }
 
-    public static void Configurator(IConfigurator config, Action<IConfigurator>? additionalConfig = null)
+    public static void Configure(this IConfigurator config, Action<IConfigurator>? additionalConfig = null)
     {
         config.SetApplicationName("sigaba");
         config.SetExceptionHandler(ExceptionHandler);
@@ -34,7 +35,7 @@ public class AnsiConsoleSetup
 
     private static int ExceptionHandler(Exception ex, ITypeResolver? resolver)
     {
-        var logger = (resolver?.Resolve(typeof(ILogger<AnsiConsoleSetup>)) as ILogger<AnsiConsoleSetup>)
+        var logger = (resolver?.Resolve(typeof(ILogger<Exception>)) as ILogger)
             ?? throw new ArgumentNullException(nameof(resolver));
 
         logger.LogError("Error: {message}", ex.Message);

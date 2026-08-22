@@ -29,6 +29,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Sigaba.Cli.Test" />
     <InternalsVisibleTo Include="Sigaba.Cli.IntegrationTest" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>

@@ -22,6 +22,7 @@
   <Folder Name="/UI/" />
   <Folder Name="/UI/Cli/">
     <Project Path="Sigaba.Cli.IntegrationTest/Sigaba.Cli.IntegrationTest.csproj" Id="1e021457-f8ac-4c1d-929c-66cfb48db55f" />
+    <Project Path="Sigaba.Cli.Test/Sigaba.Cli.Test.csproj" Id="690e8a45-89d9-45a3-8730-196aefe14fba" />
     <Project Path="Sigaba.Cli/Sigaba.Cli.csproj" />
   </Folder>
   <Folder Name="/_Solution items/">

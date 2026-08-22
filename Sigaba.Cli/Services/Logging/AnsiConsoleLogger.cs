@@ -3,11 +3,11 @@ using Spectre.Console;
 
 namespace Sigaba.Cli.Services.Logging;
 
-internal class AnsiConsoleLogger(string category, IAnsiConsole console) : ILogger
+internal class AnsiConsoleLogger(string categoryName, LogLevel minLevel, IAnsiConsole console) : ILogger
 {
     public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
 
-    public bool IsEnabled(LogLevel logLevel) => logLevel != LogLevel.None;
+    public bool IsEnabled(LogLevel logLevel) => logLevel >= minLevel;
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
