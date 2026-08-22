@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.FileSystemGlobbing;
-using Sigaba.Primitives;
 using Sigaba.Primitives.Crypto;
 using Sigaba.Primitives.FileSystem;
 using System.Text.Json;
@@ -83,7 +82,7 @@ internal partial class SigabaFileV1 : ISigabaFile
         var matcher = new Matcher();
         matcher.AddIncludePatterns(includeGlob);
         matcher.AddExcludePatterns(excludeGlob);
-        var matches = matcher.GetResultsInFullPath(rootFolder.Fs, rootFolder.Path);
+        var matches = matcher.GetResultsInFullPath(rootFolder.Fs, rootFolder.AbsolutePath);
         return matches.Select(f => rootFolder.Fs.NewFilePath(f));
     }
 

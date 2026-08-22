@@ -2,7 +2,6 @@
 using Sigaba.App.Services.SigabaFiles;
 using Sigaba.Crypto;
 using Sigaba.Documents;
-using Sigaba.Primitives;
 using Sigaba.Primitives.FileSystem;
 
 namespace Sigaba.App;
@@ -57,7 +56,8 @@ internal class SigabaApp(
     {
         var (sigabaFile, sigabaFilePath) = await sigabaFileManager.LoadAsync(editingFilePath.Parent());
 
-        if (!sigabaFile.GetTargetFiles(sigabaFilePath.Parent()).Contains(editingFilePath))
+        // Check if the file is part of the target files in the Sigaba file
+        if (!sigabaFile.GetTargetFiles(sigabaFilePath.Parent()).Any(f => f.AbsolutePath == editingFilePath.AbsolutePath))
             throw new InvalidOperationException(
                 $"The file '{editingFilePath}' is not part of Sigaba target files. Make sure you have the correct filter in {Constants.SigabaFileName}.");
 

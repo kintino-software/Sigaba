@@ -6,8 +6,6 @@ public sealed class DirPathTest
 {
     private readonly MockFileSystem fs = new();
 
-
-
     // Exists
 
     [Fact]
@@ -20,7 +18,6 @@ public sealed class DirPathTest
         existing.Exists.Should().BeTrue();
         nonExisting.Exists.Should().BeFalse();
     }
-
 
     // Parent
 
@@ -67,6 +64,30 @@ public sealed class DirPathTest
         var actual = dir.CombineAsFile("b.txt");
 
         actual.Should().Be(expected);
+    }
+
+    // Combine
+
+    [Fact]
+    public void Should_combine_with_file_path()
+    {
+        var dir = fs.NewDirPath("a", "b");
+        var file = fs.NewFilePath("c", "d", "file.txt");
+
+        var result = dir.Combine(file);
+
+        result.Path.Should().Be(fs.NewFilePath("a", "b", "c", "d", "file.txt").Path);
+    }
+
+    [Fact]
+    public void Should_combine_with_dir_path()
+    {
+        var dir = fs.NewDirPath("a", "b");
+        var subDir = fs.NewDirPath("c", "d");
+
+        var result = dir.Combine(subDir);
+
+        result.Path.Should().Be(fs.NewDirPath("a", "b", "c", "d").Path);
     }
 
     // EnsureCreated

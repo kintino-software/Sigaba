@@ -14,19 +14,47 @@ public class BasePathTest
     [Fact]
     public void Should_instantiate()
     {
+
         List<(string[], string)> inputExpectedList = [
             (["a.txt"],                 fs.Path.Combine("a.txt")),
-            (["a", "b.txt"],               fs.Path.Combine("a", "b.txt")),
+            (["a", "b.txt"],            fs.Path.Combine("a", "b.txt")),
             (["a", "b", "c", "d.txt"],  fs.Path.Combine("a", "b", "c", "d.txt"))
         ];
 
         foreach (var (input, expected) in inputExpectedList)
         {
             var obj = new DummyPath(fs, input);
+
             obj.Should().NotBeNull();
             obj.Fs.Should().Be(fs);
             obj.Path.Should().Be(expected);
         }
+    }
+
+    // AbssolutePath
+
+    [Fact]
+    public void Should_have_correct_absolute_paths()
+    {
+        fs.Directory.SetCurrentDirectory("cwd");
+        var obj1 = new DummyPath(fs, "a", "b", "c.txt"); // relative path
+        var obj2 = new DummyPath(fs, "a", "b", "..", "c.txt"); // relative path with parent directory
+
+        obj1.AbsolutePath.Should().Be(fs.Path.Combine(fs.Directory.GetCurrentDirectory(), "a", "b", "c.txt"));
+        obj2.AbsolutePath.Should().Be(fs.Path.Combine(fs.Directory.GetCurrentDirectory(), "a", "c.txt"));
+    }
+
+    // RelativePath
+
+    [Fact]
+    public void Should_have_correct_relative_path_from_cwd()
+    {
+        fs.Directory.SetCurrentDirectory("cwd");
+        var obj1 = new DummyPath(fs, "a", "b", "c.txt"); // relative path
+        var obj2 = new DummyPath(fs, "a", "b", "..", "c.txt"); // relative path with parent directory
+
+        obj1.RelativePath.Should().Be(fs.Path.Combine("a", "b", "c.txt"));
+        obj2.RelativePath.Should().Be(fs.Path.Combine("a", "c.txt"));
     }
 
     // equality

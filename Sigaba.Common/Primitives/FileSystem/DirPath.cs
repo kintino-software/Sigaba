@@ -1,9 +1,8 @@
-﻿using Sigaba.Primitives.FileSystem;
-using Sigaba.Primitives.FileSystem.Base;
+﻿using Sigaba.Primitives.FileSystem.Base;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
 
-namespace Sigaba.Primitives;
+namespace Sigaba.Primitives.FileSystem;
 
 public class DirPath(IFileSystem fs, params string[] parts) : BasePath(fs, parts)
 {
@@ -27,6 +26,18 @@ public class DirPath(IFileSystem fs, params string[] parts) : BasePath(fs, parts
     {
         var combinedPath = Fs.Path.Combine([Path, .. parts]);
         return new FilePath(Fs, combinedPath);
+    }
+
+    public FilePath Combine(FilePath filePath)
+    {
+        var combinedPath = Fs.Path.Combine(Path, filePath.Path);
+        return new FilePath(Fs, combinedPath);
+    }
+
+    public DirPath Combine(DirPath dirPath)
+    {
+        var combinedPath = Fs.Path.Combine(Path, dirPath.Path);
+        return new DirPath(Fs, combinedPath);
     }
 
     public void EnsureCreated()

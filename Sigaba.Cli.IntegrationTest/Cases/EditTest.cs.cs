@@ -17,7 +17,9 @@ public class EditTest : BaseTest
 
     [Theory]
     [InlineData("file1.secrets.json")]
+    [InlineData(".|file1.secrets.json")]
     [InlineData("subdir1|file1.secrets.json")]
+    [InlineData(".|subdir1|file1.secrets.json")]
     public async Task Should_edit_and_encrypt_files(string filePath)
     {
         var file1Path = Fs.Path.Combine(filePath.Split('|'));

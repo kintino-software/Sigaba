@@ -6,6 +6,8 @@ public abstract class BasePath : IEquatable<BasePath>
 {
     public IFileSystem Fs { get; }
     public string Path { get; }
+    public string AbsolutePath => Fs.Path.GetFullPath(Path);
+    public string RelativePath => Fs.Path.GetRelativePath(Fs.Directory.GetCurrentDirectory(), AbsolutePath);
 
     protected BasePath(IFileSystem fs, params string[] parts)
     {
