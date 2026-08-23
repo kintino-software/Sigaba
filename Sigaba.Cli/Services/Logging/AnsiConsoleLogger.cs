@@ -14,8 +14,6 @@ internal class AnsiConsoleLogger(string categoryName, LogLevel minLevel, IAnsiCo
         if (!IsEnabled(logLevel))
             return;
 
-        var message = formatter(state, exception);
-
         var color = logLevel switch
         {
             LogLevel.Trace => "grey",
@@ -27,9 +25,28 @@ internal class AnsiConsoleLogger(string categoryName, LogLevel minLevel, IAnsiCo
             _ => "white"
         };
 
+        var message = formatter(state, exception);
+
+        if (logLevel < LogLevel.Information)
+            WriteDetailed(message, color, exception);
+        else
+            WriteNormal(message, color, exception);
+    }
+
+    private void WriteNormal(string message, string color, Exception? exception)
+    {
         console.MarkupLine($"[{color}]{Markup.Escape(message)}[/]");
 
         if (exception is not null)
-            console.WriteException(exception, ExceptionFormats.ShortenPaths);
+            console.WriteException(exception, ExceptionFormats.NoStackTrace);
+    }
+
+    private void WriteDetailed(string message, string color, Exception? exception)
+    {
+        // add the category
+        console.MarkupLine($"[{color}][yellow]{categoryName}[/]: {Markup.Escape(message)}[/]");
+
+        if (exception is not null)
+            console.WriteException(exception, ExceptionFormats.ShortenTypes); // show the stack trace for detailed logs
     }
 }
