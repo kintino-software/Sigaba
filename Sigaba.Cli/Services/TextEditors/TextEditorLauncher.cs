@@ -14,7 +14,7 @@ internal static class TextEditorLauncher
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("Error editing file.", ex);
+            throw new InvalidOperationException($"Error launching process '{programName}' with argument '{filePath}'.", ex);
         }
     }
 }

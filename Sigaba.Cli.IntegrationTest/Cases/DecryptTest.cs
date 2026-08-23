@@ -78,7 +78,7 @@ public class DecryptTest : BaseTest
 
         result.ExitCode.Should().NotBe(0);
         App.Console.ShouldHaveOutputThatMatches("""
-            Error: No private key file found\.
+            Error: Private key not found on any of expected locations\.
             """);
     }
 }

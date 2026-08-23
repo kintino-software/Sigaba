@@ -1,19 +1,24 @@
-﻿using Sigaba.Primitives.FileSystem;
+﻿using Microsoft.Extensions.Logging;
+using Sigaba.Primitives.FileSystem;
 using Sigaba.Services;
 using System.IO.Abstractions;
 
 namespace Sigaba.App.Services.PrivateKeys;
 
-internal partial class PrivateKeyPathResolver(IFileSystem fs, IEnvironmentVariables env)
+internal class PrivateKeyPathResolver(
+    IFileSystem fs,
+    IEnvironmentVariables env,
+    ILogger<PrivateKeyPathResolver> logger)
+    : IPrivateKeyPathResolver
 {
+
     private FilePath GetDefaultPrivateKeyOutputPath(string projectId)
     {
         return fs.NewFilePath(Constants.SigabaSystemDir, projectId, Constants.PrivateKeyFileName);
     }
-}
 
-internal partial class PrivateKeyPathResolver : IPrivateKeyPathResolver
-{
+    // interface impl
+
     FilePath IPrivateKeyPathResolver.GetDefaultSavePath(string projectId)
     {
         return GetDefaultPrivateKeyOutputPath(projectId);
@@ -27,14 +32,33 @@ internal partial class PrivateKeyPathResolver : IPrivateKeyPathResolver
         var envVar = env.GetEnvironmentVariable(Constants.PrivateKeyDirEnvVarKey);
         if (envVar != null)
         {
-            yield return fs.NewFilePath(envVar, Constants.PrivateKeyFileName);
+            var filePath = fs.NewFilePath(envVar, Constants.PrivateKeyFileName);
+            logger.TryingGetPrivateKeyPathFrom(filePath.AbsolutePath);
+            yield return filePath;
+        }
+        else
+        {
+            logger.EnvironmentVariableNotFound(Constants.PrivateKeyDirEnvVarKey);
         }
 
         // #2. Get from project directory
-        yield return projectRootPath.CombineAsFile(Constants.PrivateKeyFileName);
+        var projectRootFilePath = projectRootPath.CombineAsFile(Constants.PrivateKeyFileName);
+        logger.TryingGetPrivateKeyPathFrom(projectRootFilePath.AbsolutePath);
+        yield return projectRootFilePath;
+
 
         // #3. Get from default system directory
-        yield return GetDefaultPrivateKeyOutputPath(projectId);
+        var defaultSystemFilePath = GetDefaultPrivateKeyOutputPath(projectId);
+        logger.TryingGetPrivateKeyPathFrom(defaultSystemFilePath.AbsolutePath);
+        yield return defaultSystemFilePath;
     }
+}
 
+public static partial class PrivateKeyPathResolverLogExtensions
+{
+    [LoggerMessage(EventId = 0, Level = LogLevel.Debug, Message = @"Trying to get private key path from ""{location}"".")]
+    public static partial void TryingGetPrivateKeyPathFrom(this ILogger logger, string location);
+
+    [LoggerMessage(EventId = 0, Level = LogLevel.Debug, Message = @"Environment variable ""{envVarKey}"" not found.")]
+    public static partial void EnvironmentVariableNotFound(this ILogger logger, string envVarKey);
 }

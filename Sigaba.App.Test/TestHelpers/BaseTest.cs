@@ -1,4 +1,5 @@
-﻿using System.IO.Abstractions.TestingHelpers;
+﻿using Microsoft.Extensions.Logging;
+using System.IO.Abstractions.TestingHelpers;
 
 namespace Sigaba.App.TestHelpers;
 
@@ -6,4 +7,6 @@ namespace Sigaba.App.TestHelpers;
 public abstract class BaseTest
 {
     protected MockFileSystem Fs { get; } = new();
+
+    public static ILogger<T> CreateLogger<T>() => Substitute.For<ILogger<T>>();
 }

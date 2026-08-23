@@ -11,7 +11,7 @@ public class PrivateKeyManagerTest : BaseTest
 
     private IPrivateKeyManager CreateService()
     {
-        return new PrivateKeyManager(cipher, pathResolver);
+        return new PrivateKeyManager(cipher, pathResolver, CreateLogger<PrivateKeyManager>());
     }
 
     private void SetupCipher()

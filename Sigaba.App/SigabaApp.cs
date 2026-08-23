@@ -17,10 +17,11 @@ internal class SigabaApp(
         var (publicKey, privateKey) = cipher.GenerateKeys();
 
         var sigabaFile = sigabaFileManager.CreateDefault(publicKey);
+
         var privateKeyResult = await privateKeyManager.SaveAsync(privateKey, sigabaFile.ProjectId, options.PrivateKeyPassword);
         var sigabaFileResult = await sigabaFileManager.SaveAsync(sigabaFile, options.SigabaFileOutputDir);
 
-        return new InitializationResult(sigabaFileResult.OutputPath, privateKeyResult.OupuptPath);
+        return new InitializationResult(sigabaFileResult.OutputPath, privateKeyResult.OutputPath);
     }
 
     async Task<CipherResult> ISigabaApp.CipherFilesAsync(DirPath referenceFolderPath)
@@ -66,5 +67,4 @@ internal class SigabaApp(
 
         return new EditFileResult(editingFilePath);
     }
-
 }

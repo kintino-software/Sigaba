@@ -1,4 +1,5 @@
-﻿using Sigaba.Crypto;
+﻿using Microsoft.Extensions.Logging;
+using Sigaba.Crypto;
 using Sigaba.Documents.Models;
 using Sigaba.Documents.Services;
 using Sigaba.Primitives.Crypto;
@@ -8,7 +9,7 @@ using System.Text;
 
 namespace Sigaba.Documents;
 
-internal partial class FileCipher(ICipher cipher)
+internal class FileCipher(ICipher cipher, ILogger<FileCipher> logger) : IFileCipher
 {
     private static async Task<IDocumentModel> LoadDocumentModelFromFileAsync(FilePath filePath)
     {
@@ -18,10 +19,11 @@ internal partial class FileCipher(ICipher cipher)
         return document;
     }
 
-    private static async Task SaveChangedDocumentAsync(IDocumentModel document, FilePath filePath)
+    private async Task SaveChangedDocumentAsync(IDocumentModel document, FilePath filePath)
     {
         var newContent = document.Serialize();
         await filePath.WriteAsync(newContent, overwrite: true);
+        logger.ChangesSavedSuccessfully(filePath);
     }
 
     public static bool IsEncryptedFieldValue(string? str)
@@ -51,9 +53,9 @@ internal partial class FileCipher(ICipher cipher)
         rawValue = null;
 
         // First try to get the value as string to check if its encrypted or not
-        // if the value is not even an string, means that is not already encripted.
-        // We dont get the raw value at this point because each document would have it's own formarting
-        // and we need an agnostic way to check if the value is already encrypted or not.
+        // if the value is not even an string, means that is not encrypted.
+        // We dont get the raw value at this point because each document would have it's own content formatting
+        // and we need an document-agnostic way to check if the value is already encrypted or not.
         if (document.TryGetValue<string>(fieldName, out var value))
         {
             // as the value is a string, we check if it is already encrypted, if so we skip it
@@ -100,14 +102,18 @@ internal partial class FileCipher(ICipher cipher)
         var rawValue = Encoding.UTF8.GetString(rawValueBytes); // 1. raw <- utf8 bytes
         return rawValue;
     }
-}
 
-internal partial class FileCipher : IFileCipher
-{
+    // interface impl.
+
     async ValueTask IFileCipher.CipherFile(FilePath filePath, PublicKey publicKey, Predicate<string> fieldFilter)
     {
+        logger.EvaluatingDocumentModel(filePath);
         var document = await LoadDocumentModelFromFileAsync(filePath);
+        logger.LoadedDocumentModel(document.GetType().Name);
+
         var fieldNames = document.GetFieldNames().Where(f => fieldFilter(f)).ToList();
+        logger.FilteredFielNames(fieldNames.Count, string.Join(", ", fieldNames));
+
         if (fieldNames.Count < 1)
             return;
 
@@ -115,6 +121,7 @@ internal partial class FileCipher : IFileCipher
         {
             if (TryGetValueToEncrypt(document, fieldName, out var rawValue))
             {
+                logger.EncryptedField(fieldName);
                 var encripted = EncryptFieldValue(rawValue, publicKey);
                 document.SetFieldValue(fieldName, encripted);
             }
@@ -131,6 +138,7 @@ internal partial class FileCipher : IFileCipher
         {
             if (TryGetValueToDecrypt(document, field, out var value))
             {
+                logger.DecryptedField(field);
                 var rawValue = DecryptFieldValue(value, privateKey);
                 document.SetFieldRawValue(field, rawValue);
             }
@@ -138,4 +146,26 @@ internal partial class FileCipher : IFileCipher
 
         await SaveChangedDocumentAsync(document, filePath);
     }
+}
+
+internal static partial class FileCipherLogExtensions
+{
+    [LoggerMessage(1, LogLevel.Debug, @"Evaluating document model for file: ""{FilePath}""")]
+    public static partial void EvaluatingDocumentModel(this ILogger<FileCipher> logger, FilePath filePath);
+
+    [LoggerMessage(2, LogLevel.Debug, "Loaded document model: {DocumentModelType}")]
+    public static partial void LoadedDocumentModel(this ILogger<FileCipher> logger, string documentModelType);
+
+    [LoggerMessage(3, LogLevel.Debug, "Changes saved successfully to file: {FilePath}")]
+    public static partial void ChangesSavedSuccessfully(this ILogger<FileCipher> logger, FilePath filePath);
+
+    [LoggerMessage(3, LogLevel.Debug, "Filtered {Count} field(s): {FieldNames}")]
+    public static partial void FilteredFielNames(this ILogger<FileCipher> logger, int count, string fieldNames);
+
+    [LoggerMessage(3, LogLevel.Debug, "Encrypted field: {FieldName}")]
+    public static partial void EncryptedField(this ILogger<FileCipher> logger, string fieldName);
+
+    [LoggerMessage(3, LogLevel.Debug, "Decrypted field: {FieldName}")]
+    public static partial void DecryptedField(this ILogger<FileCipher> logger, string fieldName);
+
 }

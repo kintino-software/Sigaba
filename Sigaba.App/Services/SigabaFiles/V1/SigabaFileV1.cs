@@ -7,12 +7,13 @@ using Vipentti.IO.Abstractions.FileSystemGlobbing;
 
 namespace Sigaba.App.Services.SigabaFiles.V1;
 
-internal partial class SigabaFileV1(
+internal class SigabaFileV1(
     string fieldRegexPattern,
     string[] includeGlob,
     string[] excludeGlob,
     string projectId,
     PublicKey publicKey)
+    : ISigabaFile
 {
     private readonly Lazy<Regex> lazyFieldNameRegex = new(() => new Regex(fieldRegexPattern, RegexOptions.IgnoreCase));
     private PublicKey currentPublicKey = publicKey;
@@ -62,10 +63,9 @@ internal partial class SigabaFileV1(
             projectId: schema.Meta.ProjectId,
             publicKey: PublicKey.FromBase64(schema.Meta.PublicKeyBase64));
     }
-}
 
-internal partial class SigabaFileV1 : ISigabaFile
-{
+    // interface impl.
+
     int ISigabaFile.Version { get; } = 1;
 
     string ISigabaFile.ProjectId { get => projectId; }

@@ -1,27 +1,29 @@
-﻿using Sigaba.App;
+﻿using Microsoft.Extensions.Logging;
+using Sigaba.App;
 using Sigaba.Primitives.FileSystem;
 
 namespace Sigaba.Cli.Services.TextEditors;
 
-internal class TextEditor : ITextEditor
+internal class TextEditor(ILogger<TextEditor> logger) : ITextEditor
 {
     public Task EditFile(FilePath filePath)
     {
-        if (OperatingSystem.IsWindows())
-        {
-            return TextEditorLauncher.Launch("edit", filePath);
-        }
-        else if (OperatingSystem.IsLinux())
-        {
-            return TextEditorLauncher.Launch("vi", filePath);
-        }
-        else if (OperatingSystem.IsMacOS())
-        {
-            return TextEditorLauncher.Launch("nano", filePath);
-        }
-        else
-        {
-            throw new NotSupportedException("Text editor is not available for this operating system.");
-        }
+        string? programName = OperatingSystem.IsWindows() ? "edit" :
+                             OperatingSystem.IsLinux() ? "vi" :
+                             OperatingSystem.IsMacOS() ? "nano" :
+                             throw new NotSupportedException("Text editor is not available for this operating system.");
+
+        logger.TryingLaunchEditor(programName, filePath);
+
+        return TextEditorLauncher.Launch(programName, filePath);
     }
+}
+
+public static partial class TextEditorLauncherLoggerExtensions
+{
+    [LoggerMessage(
+        EventId = 1,
+        Level = LogLevel.Debug,
+        Message = "Launching text editor '{ProgramName}' for file '{FilePath}'")]
+    public static partial void TryingLaunchEditor(this ILogger logger, string programName, FilePath filePath);
 }

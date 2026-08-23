@@ -1,4 +1,5 @@
-﻿using Sigaba.Documents.TestHelpers;
+﻿using Microsoft.Extensions.Logging;
+using Sigaba.Documents.TestHelpers;
 using Sigaba.Primitives.Crypto;
 using System.IO.Abstractions.TestingHelpers;
 
@@ -6,13 +7,14 @@ namespace Sigaba.Documents;
 
 public class FileCipherTest
 {
+    private readonly ILogger<FileCipher> logger = Substitute.For<ILogger<FileCipher>>();
     private readonly MockFileSystem fs = new();
     private readonly FakeCipher cipher = new FakeCipher().CheckKeysAndPasswords(false);
     private readonly Predicate<string> fieldFilter = (f) => f.Contains("_secret");
 
     private IFileCipher CreateService()
     {
-        return new FileCipher(cipher);
+        return new FileCipher(cipher, logger);
     }
 
     // CipherFile
