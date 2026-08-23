@@ -33,7 +33,7 @@ internal class PrivateKeyPathResolver(
         if (envVar != null)
         {
             var filePath = fs.NewFilePath(envVar, Constants.PrivateKeyFileName);
-            logger.TryingGetPrivateKeyPathFrom(filePath.AbsolutePath);
+            logger.TryingGetPrivateKeyPathFrom(filePath);
             yield return filePath;
         }
         else
@@ -43,13 +43,13 @@ internal class PrivateKeyPathResolver(
 
         // #2. Get from project directory
         var projectRootFilePath = projectRootPath.CombineAsFile(Constants.PrivateKeyFileName);
-        logger.TryingGetPrivateKeyPathFrom(projectRootFilePath.AbsolutePath);
+        logger.TryingGetPrivateKeyPathFrom(projectRootFilePath);
         yield return projectRootFilePath;
 
 
         // #3. Get from default system directory
         var defaultSystemFilePath = GetDefaultPrivateKeyOutputPath(projectId);
-        logger.TryingGetPrivateKeyPathFrom(defaultSystemFilePath.AbsolutePath);
+        logger.TryingGetPrivateKeyPathFrom(defaultSystemFilePath);
         yield return defaultSystemFilePath;
     }
 }
@@ -57,7 +57,7 @@ internal class PrivateKeyPathResolver(
 public static partial class PrivateKeyPathResolverLogExtensions
 {
     [LoggerMessage(EventId = 0, Level = LogLevel.Debug, Message = @"Trying to get private key path from ""{location}"".")]
-    public static partial void TryingGetPrivateKeyPathFrom(this ILogger logger, string location);
+    public static partial void TryingGetPrivateKeyPathFrom(this ILogger logger, FilePath location);
 
     [LoggerMessage(EventId = 0, Level = LogLevel.Debug, Message = @"Environment variable ""{envVarKey}"" not found.")]
     public static partial void EnvironmentVariableNotFound(this ILogger logger, string envVarKey);

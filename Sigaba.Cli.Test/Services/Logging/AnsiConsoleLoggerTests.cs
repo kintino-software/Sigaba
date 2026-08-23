@@ -9,10 +9,10 @@ public class AnsiConsoleLoggerTests
 
     private readonly TestConsole console = new();
 
-    private AnsiConsoleLogger CreateLogger(string name = "foo", LogLevel logLevel = LogLevel.Information) => new(name, logLevel, console);
+    private AnsiConsoleLogger CreateLogger() => new(console);
 
     [Fact]
-    public void Log_should_log()
+    public void Should_log()
     {
         var logger = CreateLogger();
 
@@ -33,11 +33,15 @@ public class AnsiConsoleLoggerTests
     }
 
     [Fact]
-    public void IsEnabled_should_match_the_log_level()
+    public void Should_enable_log_levels_correctly()
     {
-        CreateLogger(logLevel: LogLevel.Warning).IsEnabled(LogLevel.Information).Should().BeFalse();
-        CreateLogger(logLevel: LogLevel.Information).IsEnabled(LogLevel.Information).Should().BeTrue();
-        CreateLogger(logLevel: LogLevel.Information).IsEnabled(LogLevel.Warning).Should().BeTrue();
+        CreateLogger().IsEnabled(LogLevel.Trace).Should().BeTrue();
+        CreateLogger().IsEnabled(LogLevel.Debug).Should().BeTrue();
+        CreateLogger().IsEnabled(LogLevel.Information).Should().BeTrue();
+        CreateLogger().IsEnabled(LogLevel.Warning).Should().BeTrue();
+        CreateLogger().IsEnabled(LogLevel.Error).Should().BeTrue();
+        CreateLogger().IsEnabled(LogLevel.Critical).Should().BeTrue();
+        CreateLogger().IsEnabled(LogLevel.None).Should().BeFalse();
     }
 }
 

@@ -55,10 +55,13 @@ internal class SigabaApp(
 
     async Task<EditFileResult> ISigabaApp.EditFileAsync(ITextEditor textEditor, FilePath editingFilePath)
     {
+        if (!editingFilePath.Exists)
+            throw new FileNotFoundException($"The file '{editingFilePath}' does not exist.");
+
         var (sigabaFile, sigabaFilePath) = await sigabaFileManager.LoadAsync(editingFilePath.Parent());
 
         // Check if the file is part of the target files in the Sigaba file
-        if (!sigabaFile.GetTargetFiles(sigabaFilePath.Parent()).Any(f => f.AbsolutePath == editingFilePath.AbsolutePath))
+        if (!sigabaFile.IsTargetFile(editingFilePath, sigabaFilePath.Parent()))
             throw new InvalidOperationException(
                 $"The file '{editingFilePath}' is not part of Sigaba target files. Make sure you have the correct filter in {Constants.SigabaFileName}.");
 

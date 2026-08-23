@@ -11,10 +11,9 @@ internal static class LoggerExtensions
         {
             return verbosity switch
             {
-                VerbosityLevel.Diagnostic => LogLevel.Trace,
-                VerbosityLevel.Detailed => LogLevel.Debug,
+                VerbosityLevel.Quiet => LogLevel.None,
                 VerbosityLevel.Normal => LogLevel.Information,
-                VerbosityLevel.Minimal => LogLevel.Warning,
+                VerbosityLevel.Detailed => LogLevel.Debug,
                 _ => LogLevel.Information,
             };
         }

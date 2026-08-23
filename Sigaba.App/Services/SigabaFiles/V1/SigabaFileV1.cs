@@ -64,6 +64,14 @@ internal class SigabaFileV1(
             publicKey: PublicKey.FromBase64(schema.Meta.PublicKeyBase64));
     }
 
+    public Matcher CreateMatcher()
+    {
+        var matcher = new Matcher();
+        matcher.AddIncludePatterns(includeGlob);
+        matcher.AddExcludePatterns(excludeGlob);
+        return matcher;
+    }
+
     // interface impl.
 
     int ISigabaFile.Version { get; } = 1;
@@ -79,12 +87,16 @@ internal class SigabaFileV1(
 
     IEnumerable<FilePath> ISigabaFile.GetTargetFiles(DirPath rootFolder)
     {
-        var matcher = new Matcher();
-        matcher.AddIncludePatterns(includeGlob);
-        matcher.AddExcludePatterns(excludeGlob);
-        var matches = matcher.GetResultsInFullPath(rootFolder.Fs, rootFolder.AbsolutePath);
+        var matcher = CreateMatcher();
+        var matches = matcher.GetResultsInFullPath(rootFolder.Fs, rootFolder.Path);
         return matches.Select(f => rootFolder.Fs.NewFilePath(f));
     }
 
+    bool ISigabaFile.IsTargetFile(FilePath filePath, DirPath rootFolder)
+    {
+        var matcher = CreateMatcher();
+        var result = matcher.Match(rootFolder.Path, filePath.Path);
+        return result.HasMatches;
+    }
 }
 

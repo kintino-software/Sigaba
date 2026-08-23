@@ -19,7 +19,7 @@ internal static class ServicesExtensions
             .AddLogging(builder =>
             {
                 builder.AddAnsiConsole();
-                builder.SetMinimumLevel(LogLevel.Information);
+                builder.SetMinimumLevel(globalOptions.Verbosity.ToLogLevel());
             })
             .AddSingleton<ITextEditor, TextEditor>()
             .AddSingleton<IAnsiConsole>(_ => AnsiConsole.Console)

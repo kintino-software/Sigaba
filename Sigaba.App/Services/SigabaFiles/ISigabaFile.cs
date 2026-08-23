@@ -10,7 +10,7 @@ public interface ISigabaFile
     PublicKey PublicKey { get; set; }
     bool FieldNamePredicate(string name);
     IEnumerable<FilePath> GetTargetFiles(DirPath rootFolder);
-
+    bool IsTargetFile(FilePath filePath, DirPath rootFolder);
 }
 
 

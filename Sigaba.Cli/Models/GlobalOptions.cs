@@ -19,10 +19,6 @@ internal class GlobalOptions : IGlobalOptions
                         options.Verbosity = logLevel;
                         i++; // Skip the next argument since it's the value for --verbosity
                     }
-                    else
-                    {
-                        throw new ArgumentException("Invalid or missing value for --verbosity");
-                    }
                     break;
                 case "-q":
                 case "--quiet":

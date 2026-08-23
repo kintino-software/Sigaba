@@ -1,3 +1,8 @@
 ﻿namespace Sigaba.Cli.Models;
 
-public enum VerbosityLevel { Quiet, Minimal, Normal, Detailed, Diagnostic }
+public enum VerbosityLevel
+{
+    Detailed = 0,
+    Normal = 1,
+    Quiet = 2,
+}

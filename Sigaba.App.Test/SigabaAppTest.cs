@@ -112,22 +112,40 @@ public class SigabaAppTest : BaseTest
     [Fact]
     public async Task Should_edit_files()
     {
-        var filePathArg = Fs.NewFilePath("a", "b", "file1.txt");
+        var filePathArg = Fs.AddMockFilePath(string.Empty, "a", "b", "file1.txt");
         var textEditorArg = Substitute.For<ITextEditor>();
         var service = CreateService();
-        sigabaFile.GetTargetFiles(default).ReturnsForAnyArgs([filePathArg]);
+
+        sigabaFile.IsTargetFile(default, default).ReturnsForAnyArgs(true);
         SetupSigabaFileManager();
 
+        //
+
         await service.EditFileAsync(textEditorArg, filePathArg);
+
+        //
 
         await textEditorArg.Received().EditFile(filePathArg);
         await fileCipher.Received().CipherFile(filePathArg, Arg.Any<PublicKey>(), Arg.Any<Predicate<string>>());
     }
 
     [Fact]
+    public async Task Should_throw_when_file_does_not_exist()
+    {
+        var filePathArg = Fs.NewFilePath("a", "b", "file1.txt"); // created path without writing a file to it
+        var textEditorArg = Substitute.For<ITextEditor>();
+        var service = CreateService();
+
+        var action = () => service.EditFileAsync(textEditorArg, filePathArg);
+
+        await action.Should().ThrowAsync<FileNotFoundException>()
+            .WithMessage("The file '*' does not exist.");
+    }
+
+    [Fact]
     public async Task Should_throw_when_editing_file_outside_of_a_sigaba_file_context()
     {
-        var filePathArg = Fs.NewFilePath("a", "b", "file1.txt");
+        var filePathArg = Fs.AddMockFilePath(string.Empty, "a", "b", "file1.txt");
         var textEditorArg = Substitute.For<ITextEditor>();
         var service = CreateService();
         sigabaFile.GetTargetFiles(default).ReturnsForAnyArgs([Fs.NewFilePath("a", "b", "other-file.txt")]);

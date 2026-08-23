@@ -31,30 +31,18 @@ public class BasePathTest
         }
     }
 
-    // AbssolutePath
+    // IsAbsolute
 
     [Fact]
-    public void Should_have_correct_absolute_paths()
+    public void Should_have_know_if_its_absolute()
     {
         fs.Directory.SetCurrentDirectory("cwd");
-        var obj1 = new DummyPath(fs, "a", "b", "c.txt"); // relative path
-        var obj2 = new DummyPath(fs, "a", "b", "..", "c.txt"); // relative path with parent directory
+        var cwd = fs.Directory.GetCurrentDirectory();
 
-        obj1.AbsolutePath.Should().Be(fs.Path.Combine(fs.Directory.GetCurrentDirectory(), "a", "b", "c.txt"));
-        obj2.AbsolutePath.Should().Be(fs.Path.Combine(fs.Directory.GetCurrentDirectory(), "a", "c.txt"));
-    }
-
-    // RelativePath
-
-    [Fact]
-    public void Should_have_correct_relative_path_from_cwd()
-    {
-        fs.Directory.SetCurrentDirectory("cwd");
-        var obj1 = new DummyPath(fs, "a", "b", "c.txt"); // relative path
-        var obj2 = new DummyPath(fs, "a", "b", "..", "c.txt"); // relative path with parent directory
-
-        obj1.RelativePath.Should().Be(fs.Path.Combine("a", "b", "c.txt"));
-        obj2.RelativePath.Should().Be(fs.Path.Combine("a", "c.txt"));
+        new DummyPath(fs, cwd).IsAbsolute.Should().BeTrue();
+        new DummyPath(fs, cwd, "a", "b").IsAbsolute.Should().BeTrue();
+        new DummyPath(fs, "a").IsAbsolute.Should().BeFalse();
+        new DummyPath(fs, "a", "b").IsAbsolute.Should().BeFalse();
     }
 
     // equality
