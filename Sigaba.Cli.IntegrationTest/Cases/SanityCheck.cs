@@ -1,4 +1,4 @@
-﻿namespace Sigaba.Cli.Cases;
+﻿namespace Sigaba.Cli.IntegrationTest.Cases;
 
 public class SanityCheck : BaseTest
 {

@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.FileSystemGlobbing;
-using Sigaba.Primitives;
 using Sigaba.Primitives.Crypto;
 using Sigaba.Primitives.FileSystem;
 using System.Text.Json;
@@ -8,12 +7,13 @@ using Vipentti.IO.Abstractions.FileSystemGlobbing;
 
 namespace Sigaba.App.Services.SigabaFiles.V1;
 
-internal partial class SigabaFileV1(
+internal class SigabaFileV1(
     string fieldRegexPattern,
     string[] includeGlob,
     string[] excludeGlob,
     string projectId,
     PublicKey publicKey)
+    : ISigabaFile
 {
     private readonly Lazy<Regex> lazyFieldNameRegex = new(() => new Regex(fieldRegexPattern, RegexOptions.IgnoreCase));
     private PublicKey currentPublicKey = publicKey;
@@ -63,10 +63,17 @@ internal partial class SigabaFileV1(
             projectId: schema.Meta.ProjectId,
             publicKey: PublicKey.FromBase64(schema.Meta.PublicKeyBase64));
     }
-}
 
-internal partial class SigabaFileV1 : ISigabaFile
-{
+    public Matcher CreateMatcher()
+    {
+        var matcher = new Matcher();
+        matcher.AddIncludePatterns(includeGlob);
+        matcher.AddExcludePatterns(excludeGlob);
+        return matcher;
+    }
+
+    // interface impl.
+
     int ISigabaFile.Version { get; } = 1;
 
     string ISigabaFile.ProjectId { get => projectId; }
@@ -80,12 +87,16 @@ internal partial class SigabaFileV1 : ISigabaFile
 
     IEnumerable<FilePath> ISigabaFile.GetTargetFiles(DirPath rootFolder)
     {
-        var matcher = new Matcher();
-        matcher.AddIncludePatterns(includeGlob);
-        matcher.AddExcludePatterns(excludeGlob);
+        var matcher = CreateMatcher();
         var matches = matcher.GetResultsInFullPath(rootFolder.Fs, rootFolder.Path);
         return matches.Select(f => rootFolder.Fs.NewFilePath(f));
     }
 
+    bool ISigabaFile.IsTargetFile(FilePath filePath, DirPath rootFolder)
+    {
+        var matcher = CreateMatcher();
+        var result = matcher.Match(rootFolder.Path, filePath.Path);
+        return result.HasMatches;
+    }
 }
 

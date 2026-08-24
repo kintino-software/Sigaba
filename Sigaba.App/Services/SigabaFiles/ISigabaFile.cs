@@ -1,5 +1,4 @@
-﻿using Sigaba.Primitives;
-using Sigaba.Primitives.Crypto;
+﻿using Sigaba.Primitives.Crypto;
 using Sigaba.Primitives.FileSystem;
 
 namespace Sigaba.App.Services.SigabaFiles;
@@ -11,7 +10,7 @@ public interface ISigabaFile
     PublicKey PublicKey { get; set; }
     bool FieldNamePredicate(string name);
     IEnumerable<FilePath> GetTargetFiles(DirPath rootFolder);
-
+    bool IsTargetFile(FilePath filePath, DirPath rootFolder);
 }
 
 

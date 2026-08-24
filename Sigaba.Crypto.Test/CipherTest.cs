@@ -1,4 +1,5 @@
-﻿using Sigaba.Crypto.Adaptors;
+﻿using Microsoft.Extensions.Logging;
+using Sigaba.Crypto.Adaptors;
 using Sigaba.Crypto.Services.Ciphers;
 using Sigaba.Primitives.Crypto;
 
@@ -6,6 +7,7 @@ namespace Sigaba.Crypto;
 
 public class CipherTest
 {
+    private readonly ILogger<Cipher> logger = Substitute.For<ILogger<Cipher>>();
     private readonly IVersionedCipher fakeCipherV1 = Substitute.For<IVersionedCipher>();
     private readonly IVersionedCipher fakeCipherV2 = Substitute.For<IVersionedCipher>();
 
@@ -21,10 +23,33 @@ public class CipherTest
         }
     }
 
-    private static ICipher CreateService(IVersionedCipher[] ciphers)
+    private ICipher CreateService(IVersionedCipher[] ciphers)
     {
-        var service = new Cipher(ciphers);
+        var service = new Cipher(logger, ciphers);
         return service;
+    }
+
+    // Instantiation
+
+    [Fact]
+    public void Should_throw_when_instantiating_referencing_ciphers_with_sameVersion()
+    {
+        var ciper1 = Substitute.For<IVersionedCipher>();
+        ciper1.Version.Returns<byte>(1);
+        var otherCipherV1 = Substitute.For<IVersionedCipher>();
+        otherCipherV1.Version.Returns<byte>(1);
+
+        var action = () => _ = new Cipher(logger, [ciper1, otherCipherV1]);
+
+        action.Should().Throw<ArgumentException>().WithMessage("Multiple asymmetric ciphers found for version 1.");
+    }
+
+    [Fact]
+    public void Should_throw_when_instantiating_with_no_ciphers()
+    {
+        var action = () => _ = new Cipher(logger, []);
+
+        action.Should().Throw<ArgumentException>().WithMessage("No asymmetric ciphers are available.");
     }
 
     // GenerateKeys

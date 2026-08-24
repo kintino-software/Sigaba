@@ -1,24 +1,22 @@
-﻿using Sigaba.App;
-using Sigaba.Cli.Services.Diagnostics;
+﻿using Microsoft.Extensions.Logging;
+using Sigaba.App;
+using Sigaba.Cli.Models;
 using Sigaba.Primitives.FileSystem;
-using Spectre.Console;
 using Spectre.Console.Cli;
 using System.IO.Abstractions;
 
 namespace Sigaba.Cli.Commands.Encrypt;
 
-internal class EncryptCommand(ISigabaApp app, IFileSystem fs, IAnsiConsole console, CliStopWatch stopWatch) : AsyncCommand
+internal class EncryptCommand(
+    IGlobalOptions globalOptions,
+    ISigabaApp app,
+    IFileSystem fs,
+    ILogger<EncryptCommand> logger) : BaseCommand(globalOptions)
 {
-    protected override async Task<int> ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
+    protected override async Task<int> ExecuteCoreAsync(CommandContext context, BaseCommandSettings settings, CancellationToken cancellationToken)
     {
-        var result = await stopWatch.MeasureAsync(() => app.CipherFilesAsync(fs.NewCwdDirPath()));
-
-        console.WriteSuccessLine($"{result.PathsOfFilesAffected.Count()} file(s) encrypted:");
-        foreach (var file in result.PathsOfFilesAffected)
-        {
-            console.WriteSuccessLine($"    {file}");
-        }
-
+        var result = await app.CipherFilesAsync(fs.NewCwdDirPath());
+        logger.LogCipherResult(LogLevel.Information, result);
         return 0;
     }
 }

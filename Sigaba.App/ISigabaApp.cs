@@ -1,5 +1,4 @@
-﻿using Sigaba.Primitives;
-using Sigaba.Primitives.FileSystem;
+﻿using Sigaba.Primitives.FileSystem;
 
 namespace Sigaba.App;
 

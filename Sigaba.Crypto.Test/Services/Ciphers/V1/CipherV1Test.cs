@@ -34,13 +34,9 @@ public class CipherV1Test
     [Fact]
     public void Should_throw_when_encrypting_with_invalid_public_key()
     {
-        var (publicKey, _) = service.GenerateKeys();
-        var original = new PlainData(Encoding.UTF8.GetBytes("This is a secrete message."));
-        publicKey = new PublicKey([.. publicKey.Bytes, 1]);
+        var action = () => service.EncryptWithKey(PlainData.Any(), PublicKey.Any());
 
-        var action = () => service.EncryptWithKey(original, publicKey);
-
-        action.Should().Throw<Exception>();
+        action.Should().Throw<InvalidOperationException>().WithMessage("Encryption failed.");
     }
 
     // DecryptWithKey

@@ -47,32 +47,16 @@ internal static class AsymmetricAlgoV1
         var nonce = new byte[aeadAlgorithm.NonceSize];
         var ciphertext = aeadAlgorithm.Encrypt(encryptionKey, nonce, ephemeralPublicKeyBytes, plainData.Bytes);
 
-        // Format: [ephemeralPublicKey (32 bytes)][ciphertext (includes tag)]
-        var result = new byte[ephemeralPublicKeyBytes.Length + ciphertext.Length];
-        Buffer.BlockCopy(ephemeralPublicKeyBytes, 0, result, 0, ephemeralPublicKeyBytes.Length);
-        Buffer.BlockCopy(ciphertext, 0, result, ephemeralPublicKeyBytes.Length, ciphertext.Length);
-
-        return new EncryptedData(result);
+        var result = ByteMerger.FromSplitedData(ephemeralPublicKeyBytes, ciphertext);
+        return new EncryptedData(result.Merge());
     }
 
     public static PlainData Decrypt(IEncryptedData encryptedData, PrivateKey privateKey)
     {
-        // Format: [ephemeralPublicKey (32 bytes)][ciphertext (includes tag)]
-        const int ephemeralPublicKeySize = 32; // X25519 public key size
+        ByteMerger.FromMergedData(encryptedData.Bytes)
+            .Split(keyAgreementAlgorithm.PublicKeySize, out var ephemeralPublicKeyBytes, out var ciphertext);
 
-        if (encryptedData.Bytes.Length < ephemeralPublicKeySize)
-        {
-            throw new CryptographicException("Invalid encrypted data format: too short");
-        }
-
-        // Extract ephemeral public key
-        var ephemeralPublicKeyBytes = new byte[ephemeralPublicKeySize];
-        Buffer.BlockCopy(encryptedData.Bytes, 0, ephemeralPublicKeyBytes, 0, ephemeralPublicKeySize);
         var ephemeralPublicKey = NSec.PublicKey.Import(keyAgreementAlgorithm, ephemeralPublicKeyBytes, NSec.KeyBlobFormat.RawPublicKey);
-
-        // Extract ciphertext
-        var ciphertext = new byte[encryptedData.Bytes.Length - ephemeralPublicKeySize];
-        Buffer.BlockCopy(encryptedData.Bytes, ephemeralPublicKeySize, ciphertext, 0, ciphertext.Length);
 
         // Import recipient's private key
         using var recipientPrivateKey = NSec.Key.Import(keyAgreementAlgorithm, privateKey.Bytes, NSec.KeyBlobFormat.RawPrivateKey);
@@ -96,5 +80,4 @@ internal static class AsymmetricAlgoV1
 
         return new PlainData(plaintext);
     }
-
 }

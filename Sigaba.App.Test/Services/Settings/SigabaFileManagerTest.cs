@@ -7,7 +7,7 @@ public class SigabaFileManagerTest(Fixture fixture) : BaseTest
 {
     private static ISigabaFileManager CreateService()
     {
-        return new SigabaFileManager();
+        return new SigabaFileManager(CreateLogger<SigabaFileManager>());
     }
 
     // SaveAsync

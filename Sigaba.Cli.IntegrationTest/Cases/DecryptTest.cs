@@ -1,61 +1,106 @@
 ﻿using System.IO.Abstractions.TestingHelpers;
+using Xunit.Abstractions;
 
-namespace Sigaba.Cli.Cases;
+namespace Sigaba.Cli.IntegrationTest.Cases;
 
 public class DecryptTest : BaseTest
 {
-    private readonly string password = "password";
+    private readonly string cwd;
+    private readonly string password;
+    private readonly ITestOutputHelper testOutput;
 
-    private async Task InitializeAppAsync()
+    public DecryptTest(ITestOutputHelper testOutput)
     {
-        await App.RunAsync(["init", "-n", "-p", password]);
+        this.testOutput = testOutput;
+        InitializeAppAsync().GetAwaiter().GetResult().Deconstruct(out password, out cwd);
     }
+
+    private async Task Encrypt()
+    {
+        var result = await CreateCommandApp().RunAsync(["encrypt"]);
+        result.ExitCode.Should().Be(0);
+    }
+
+    // tests
 
     [Theory]
     [InlineData("decrypt", "-p")]
     [InlineData("decrypt", "--password")]
-
-    public async Task Should_decrypt_all_files_in_directory_tree(string command, string passwordOption)
+    public async Task Should_decrypt_all_files_in_directory_tree(string command, string passwordArg)
     {
-        await InitializeAppAsync();
+        var path1 = Fs.Path.Combine(cwd, "file1.secrets.json");
         var originalContent1 = """
             {
                 "field1": "value 1",
                 "field2_secret": "secret value 2",
             }
             """;
+        Fs.AddFile(path1, new MockFileData(originalContent1));
+
+        var path2 = Fs.Path.Combine(cwd, "file2.secrets.json");
         var originalContent2 = """
             {
                 "field3": "value 3",
                 "field4_secret": "secret value 4",
             }
             """;
-        Fs.AddFile("file1.secrets.json", new MockFileData(originalContent1));
-        Fs.AddFile("file2.secrets.json", new MockFileData(originalContent2));
-        await App.RunAsync(["encrypt"]);
+        Fs.AddFile(path2, new MockFileData(originalContent2));
+
+        await Encrypt();
 
         //
 
-        await App.RunAsync([command, passwordOption, password]);
+        var result = await App.RunAsync([command, passwordArg, password]);
+        testOutput.WriteLine(App.Console.Output);
 
         //
 
-        Fs.GetFile("file1.secrets.json").TextContents.Should().Be(originalContent1);
-        Fs.GetFile("file2.secrets.json").TextContents.Should().Be(originalContent2);
+        result.ExitCode.Should().Be(0);
+        Fs.GetFile(path1).TextContents.Should().Be(originalContent1);
+        Fs.GetFile(path2).TextContents.Should().Be(originalContent2);
+        App.Console.ShouldHaveOutputThatMatches("""
+            ^2 file\(s\) affected:$
+            ^\s\s.*file1\.secrets\.json$
+            ^\s\s.*file2\.secrets\.json$
+            """);
     }
 
     [Fact]
     public async Task Should_not_decript_without_private_key()
     {
-        await InitializeAppAsync();
+        Fs.RemoveFile(Fs.AllFiles.First(f => f.EndsWith("private.key"))); // remove private key to simulate missing key
 
         //
 
-        Fs.RemoveFile(Fs.AllFiles.First(f => f.EndsWith("private.key"))); // remove private key to simulate missing key
         var result = await App.RunAsync(["decrypt", "-p", password]);
+        testOutput.WriteLine(App.Console.Output);
 
         //
 
         result.ExitCode.Should().NotBe(0);
+        App.Console.ShouldHaveOutputThatMatches(@"Error: Private key not found on any of expected locations\.");
+    }
+
+    [Fact]
+    public async Task Should_not_decript_without_password()
+    {
+        var result = await App.RunAsync(["decrypt"]);
+        testOutput.WriteLine(App.Console.Output);
+
+        result.ExitCode.Should().NotBe(0);
+        App.Console.ShouldHaveOutputThatMatches(@"Error: Password is required to decrypt files\.");
+    }
+
+    [Fact]
+    public async Task Should_not_decript_with_wrong_password()
+    {
+        var wrongPassword = password + "x"; // intentionally wrong password
+        var result = await App.RunAsync(["decrypt", "-p", wrongPassword]);
+        testOutput.WriteLine(App.Console.Output);
+
+        //
+
+        result.ExitCode.Should().NotBe(0);
+        App.Console.ShouldHaveOutputThatMatches(@"Error: Decryption with password failed\.");
     }
 }

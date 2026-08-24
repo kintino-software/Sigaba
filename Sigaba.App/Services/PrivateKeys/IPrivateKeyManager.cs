@@ -1,10 +1,9 @@
-﻿using Sigaba.Primitives;
-using Sigaba.Primitives.Crypto;
+﻿using Sigaba.Primitives.Crypto;
 using Sigaba.Primitives.FileSystem;
 
 namespace Sigaba.App.Services.PrivateKeys;
 
-internal record PrivateKeySaveResult(FilePath OupuptPath);
+internal record PrivateKeySaveResult(FilePath OutputPath);
 internal record PrivateKeyLoadResult(PrivateKey PrivateKey, FilePath LoadedFilePath);
 
 internal interface IPrivateKeyManager

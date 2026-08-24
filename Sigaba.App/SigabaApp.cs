@@ -2,7 +2,6 @@
 using Sigaba.App.Services.SigabaFiles;
 using Sigaba.Crypto;
 using Sigaba.Documents;
-using Sigaba.Primitives;
 using Sigaba.Primitives.FileSystem;
 
 namespace Sigaba.App;
@@ -18,10 +17,11 @@ internal class SigabaApp(
         var (publicKey, privateKey) = cipher.GenerateKeys();
 
         var sigabaFile = sigabaFileManager.CreateDefault(publicKey);
+
         var privateKeyResult = await privateKeyManager.SaveAsync(privateKey, sigabaFile.ProjectId, options.PrivateKeyPassword);
         var sigabaFileResult = await sigabaFileManager.SaveAsync(sigabaFile, options.SigabaFileOutputDir);
 
-        return new InitializationResult(sigabaFileResult.OutputPath, privateKeyResult.OupuptPath);
+        return new InitializationResult(sigabaFileResult.OutputPath, privateKeyResult.OutputPath);
     }
 
     async Task<CipherResult> ISigabaApp.CipherFilesAsync(DirPath referenceFolderPath)
@@ -55,9 +55,13 @@ internal class SigabaApp(
 
     async Task<EditFileResult> ISigabaApp.EditFileAsync(ITextEditor textEditor, FilePath editingFilePath)
     {
+        if (!editingFilePath.Exists)
+            throw new FileNotFoundException($"The file '{editingFilePath}' does not exist.");
+
         var (sigabaFile, sigabaFilePath) = await sigabaFileManager.LoadAsync(editingFilePath.Parent());
 
-        if (!sigabaFile.GetTargetFiles(sigabaFilePath.Parent()).Contains(editingFilePath))
+        // Check if the file is part of the target files in the Sigaba file
+        if (!sigabaFile.IsTargetFile(editingFilePath, sigabaFilePath.Parent()))
             throw new InvalidOperationException(
                 $"The file '{editingFilePath}' is not part of Sigaba target files. Make sure you have the correct filter in {Constants.SigabaFileName}.");
 
@@ -66,5 +70,4 @@ internal class SigabaApp(
 
         return new EditFileResult(editingFilePath);
     }
-
 }

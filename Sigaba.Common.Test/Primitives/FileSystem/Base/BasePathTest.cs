@@ -14,19 +14,35 @@ public class BasePathTest
     [Fact]
     public void Should_instantiate()
     {
+
         List<(string[], string)> inputExpectedList = [
             (["a.txt"],                 fs.Path.Combine("a.txt")),
-            (["a", "b.txt"],               fs.Path.Combine("a", "b.txt")),
+            (["a", "b.txt"],            fs.Path.Combine("a", "b.txt")),
             (["a", "b", "c", "d.txt"],  fs.Path.Combine("a", "b", "c", "d.txt"))
         ];
 
         foreach (var (input, expected) in inputExpectedList)
         {
             var obj = new DummyPath(fs, input);
+
             obj.Should().NotBeNull();
             obj.Fs.Should().Be(fs);
             obj.Path.Should().Be(expected);
         }
+    }
+
+    // IsAbsolute
+
+    [Fact]
+    public void Should_have_know_if_its_absolute()
+    {
+        fs.Directory.SetCurrentDirectory("cwd");
+        var cwd = fs.Directory.GetCurrentDirectory();
+
+        new DummyPath(fs, cwd).IsAbsolute.Should().BeTrue();
+        new DummyPath(fs, cwd, "a", "b").IsAbsolute.Should().BeTrue();
+        new DummyPath(fs, "a").IsAbsolute.Should().BeFalse();
+        new DummyPath(fs, "a", "b").IsAbsolute.Should().BeFalse();
     }
 
     // equality

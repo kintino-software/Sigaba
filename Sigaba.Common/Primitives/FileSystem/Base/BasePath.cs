@@ -6,6 +6,7 @@ public abstract class BasePath : IEquatable<BasePath>
 {
     public IFileSystem Fs { get; }
     public string Path { get; }
+    public bool IsAbsolute => Fs.Path.IsPathFullyQualified(Path);
 
     protected BasePath(IFileSystem fs, params string[] parts)
     {
