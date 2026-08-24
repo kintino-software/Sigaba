@@ -34,7 +34,11 @@ jobs:
           --no-restore
           /p:Version=${{ env.APP_VERSION }}
       - name: Test
-        run: dotnet test --configuration Release --no-build --verbosity normal
+        run: >-
+          dotnet test 
+          --configuration Release 
+          --no-build 
+          --verbosity normal
       - name: Pack
         run: >-
           dotnet pack Sigaba.Cli/Sigaba.Cli.csproj 
