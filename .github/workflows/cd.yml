@@ -58,12 +58,12 @@ jobs:
           --configuration Release 
           --no-build 
           --verbosity normal
-          --collect:"XPlat Code Coverage"
-          --results-directory ./coverage
+          /p:CollectCoverage=true
+          /p:CoverletOutputFormat=cobertura
       - name: Generate Coverage Report
         uses: danielpalme/ReportGenerator-GitHub-Action@5.3.11
         with:
-          reports: './coverage/**/coverage.cobertura.xml'
+          reports: './**/coverage.cobertura.xml'
           targetdir: './coverage-report'
           reporttypes: 'HtmlInline;Cobertura'
       - name: Upload Coverage Report
@@ -74,7 +74,7 @@ jobs:
       - name: Upload Coverage to Codecov (Optional)
         uses: codecov/codecov-action@v4
         with:
-          files: ./coverage/**/coverage.cobertura.xml
+          files: ./**/coverage.cobertura.xml
           fail_ci_if_error: false
       
       # pack and publish    

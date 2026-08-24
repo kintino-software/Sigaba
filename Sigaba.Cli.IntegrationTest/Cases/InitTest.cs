@@ -1,6 +1,8 @@
-﻿namespace Sigaba.Cli.IntegrationTest.Cases;
+﻿using Xunit.Abstractions;
 
-public class InitTest : BaseTest
+namespace Sigaba.Cli.IntegrationTest.Cases;
+
+public class InitTest(ITestOutputHelper testOutput) : BaseTest
 {
     private string Cwd => Fs.Directory.GetCurrentDirectory();
 
@@ -19,7 +21,7 @@ public class InitTest : BaseTest
         App.Console.Input.PushTextWithEnter("password"); // confirm password
 
         var result = await App.RunAsync(["init"]);
-        TestContext.Current.TestOutputHelper.WriteLine(App.Console.Output);
+        testOutput.WriteLine(App.Console.Output);
 
         result.ExitCode.Should().Be(0);
         AssertInitializationIsCorrect();
@@ -37,7 +39,7 @@ public class InitTest : BaseTest
     public async Task Should_initialize_non_interactively(string command, string nonInteractiveOption, string passwordOption)
     {
         var result = await App.RunAsync([command, nonInteractiveOption, passwordOption, "password"]);
-        TestContext.Current.TestOutputHelper.WriteLine(App.Console.Output);
+        testOutput.WriteLine(App.Console.Output);
 
         result.ExitCode.Should().Be(0);
         AssertInitializationIsCorrect();

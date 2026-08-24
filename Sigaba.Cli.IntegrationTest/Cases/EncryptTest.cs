@@ -1,13 +1,17 @@
-﻿namespace Sigaba.Cli.IntegrationTest.Cases;
+﻿using Xunit.Abstractions;
+
+namespace Sigaba.Cli.IntegrationTest.Cases;
 
 public sealed class EncryptTest : BaseTest
 {
     private readonly string cwd;
+    private readonly ITestOutputHelper testOutput;
 
-    public EncryptTest()
+    public EncryptTest(ITestOutputHelper testOutput)
     {
         var data = InitializeAppAsync().GetAwaiter().GetResult();
         cwd = data.Cwd;
+        this.testOutput = testOutput;
     }
 
     // tests
@@ -34,7 +38,7 @@ public sealed class EncryptTest : BaseTest
         //
 
         var result = await App.RunAsync(["encrypt"]);
-        TestContext.Current.TestOutputHelper.WriteLine(App.Console.Output);
+        testOutput.WriteLine(App.Console.Output);
 
         //
 
@@ -71,7 +75,7 @@ public sealed class EncryptTest : BaseTest
         //
 
         var result = await App.RunAsync(["encrypt"]);
-        TestContext.Current.TestOutputHelper.WriteLine(App.Console.Output);
+        testOutput.WriteLine(App.Console.Output);
 
         //
 

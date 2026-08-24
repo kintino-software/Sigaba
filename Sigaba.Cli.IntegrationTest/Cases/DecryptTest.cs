@@ -1,4 +1,5 @@
 ﻿using System.IO.Abstractions.TestingHelpers;
+using Xunit.Abstractions;
 
 namespace Sigaba.Cli.IntegrationTest.Cases;
 
@@ -6,9 +7,11 @@ public class DecryptTest : BaseTest
 {
     private readonly string cwd;
     private readonly string password;
+    private readonly ITestOutputHelper testOutput;
 
-    public DecryptTest()
+    public DecryptTest(ITestOutputHelper testOutput)
     {
+        this.testOutput = testOutput;
         InitializeAppAsync().GetAwaiter().GetResult().Deconstruct(out password, out cwd);
     }
 
@@ -48,7 +51,7 @@ public class DecryptTest : BaseTest
         //
 
         var result = await App.RunAsync([command, passwordArg, password]);
-        TestContext.Current.TestOutputHelper.WriteLine(App.Console.Output);
+        testOutput.WriteLine(App.Console.Output);
 
         //
 
@@ -70,7 +73,7 @@ public class DecryptTest : BaseTest
         //
 
         var result = await App.RunAsync(["decrypt", "-p", password]);
-        TestContext.Current.TestOutputHelper.WriteLine(App.Console.Output);
+        testOutput.WriteLine(App.Console.Output);
 
         //
 
@@ -82,7 +85,7 @@ public class DecryptTest : BaseTest
     public async Task Should_not_decript_without_password()
     {
         var result = await App.RunAsync(["decrypt"]);
-        TestContext.Current.TestOutputHelper.WriteLine(App.Console.Output);
+        testOutput.WriteLine(App.Console.Output);
 
         result.ExitCode.Should().NotBe(0);
         App.Console.ShouldHaveOutputThatMatches(@"Error: Password is required to decrypt files\.");
@@ -93,7 +96,7 @@ public class DecryptTest : BaseTest
     {
         var wrongPassword = password + "x"; // intentionally wrong password
         var result = await App.RunAsync(["decrypt", "-p", wrongPassword]);
-        TestContext.Current.TestOutputHelper.WriteLine(App.Console.Output);
+        testOutput.WriteLine(App.Console.Output);
 
         //
 

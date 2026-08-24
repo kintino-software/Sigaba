@@ -1,11 +1,15 @@
-﻿namespace Sigaba.Cli.IntegrationTest.Cases;
+﻿using Xunit.Abstractions;
+
+namespace Sigaba.Cli.IntegrationTest.Cases;
 
 public class EditTest : BaseTest
 {
     private readonly string cwd;
+    private readonly ITestOutputHelper testOutput;
 
-    public EditTest()
+    public EditTest(ITestOutputHelper testOutput)
     {
+        this.testOutput = testOutput;
         InitializeAppAsync().GetAwaiter().GetResult().Deconstruct(out _, out cwd);
     }
 
@@ -33,7 +37,7 @@ public class EditTest : BaseTest
         await Encrypt();
 
         var result = await App.RunAsync(["edit", file1Path]);
-        TestContext.Current.TestOutputHelper.WriteLine(result.Output);
+        testOutput.WriteLine(result.Output);
 
         result.ExitCode.Should().Be(0);
     }
