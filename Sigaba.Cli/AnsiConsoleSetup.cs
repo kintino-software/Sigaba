@@ -21,16 +21,15 @@ internal static class AnsiConsoleSetup
 
     public static void Configure(this IConfigurator config, Action<IConfigurator>? additionalConfig = null)
     {
-        config.SetApplicationName("sigaba");
-
-        config.UseAssemblyInformationalVersion();
-
         config.AddCommand<InitCommand>("init").WithDescription("Sets up the initial configuration.");
         config.AddCommand<EncryptCommand>("encrypt").WithDescription("Encrypts all files defined in the configuration.");
         config.AddCommand<DecryptCommand>("decrypt").WithDescription("Decrypts all files defined in the configuration.");
         config.AddCommand<EditCommand>("edit").WithDescription("Opens the specified file and encrypts it after editing.");
 
+        config.SetApplicationName("sigaba");
+        config.UseAssemblyInformationalVersion();
         config.SetExceptionHandler(ExceptionHandler);
+        config.SetInterceptor(new CommandInterceptor());
 
         additionalConfig?.Invoke(config);
     }

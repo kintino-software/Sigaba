@@ -1,5 +1,4 @@
-﻿using Sigaba.Cli.IntegrationTest.TestHelpers;
-namespace Sigaba.Cli.IntegrationTest.Cases;
+﻿namespace Sigaba.Cli.IntegrationTest.Cases;
 
 public sealed class EncryptTest : BaseTest
 {
@@ -50,9 +49,9 @@ public sealed class EncryptTest : BaseTest
         jsonTester2.GetJsonValue<string>("$.field4_secret").Should().NotBe("secret value 4");
 
         App.Console.ShouldHaveOutputThatMatches("""
-            2 file\(s\) encrypted:
-              .*fileA\.secrets\.json
-              .*fileB\.secrets\.json
+            ^2 file\(s\) affected:$
+            ^\s\s.*fileA\.secrets\.json$
+            ^\s\s.*fileB\.secrets\.json$
             """);
     }
 

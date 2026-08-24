@@ -12,7 +12,7 @@
     <Using Include="Xunit" />
     <Using Include="AwesomeAssertions" />
     <Using Include="NSubstitute" />
-    <Using Include="Sigaba.Cli.TestHelpers" />
+    <Using Include="Sigaba.Cli.IntegrationTest.TestHelpers" />
   </ItemGroup>
 
   <ItemGroup>

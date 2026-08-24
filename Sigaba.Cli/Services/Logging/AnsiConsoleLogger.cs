@@ -19,7 +19,7 @@ internal class AnsiConsoleLogger(IAnsiConsole console, IGlobalOptions globalOpti
         {
             LogLevel.Trace => "grey",
             LogLevel.Debug => "grey",
-            LogLevel.Information => "white",
+            LogLevel.Information => "green",
             LogLevel.Warning => "yellow",
             LogLevel.Error => "red",
             LogLevel.Critical => "red bold",

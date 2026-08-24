@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Sigaba.App;
 using Sigaba.Cli.Models;
-using Sigaba.Cli.Services.Diagnostics;
 using Sigaba.Primitives.FileSystem;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -15,7 +14,6 @@ internal class InitCommand(
     ISigabaApp app,
     IFileSystem fs,
     IAnsiConsole console,
-    CliStopWatch stopWatch,
     ILogger<InitCommand> logger) : BaseCommand<InitCommand.InitSettings>(globalOptions)
 {
     public class InitSettings : BaseCommandSettings
@@ -31,6 +29,16 @@ internal class InitCommand(
         [CommandOption("--no-logo")]
         [Description("Disables the display of the logo.")]
         public bool NoLogo { get; set; } = false;
+    }
+
+    protected override ValidationResult Validate(CommandContext context, InitSettings settings)
+    {
+        if (settings.NonInteractive && string.IsNullOrWhiteSpace(settings.Password))
+        {
+            return ValidationResult.Error("Password is required in non-interactive mode.");
+        }
+
+        return ValidationResult.Success();
     }
 
     protected override async Task<int> ExecuteCoreAsync(CommandContext context, InitSettings settings, CancellationToken cancellationToken)
@@ -50,24 +58,14 @@ internal class InitCommand(
 
     private Task<InitializationResult> ExecuteNonInteractiveAsync(InitSettings settings)
     {
-
-        if (string.IsNullOrWhiteSpace(settings.Password))
-        {
-            throw new Exception("Error: Password is required in non-interactive mode.");
-        }
-
-        return stopWatch.MeasureAsync(() => app.InitAsync(new InitializationOptions(
-            SigabaFileOutputDir: fs.NewCwdDirPath(),
-            PrivateKeyPassword: settings.Password)));
+        return app.InitAsync(new InitializationOptions(SigabaFileOutputDir: fs.NewCwdDirPath(), PrivateKeyPassword: settings.Password));
     }
 
     private Task<InitializationResult> ExecuteInteractiveAsync()
     {
         var password = console.PromptForPasswordDefinition("Enter a password to protect the private key:");
 
-        return stopWatch.MeasureAsync(() => app.InitAsync(new InitializationOptions(
-            SigabaFileOutputDir: fs.NewCwdDirPath(),
-            PrivateKeyPassword: password)));
+        return app.InitAsync(new InitializationOptions(SigabaFileOutputDir: fs.NewCwdDirPath(), PrivateKeyPassword: password));
     }
 
 }

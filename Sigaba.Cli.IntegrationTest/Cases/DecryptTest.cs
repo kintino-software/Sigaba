@@ -1,5 +1,4 @@
-﻿using Sigaba.Cli.IntegrationTest.TestHelpers;
-using System.IO.Abstractions.TestingHelpers;
+﻿using System.IO.Abstractions.TestingHelpers;
 
 namespace Sigaba.Cli.IntegrationTest.Cases;
 
@@ -24,10 +23,8 @@ public class DecryptTest : BaseTest
     [Theory]
     [InlineData("decrypt", "-p")]
     [InlineData("decrypt", "--password")]
-
     public async Task Should_decrypt_all_files_in_directory_tree(string command, string passwordArg)
     {
-
         var path1 = Fs.Path.Combine(cwd, "file1.secrets.json");
         var originalContent1 = """
             {
@@ -59,9 +56,9 @@ public class DecryptTest : BaseTest
         Fs.GetFile(path1).TextContents.Should().Be(originalContent1);
         Fs.GetFile(path2).TextContents.Should().Be(originalContent2);
         App.Console.ShouldHaveOutputThatMatches("""
-            2 file\(s\) decrypted:
-              .*file1\.secrets\.json
-              .*file2\.secrets\.json
+            ^2 file\(s\) affected:$
+            ^\s\s.*file1\.secrets\.json$
+            ^\s\s.*file2\.secrets\.json$
             """);
     }
 
@@ -78,8 +75,29 @@ public class DecryptTest : BaseTest
         //
 
         result.ExitCode.Should().NotBe(0);
-        App.Console.ShouldHaveOutputThatMatches("""
-            Error: Private key not found on any of expected locations\.
-            """);
+        App.Console.ShouldHaveOutputThatMatches(@"Error: Private key not found on any of expected locations\.");
+    }
+
+    [Fact]
+    public async Task Should_not_decript_without_password()
+    {
+        var result = await App.RunAsync(["decrypt"]);
+        TestContext.Current.TestOutputHelper.WriteLine(App.Console.Output);
+
+        result.ExitCode.Should().NotBe(0);
+        App.Console.ShouldHaveOutputThatMatches(@"Error: Password is required to decrypt files\.");
+    }
+
+    [Fact]
+    public async Task Should_not_decript_with_wrong_password()
+    {
+        var wrongPassword = password + "x"; // intentionally wrong password
+        var result = await App.RunAsync(["decrypt", "-p", wrongPassword]);
+        TestContext.Current.TestOutputHelper.WriteLine(App.Console.Output);
+
+        //
+
+        result.ExitCode.Should().NotBe(0);
+        App.Console.ShouldHaveOutputThatMatches(@"Error: Decryption with password failed\.");
     }
 }

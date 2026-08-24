@@ -1,5 +1,4 @@
-﻿using Sigaba.Cli.IntegrationTest.TestHelpers;
-namespace Sigaba.Cli.IntegrationTest.Cases;
+﻿namespace Sigaba.Cli.IntegrationTest.Cases;
 
 public class InitTest : BaseTest
 {
@@ -25,11 +24,10 @@ public class InitTest : BaseTest
         result.ExitCode.Should().Be(0);
         AssertInitializationIsCorrect();
         App.Console.ShouldHaveOutputThatMatches("""
-            Enter a password to protect the private key: \*+
-            Confirm the private key password: \*+
-            ^.+$
-            Sigaba file created at: .*sigaba.json
-            Private key created at: .*private.key
+            ^Enter a password to protect the private key: \*+$
+            ^Confirm the private key password: \*+$
+            ^Sigaba file created at: .*sigaba.json$
+            ^Private key created at: .*private.key$
             """);
     }
 
