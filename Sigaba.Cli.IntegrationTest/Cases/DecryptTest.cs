@@ -1,6 +1,7 @@
-﻿using System.IO.Abstractions.TestingHelpers;
+﻿using Sigaba.Cli.IntegrationTest.TestHelpers;
+using System.IO.Abstractions.TestingHelpers;
 
-namespace Sigaba.Cli.Cases;
+namespace Sigaba.Cli.IntegrationTest.Cases;
 
 public class DecryptTest : BaseTest
 {

@@ -3,7 +3,7 @@ using Spectre.Console.Cli;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Sigaba.Cli.Commands;
+namespace Sigaba.Cli.Adaptors;
 
 internal class BaseCommandSettings : CommandSettings
 {
@@ -18,3 +18,4 @@ internal class BaseCommandSettings : CommandSettings
     public VerbosityLevel Verbosity { get; set; } = VerbosityLevel.Normal;
 
 }
+

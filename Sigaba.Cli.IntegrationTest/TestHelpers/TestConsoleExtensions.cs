@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
-namespace Sigaba.Cli.TestHelpers;
+namespace Sigaba.Cli.IntegrationTest.TestHelpers;
 
 internal static class TestConsoleExtensions
 {

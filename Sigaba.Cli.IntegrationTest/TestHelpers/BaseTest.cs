@@ -1,14 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sigaba.App;
-using Sigaba.Cli.Models;
 using Sigaba.Primitives.FileSystem;
 using Sigaba.Services;
 using Spectre.Console.Cli.Testing;
 using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 
-namespace Sigaba.Cli.TestHelpers;
+namespace Sigaba.Cli.IntegrationTest.TestHelpers;
 
 public abstract class BaseTest
 {
@@ -40,21 +39,13 @@ public abstract class BaseTest
         return new InitializationData(password, cwdDirPath.Path);
     }
 
-    public CommandAppTester CreateCommandApp(VerbosityLevel verbosity = VerbosityLevel.Normal)
+    public CommandAppTester CreateCommandApp()
     {
-        var globalOptions = new GlobalOptions()
-        {
-            // we set the verbosity as a parameter so we can test outputs at different levels
-            // or disable output for some operations that we dont want to interfere with the output
-            Verbosity = verbosity
-        };
-
         // override services for testing, so we don't mess with the real environment
         // CommandAppTester already injects a TestConsole, so we don't need to override that
-        var app = new CommandAppTester(AnsiConsoleSetup.CreateTypeRegistrar(globalOptions, services =>
+        var app = new CommandAppTester(AnsiConsoleSetup.CreateTypeRegistrar(services =>
         {
             services
-                .Replace(ServiceDescriptor.Singleton<IGlobalOptions>(globalOptions))
                 // we wont save to disk and create messy temp folders, so we need a mock file system
                 .Replace(ServiceDescriptor.Singleton<IFileSystem>(Fs))
                 // we wont mess with the real environment variables, so we need a env var mock

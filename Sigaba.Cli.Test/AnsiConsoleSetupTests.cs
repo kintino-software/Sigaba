@@ -1,19 +1,17 @@
-﻿using Sigaba.Cli.Models;
-using Spectre.Console.Cli.Testing;
+﻿using Spectre.Console.Cli;
 
 namespace Sigaba.Cli;
 
 public class AnsiConsoleSetupTests
 {
-    private CommandAppTester app = new();
-    private IGlobalOptions globalOptions = Substitute.For<IGlobalOptions>();
+    private readonly CommandApp app = new();
 
     // CrateTypeRegistrar
 
     [Fact]
     public void Should_create_type_registrar()
     {
-        var typeRegistrar = AnsiConsoleSetup.CreateTypeRegistrar(globalOptions);
+        var typeRegistrar = AnsiConsoleSetup.CreateTypeRegistrar();
 
         typeRegistrar.Should().NotBeNull();
     }
@@ -25,7 +23,7 @@ public class AnsiConsoleSetupTests
     {
         app.Configure(cfg => cfg.Configure());
 
-        var action = () => app.Run();
+        var action = () => app.Run([]);
 
         action.Should().NotThrow();
     }

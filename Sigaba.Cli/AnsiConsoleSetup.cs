@@ -5,17 +5,16 @@ using Sigaba.Cli.Commands.Edit;
 using Sigaba.Cli.Commands.Encrypt;
 using Sigaba.Cli.Commands.Init;
 using Sigaba.Cli.DependencyInjection;
-using Sigaba.Cli.Models;
 using Spectre.Console.Cli;
 
 namespace Sigaba.Cli;
 
 internal static class AnsiConsoleSetup
 {
-    public static ITypeRegistrar CreateTypeRegistrar(IGlobalOptions globalOptions, Action<IServiceCollection>? config = null)
+    public static ITypeRegistrar CreateTypeRegistrar(Action<IServiceCollection>? config = null)
     {
         var services = new ServiceCollection();
-        services.AddCliApp(globalOptions);
+        services.AddCliApp();
         config?.Invoke(services);
         return new SpectreTypeRegistrar(services);
     }
@@ -25,8 +24,6 @@ internal static class AnsiConsoleSetup
         config.SetApplicationName("sigaba");
 
         config.UseAssemblyInformationalVersion();
-
-        config.SetHelpProvider(new CustomSepctreHelpProvider(config.Settings));
 
         config.AddCommand<InitCommand>("init").WithDescription("Sets up the initial configuration.");
         config.AddCommand<EncryptCommand>("encrypt").WithDescription("Encrypts all files defined in the configuration.");

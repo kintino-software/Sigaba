@@ -1,11 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
+using Sigaba.Cli.Models;
 using Spectre.Console;
 using System.Collections.Concurrent;
 
 namespace Sigaba.Cli.Services.Logging;
 
 [ProviderAlias("AnsiConsole")]
-internal sealed class AnsiConsoleLoggerProvider(IAnsiConsole console) : ILoggerProvider
+internal sealed class AnsiConsoleLoggerProvider(IAnsiConsole console, IGlobalOptions globalOptions) : ILoggerProvider
 {
     private readonly ConcurrentDictionary<string, AnsiConsoleLogger> loggers = [];
 
@@ -13,7 +14,7 @@ internal sealed class AnsiConsoleLoggerProvider(IAnsiConsole console) : ILoggerP
     {
         return loggers.GetOrAdd(
             categoryName,
-            name => new AnsiConsoleLogger(console));
+            name => new AnsiConsoleLogger(console, globalOptions));
     }
 
     public void Dispose()

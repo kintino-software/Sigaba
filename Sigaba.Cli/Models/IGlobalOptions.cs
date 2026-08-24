@@ -3,4 +3,5 @@
 internal interface IGlobalOptions
 {
     VerbosityLevel Verbosity { get; }
+    void SetVerbosity(VerbosityLevel verbosityLevel);
 }

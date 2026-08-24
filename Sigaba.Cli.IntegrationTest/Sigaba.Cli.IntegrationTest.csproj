@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <IsPackable>false</IsPackable>
-    <RootNamespace>Sigaba.Cli</RootNamespace>
+    <RootNamespace>Sigaba.Cli.IntegrationTest</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

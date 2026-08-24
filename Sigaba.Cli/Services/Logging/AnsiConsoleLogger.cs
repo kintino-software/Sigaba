@@ -1,13 +1,14 @@
 ﻿using Microsoft.Extensions.Logging;
+using Sigaba.Cli.Models;
 using Spectre.Console;
 
 namespace Sigaba.Cli.Services.Logging;
 
-internal class AnsiConsoleLogger(IAnsiConsole console) : ILogger
+internal class AnsiConsoleLogger(IAnsiConsole console, IGlobalOptions globalOptions) : ILogger
 {
     public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
 
-    public bool IsEnabled(LogLevel logLevel) => logLevel < LogLevel.None;
+    public bool IsEnabled(LogLevel logLevel) => logLevel >= globalOptions.Verbosity.ToLogLevel();
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {

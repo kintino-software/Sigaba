@@ -2,35 +2,16 @@
 
 internal class GlobalOptions : IGlobalOptions
 {
-    public VerbosityLevel Verbosity { get; set; } = VerbosityLevel.Normal;
+    private readonly Lock lockObj = new();
 
-    public static GlobalOptions ParseFromArgs(string[] args, out string[] remainingArgs)
+    private VerbosityLevel verbosity = VerbosityLevel.Normal;
+    VerbosityLevel IGlobalOptions.Verbosity => verbosity;
+
+    void IGlobalOptions.SetVerbosity(VerbosityLevel verbosityLevel)
     {
-        var options = new GlobalOptions();
-        var remainingArgsList = new List<string>();
-        for (int i = 0; i < args.Length; i++)
+        lock (lockObj)
         {
-            switch (args[i])
-            {
-                case "-v":
-                case "--verbosity":
-                    if (i + 1 < args.Length && Enum.TryParse<VerbosityLevel>(args[i + 1], true, out var logLevel))
-                    {
-                        options.Verbosity = logLevel;
-                        i++; // Skip the next argument since it's the value for --verbosity
-                    }
-                    break;
-                case "-q":
-                case "--quiet":
-                    options.Verbosity = VerbosityLevel.Quiet;
-                    break;
-                default:
-                    remainingArgsList.Add(args[i]);
-                    break;
-            }
+            verbosity = verbosityLevel;
         }
-        remainingArgs = [.. remainingArgsList];
-        return options;
     }
-
 }

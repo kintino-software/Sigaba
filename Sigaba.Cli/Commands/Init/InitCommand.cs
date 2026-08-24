@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Sigaba.App;
+using Sigaba.Cli.Models;
 using Sigaba.Cli.Services.Diagnostics;
 using Sigaba.Primitives.FileSystem;
 using Spectre.Console;
@@ -9,13 +10,13 @@ using System.IO.Abstractions;
 
 namespace Sigaba.Cli.Commands.Init;
 
-
 internal class InitCommand(
+    IGlobalOptions globalOptions,
     ISigabaApp app,
     IFileSystem fs,
     IAnsiConsole console,
     CliStopWatch stopWatch,
-    ILogger<InitCommand> logger) : AsyncCommand<InitCommand.InitSettings>
+    ILogger<InitCommand> logger) : BaseCommand<InitCommand.InitSettings>(globalOptions)
 {
     public class InitSettings : BaseCommandSettings
     {
@@ -32,7 +33,7 @@ internal class InitCommand(
         public bool NoLogo { get; set; } = false;
     }
 
-    protected override async Task<int> ExecuteAsync(CommandContext context, InitSettings settings, CancellationToken cancellationToken)
+    protected override async Task<int> ExecuteAsyncCore(CommandContext context, InitSettings settings, CancellationToken cancellationToken)
     {
         if (!settings.NoLogo)
             console.Write(new FigletText("Sigaba"));

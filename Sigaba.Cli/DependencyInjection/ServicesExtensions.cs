@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Sigaba.App;
 using Sigaba.App.DependencyInjection;
 using Sigaba.Cli.Models;
@@ -12,20 +11,20 @@ namespace Sigaba.Cli.DependencyInjection;
 
 internal static class ServicesExtensions
 {
-    public static IServiceCollection AddCliApp(this IServiceCollection services, IGlobalOptions globalOptions)
+    public static IServiceCollection AddCliApp(this IServiceCollection services)
     {
+        services.AddApp();
+
         services
-            .AddApp()
-            .AddLogging(builder =>
-            {
-                builder.AddAnsiConsole();
-                builder.SetMinimumLevel(globalOptions.Verbosity.ToLogLevel());
-            })
-            .AddSingleton<IAnsiConsole>(AnsiConsole.Console)
-            .AddSingleton<IGlobalOptions>(globalOptions)
+            .AddSingleton<IGlobalOptions, GlobalOptions>()
             .AddSingleton<ITextEditor, TextEditor>()
             .AddSingleton<IAnsiConsole>(_ => AnsiConsole.Console)
             .AddSingleton<CliStopWatch>();
+
+        services.AddLogging(builder =>
+        {
+            builder.AddAnsiConsole();
+        });
 
         return services;
     }

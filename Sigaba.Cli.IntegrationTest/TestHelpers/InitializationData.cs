@@ -1,4 +1,4 @@
-﻿namespace Sigaba.Cli.TestHelpers;
+﻿namespace Sigaba.Cli.IntegrationTest.TestHelpers;
 
 /// <summary>
 /// Represents information regarding on how and where the app was initialized.

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Sigaba.App;
+using Sigaba.Cli.Models;
 using Sigaba.Cli.Services.Diagnostics;
 using Sigaba.Primitives.FileSystem;
 using Spectre.Console.Cli;
@@ -9,10 +10,11 @@ using System.IO.Abstractions;
 namespace Sigaba.Cli.Commands.Decrypt;
 
 internal class DecryptCommand(
+    IGlobalOptions globalOptions,
     ISigabaApp app,
     IFileSystem fs,
     CliStopWatch stopWatch,
-    ILogger<DecryptCommand> logger) : AsyncCommand<DecryptCommand.Settings>
+    ILogger<DecryptCommand> logger) : BaseCommand<DecryptCommand.Settings>(globalOptions)
 {
     public class Settings : BaseCommandSettings
     {
@@ -21,7 +23,7 @@ internal class DecryptCommand(
         public required string? Password { get; set; }
     }
 
-    protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
+    protected override async Task<int> ExecuteAsyncCore(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(settings.Password))
         {
