@@ -231,3 +231,10 @@ Although the tool can reach any field in the document hiearchy, it cannot encryp
   ```
 
   That's to avoid confusion on which level of the document would be encrypted first and the hassle to handle nested encrypted values.
+
+  ## Changelog
+
+  ### 0.3
+  - Improved cli experience with better messages
+    - can run commands with ```-q``` or ```--quiet``` to suppress messages
+    - can run commands with ```--verbosity detailed``` to show more details
