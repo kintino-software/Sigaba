@@ -23,7 +23,7 @@ internal class DecryptCommand(
         public required string? Password { get; set; }
     }
 
-    protected override async Task<int> ExecuteAsyncCore(CommandContext context, Settings settings, CancellationToken cancellationToken)
+    protected override async Task<int> ExecuteCoreAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(settings.Password))
         {

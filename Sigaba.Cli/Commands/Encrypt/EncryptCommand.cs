@@ -15,7 +15,7 @@ internal class EncryptCommand(
     CliStopWatch stopWatch,
     ILogger<EncryptCommand> logger) : BaseCommand(globalOptions)
 {
-    protected override async Task<int> ExecuteAsyncCore(CommandContext context, BaseCommandSettings settings, CancellationToken cancellationToken)
+    protected override async Task<int> ExecuteCoreAsync(CommandContext context, BaseCommandSettings settings, CancellationToken cancellationToken)
     {
         var result = await stopWatch.MeasureAsync(() => app.CipherFilesAsync(fs.NewCwdDirPath()));
 

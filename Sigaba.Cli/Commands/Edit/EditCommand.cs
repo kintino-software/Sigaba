@@ -23,7 +23,7 @@ internal class EditCommand(
         public string File { get; init; } = null!;
     }
 
-    protected override async Task<int> ExecuteAsyncCore(CommandContext context, EditCommandSettings settings, CancellationToken cancellationToken)
+    protected override async Task<int> ExecuteCoreAsync(CommandContext context, EditCommandSettings settings, CancellationToken cancellationToken)
     {
         var cwd = fs.NewCwdDirPath();
         var filePath = cwd.CombineAsFile(settings.File);

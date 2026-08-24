@@ -12,10 +12,10 @@ internal abstract class BaseCommand<T>(IGlobalOptions globalOptions) : AsyncComm
             ? VerbosityLevel.Quiet
             : settings.Verbosity);
 
-        return await ExecuteAsyncCore(context, settings, cancellationToken);
+        return await ExecuteCoreAsync(context, settings, cancellationToken);
     }
 
-    protected abstract Task<int> ExecuteAsyncCore(CommandContext context, T settings, CancellationToken cancellationToken);
+    protected abstract Task<int> ExecuteCoreAsync(CommandContext context, T settings, CancellationToken cancellationToken);
 }
 
 internal abstract class BaseCommand(IGlobalOptions globalOptions) : BaseCommand<BaseCommandSettings>(globalOptions);

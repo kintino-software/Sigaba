@@ -33,7 +33,7 @@ internal class InitCommand(
         public bool NoLogo { get; set; } = false;
     }
 
-    protected override async Task<int> ExecuteAsyncCore(CommandContext context, InitSettings settings, CancellationToken cancellationToken)
+    protected override async Task<int> ExecuteCoreAsync(CommandContext context, InitSettings settings, CancellationToken cancellationToken)
     {
         if (!settings.NoLogo)
             console.Write(new FigletText("Sigaba"));
