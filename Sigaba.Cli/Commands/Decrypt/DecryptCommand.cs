@@ -14,7 +14,7 @@ internal class DecryptCommand(
     CliStopWatch stopWatch,
     ILogger<DecryptCommand> logger) : AsyncCommand<DecryptCommand.Settings>
 {
-    public class Settings : CommandSettings
+    public class Settings : BaseCommandSettings
     {
         [CommandOption("-p|--password <PASSWORD>")]
         [Description("The password to decrypt the private key.")]

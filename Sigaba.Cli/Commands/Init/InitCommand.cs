@@ -17,7 +17,7 @@ internal class InitCommand(
     CliStopWatch stopWatch,
     ILogger<InitCommand> logger) : AsyncCommand<InitCommand.InitSettings>
 {
-    public class InitSettings : CommandSettings
+    public class InitSettings : BaseCommandSettings
     {
         [CommandOption("-n|--non-interactive")]
         [Description("Runs the command in non-interactive mode.")]

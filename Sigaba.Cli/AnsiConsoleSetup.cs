@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Sigaba.App.DependencyInjection;
 using Sigaba.Cli.Commands.Decrypt;
 using Sigaba.Cli.Commands.Edit;
 using Sigaba.Cli.Commands.Encrypt;
@@ -8,7 +7,6 @@ using Sigaba.Cli.Commands.Init;
 using Sigaba.Cli.DependencyInjection;
 using Sigaba.Cli.Models;
 using Spectre.Console.Cli;
-using System.Reflection;
 
 namespace Sigaba.Cli;
 
@@ -17,7 +15,6 @@ internal static class AnsiConsoleSetup
     public static ITypeRegistrar CreateTypeRegistrar(IGlobalOptions globalOptions, Action<IServiceCollection>? config = null)
     {
         var services = new ServiceCollection();
-        services.AddApp();
         services.AddCliApp(globalOptions);
         config?.Invoke(services);
         return new SpectreTypeRegistrar(services);
@@ -27,7 +24,7 @@ internal static class AnsiConsoleSetup
     {
         config.SetApplicationName("sigaba");
 
-        config.SetApplicationVersion(Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0");
+        config.UseAssemblyInformationalVersion();
 
         config.SetHelpProvider(new CustomSepctreHelpProvider(config.Settings));
 
@@ -43,10 +40,17 @@ internal static class AnsiConsoleSetup
 
     private static int ExceptionHandler(Exception ex, ITypeResolver? resolver)
     {
-        var logger = (resolver?.Resolve(typeof(ILogger<Exception>)) as ILogger)
-            ?? throw new ArgumentNullException(nameof(resolver));
+        var logger = (resolver?.Resolve(typeof(ILogger<CommandApp>)) as ILogger);
 
-        logger.LogError("Error: {message}", ex.Message);
+        // some early exceptions may occur before the logger is registered, so we need to handle that case
+        if (logger == null)
+        {
+            Console.WriteLine("Error: {0}", ex.Message);
+        }
+        else
+        {
+            logger.LogError("Error: {message}", ex.Message);
+        }
 
         return -1;
     }

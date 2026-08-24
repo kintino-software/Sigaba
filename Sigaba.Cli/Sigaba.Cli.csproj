@@ -9,9 +9,10 @@
     <Nullable>enable</Nullable>
     <NoWarn>CA1873;IDE0290</NoWarn>
   </PropertyGroup>
+  
   <PropertyGroup>
     <PackageId>Sigaba</PackageId>
-    <Version>0.0.0-alpha</Version>
+    <Version>0.0.0</Version>
     <Description>
       Sigaba is a command-line tool that encrypts/decrypts selected fields in files that contain sensitive information, such as passwords and connection strings.
       It is mainly intended to be used on configuration files.

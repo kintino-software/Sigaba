@@ -9,7 +9,7 @@ namespace Sigaba.Cli.Commands.Edit;
 
 internal class EditCommand(ISigabaApp app, IFileSystem fs, ITextEditor textEditor, ILogger<EditCommand> logger) : AsyncCommand<EditCommand.EditCommandSettings>
 {
-    public class EditCommandSettings : CommandSettings
+    public class EditCommandSettings : BaseCommandSettings
     {
         [CommandArgument(0, "<file>")]
         [Description("The path to the file to edit.")]
