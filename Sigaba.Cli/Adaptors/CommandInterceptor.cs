@@ -7,6 +7,7 @@ namespace Sigaba.Cli.Adaptors;
 internal class CommandInterceptor : ICommandInterceptor
 {
     private readonly Stopwatch sw = new();
+
     void ICommandInterceptor.Intercept(CommandContext context, CommandSettings settings)
     {
         sw.Restart();

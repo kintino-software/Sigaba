@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sigaba.App;
+using Sigaba.Cli.Adaptors;
 using Sigaba.Primitives.FileSystem;
 using Sigaba.Services;
 using Spectre.Console.Cli.Testing;

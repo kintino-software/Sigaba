@@ -1,5 +1,4 @@
-﻿using Sigaba.Cli.IntegrationTest.TestHelpers;
-namespace Sigaba.Cli.IntegrationTest.Cases;
+﻿namespace Sigaba.Cli.IntegrationTest.Cases;
 
 public class EditTest : BaseTest
 {

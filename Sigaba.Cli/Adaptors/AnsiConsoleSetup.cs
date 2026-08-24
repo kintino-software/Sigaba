@@ -7,7 +7,7 @@ using Sigaba.Cli.Commands.Init;
 using Sigaba.Cli.DependencyInjection;
 using Spectre.Console.Cli;
 
-namespace Sigaba.Cli;
+namespace Sigaba.Cli.Adaptors;
 
 internal static class AnsiConsoleSetup
 {

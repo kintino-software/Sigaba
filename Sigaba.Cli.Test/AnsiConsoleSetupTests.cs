@@ -1,4 +1,5 @@
-﻿using Spectre.Console.Cli;
+﻿using Sigaba.Cli.Adaptors;
+using Spectre.Console.Cli;
 
 namespace Sigaba.Cli;
 
