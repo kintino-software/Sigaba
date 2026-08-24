@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Sigaba.App;
 using Sigaba.Primitives.FileSystem;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sigaba.Cli.Services.TextEditors;
 
@@ -19,6 +20,7 @@ internal class TextEditor(ILogger<TextEditor> logger) : ITextEditor
     }
 }
 
+[ExcludeFromCodeCoverage]
 public static partial class TextEditorLauncherLoggerExtensions
 {
     [LoggerMessage(

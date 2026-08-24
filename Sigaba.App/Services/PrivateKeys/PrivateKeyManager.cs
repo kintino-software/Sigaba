@@ -2,6 +2,7 @@
 using Sigaba.Crypto;
 using Sigaba.Primitives.Crypto;
 using Sigaba.Primitives.FileSystem;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sigaba.App.Services.PrivateKeys;
 
@@ -55,6 +56,7 @@ internal class PrivateKeyManager(
     }
 }
 
+[ExcludeFromCodeCoverage]
 internal static partial class PrivateKeyManagerLogExtensions
 {
     [LoggerMessage(EventId = 0, Level = LogLevel.Debug, Message = @"Saved private key at ""{Path}"".")]

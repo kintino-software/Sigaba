@@ -148,6 +148,7 @@ internal class FileCipher(ICipher cipher, ILogger<FileCipher> logger) : IFileCip
     }
 }
 
+[ExcludeFromCodeCoverage]
 internal static partial class FileCipherLogExtensions
 {
     [LoggerMessage(1, LogLevel.Debug, @"Evaluating document model for file: ""{FilePath}""")]

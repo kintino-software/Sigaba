@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Sigaba.Primitives.FileSystem;
 using Sigaba.Services;
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
 
 namespace Sigaba.App.Services.PrivateKeys;
@@ -54,6 +55,7 @@ internal class PrivateKeyPathResolver(
     }
 }
 
+[ExcludeFromCodeCoverage]
 public static partial class PrivateKeyPathResolverLogExtensions
 {
     [LoggerMessage(EventId = 0, Level = LogLevel.Debug, Message = @"Trying to get private key path from ""{location}"".")]

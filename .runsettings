@@ -10,6 +10,11 @@
                 <ModulePath>.*\\Sigaba\.[^.]+\.dll</ModulePath>
               </Include>
             </ModulePaths>
+            <SourcePaths>
+              <Exclude>
+                <Source>.*\.g\.cs$</Source>
+              </Exclude>
+            </SourcePaths>
           </CodeCoverage>
         </Configuration>
       </DataCollector>

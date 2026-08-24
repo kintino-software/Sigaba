@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Sigaba.Crypto.Services.Ciphers;
 using Sigaba.Primitives.Crypto;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sigaba.Crypto;
 
@@ -74,6 +75,7 @@ internal class Cipher(ILogger<Cipher> logger, IEnumerable<IVersionedCipher> vers
     }
 }
 
+[ExcludeFromCodeCoverage]
 internal static partial class CipherLogExtensions
 {
     [LoggerMessage(0, LogLevel.Debug, "Generating keys using algo version {Version}.")]

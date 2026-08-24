@@ -3,6 +3,7 @@ using Sigaba.App.Exceptions;
 using Sigaba.App.Services.SigabaFiles.V1;
 using Sigaba.Primitives.Crypto;
 using Sigaba.Primitives.FileSystem;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sigaba.App.Services.SigabaFiles;
 
@@ -55,6 +56,7 @@ internal class SigabaFileManager(ILogger<SigabaFileManager> logger) : ISigabaFil
     }
 }
 
+[ExcludeFromCodeCoverage]
 internal static partial class SigabaFileManagerLoggerExtensions
 {
     [LoggerMessage(EventId = 0, Level = LogLevel.Debug, Message = @"Saved Sigaba file at ""{Path}"".")]
