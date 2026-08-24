@@ -43,8 +43,8 @@ public abstract class BaseTest
     public CommandAppTester CreateCommandApp()
     {
         // override services for testing, so we don't mess with the real environment
-        // CommandAppTester already injects a TestConsole, so we don't need to override that
-        var app = new CommandAppTester(AnsiConsoleSetup.CreateTypeRegistrar(services =>
+        // CommandAppTester already injects a TestConsole implementation for IConsole, so we don't need to override that
+        var setup = AnsiConsoleSetup.Create(services =>
         {
             services
                 // we wont save to disk and create messy temp folders, so we need a mock file system
@@ -53,11 +53,11 @@ public abstract class BaseTest
                 .Replace(ServiceDescriptor.Singleton<IEnvironmentVariables>(EnvironmentVariables))
                 // we wont launch a real text editor, so we need a mock
                 .Replace(ServiceDescriptor.Singleton<ITextEditor>(TextEditor));
+        });
 
-        }));
 
-        // configure app and override some settings if convenient
-        app.Configure(cfg => AnsiConsoleSetup.Configure(cfg, null));
+        var app = new CommandAppTester(setup.TypeRegistrar);
+        app.Configure(setup.Configurator);
         return app;
     }
 

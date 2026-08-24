@@ -9,17 +9,31 @@ using Spectre.Console.Cli;
 
 namespace Sigaba.Cli.Adaptors;
 
-internal static class AnsiConsoleSetup
+internal class AnsiConsoleSetup
 {
-    public static ITypeRegistrar CreateTypeRegistrar(Action<IServiceCollection>? config = null)
+    public ITypeRegistrar TypeRegistrar { get; }
+    public Action<IConfigurator> Configurator { get; }
+
+    private AnsiConsoleSetup(ITypeRegistrar typeRegistrar, Action<IConfigurator> configuratior)
+    {
+        TypeRegistrar = typeRegistrar;
+        Configurator = configuratior;
+    }
+
+    public static AnsiConsoleSetup Create(Action<IServiceCollection>? additionalServicesConfig = null)
     {
         var services = new ServiceCollection();
         services.AddCliApp();
-        config?.Invoke(services);
-        return new SpectreTypeRegistrar(services);
+        additionalServicesConfig?.Invoke(services);
+
+        var typeRegistrar = new SpectreTypeRegistrar(services);
+        return new AnsiConsoleSetup(
+            typeRegistrar,
+            Configure);
+
     }
 
-    public static void Configure(this IConfigurator config, Action<IConfigurator>? additionalConfig = null)
+    private static void Configure(IConfigurator config)
     {
         config.AddCommand<InitCommand>("init").WithDescription("Sets up the initial configuration.");
         config.AddCommand<EncryptCommand>("encrypt").WithDescription("Encrypts all files defined in the configuration.");
@@ -30,8 +44,6 @@ internal static class AnsiConsoleSetup
         config.UseAssemblyInformationalVersion();
         config.SetExceptionHandler(ExceptionHandler);
         config.SetInterceptor(new CommandInterceptor());
-
-        additionalConfig?.Invoke(config);
     }
 
     private static int ExceptionHandler(Exception ex, ITypeResolver? resolver)

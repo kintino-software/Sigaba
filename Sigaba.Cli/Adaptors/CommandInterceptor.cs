@@ -16,6 +16,6 @@ internal class CommandInterceptor : ICommandInterceptor
     void ICommandInterceptor.InterceptResult(CommandContext context, CommandSettings settings, ref int result)
     {
         sw.Stop();
-        AnsiConsole.MarkupLine($"[gray]Execution time: {sw.ElapsedMilliseconds} ms[/]");
+        AnsiConsole.MarkupLine($"[grey]Command executed in {sw.ElapsedMilliseconds} ms[/]");
     }
 }

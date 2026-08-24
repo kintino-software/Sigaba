@@ -12,9 +12,9 @@ public class AnsiConsoleSetupTests
     [Fact]
     public void Should_create_type_registrar()
     {
-        var typeRegistrar = AnsiConsoleSetup.CreateTypeRegistrar();
+        var setup = AnsiConsoleSetup.Create();
 
-        typeRegistrar.Should().NotBeNull();
+        setup.TypeRegistrar.Should().NotBeNull();
     }
 
     // Configure
@@ -22,8 +22,9 @@ public class AnsiConsoleSetupTests
     [Fact]
     public void Should_configure_app_configurator()
     {
-        app.Configure(cfg => cfg.Configure());
+        var setup = AnsiConsoleSetup.Create();
 
+        app.Configure(setup.Configurator);
         var action = () => app.Run([]);
 
         action.Should().NotThrow();
