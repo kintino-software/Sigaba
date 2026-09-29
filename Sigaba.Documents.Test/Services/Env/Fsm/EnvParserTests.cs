@@ -60,5 +60,22 @@ public class EnvParserTests
         });
     }
 
+    [Theory]
+    [InlineData("FOO\nBAR=1", "ENV001")]
+    [InlineData("1BAD=1", "ENV003")]
+    [InlineData("A=\"unclosed", "ENV004")]
+    [InlineData("A=1\\", "ENV005")]  // dangling at EOF
+    [InlineData("A=1 \\", "ENV005")]  // ws before backslash
+    [InlineData("A=1\\ # c", "ENV005")]  // comment after backslash
+    public void Should_throw_parse_exceptions(string input, string code)
+    {
+        var parser = CreateParser();
+
+        var action = () => parser.Parse(input);
+
+        action.Should().ThrowExactly<EnvParseException>();
+
+    }
+
 }
 
