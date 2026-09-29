@@ -161,35 +161,132 @@ public sealed class StartLineState : IEnvState
 
 public class EnvParser
 {
+    private enum State
+    {
+        LineStart,
+        KeyBlock,
+        Assign,
+        QuotedValueBlock,
+        PlainValueBlock,
+        ValueContinuation,
+        CommentBlock
+    }
+
     public Dictionary<string, EnvEntry> Parse(string envDocument)
     {
         var result = new Dictionary<string, EnvEntry>();
         var content = envDocument.Replace("\r\n", "\n").Replace('\r', '\n');
 
-        var ctx = new EnvContext();
-        IEnvState state = new StartLineState();
+        char? quoteChar = null;
+        int lastValueStartIdx = -1;
+        var keyBuffer = new StringBuilder();
+        var state = State.LineStart;
+        var lineIdx = 0;
 
         for (int i = 0; i < content.Length; i++)
         {
             var c = content[i];
+            if (c == SChar.NewLine)
+                lineIdx++;
+            var isLastChar = i == content.Length - 1;
 
-            if (state.IsTerminal)
+            switch (state)
             {
-                var entry = GetResultFromContext(ctx);
-                result.Add(entry.Key, entry);
-                ctx.Reset();
-            }
-            try
-            {
-                state = state.ProcessChar(c, i, ctx);
-            }
-            catch (Exception ex) when (ex is FormatException)
-            {
-                throw new EnvParseException(1, 1, ex.Message);
+                case State.LineStart:
+                    {
+                        if (c == SChar.WhiteSpace || c == SChar.NewLine)
+                        {
+                            continue;
+                        }
+                        else if (c == SChar.Comment)
+                        {
+                            state = State.QuotedValueBlock;
+                            continue;
+                        }
+                        else if (char.IsDigit(c))
+                        {
+                            throw new FormatException("Invalid key name.");
+                        }
+                        keyBuffer.Append(c);
+                        state = State.KeyBlock;
+                    }
+                    break;
+                case State.CommentBlock:
+                    {
+                        if (c == SChar.LineBreak)
+                        {
+                            state = State.LineStart;
+                        }
+                    }
+                    break;
+                case State.KeyBlock:
+                    {
+                        if (c == SChar.Eq)
+                        {
+                            state = State.Assign;
+                            continue;
+                        }
+                        keyBuffer.Append(c);
+                    }
+                    break;
+                case State.Assign:
+                    {
+                        if (c == SChar.SingleQuote || c == SChar.DoubleQuote)
+                        {
+                            quoteChar = c;
+                            state = State.QuotedValueBlock;
+                            lastValueStartIdx = i;
+                            continue;
+                        }
+                        if (c == SChar.NewLine || isLastChar)
+                        {
+                            throw new FormatException("Expecting value, but got line end");
+                        }
+                        state = State.PlainValueBlock;
+                        lastValueStartIdx = i;
+                    }
+                    break;
+                case State.QuotedValueBlock:
+                    {
+                        if (c == quoteChar)
+                        {
+                            var key = keyBuffer.ToString();
+                            result.Add(key, new EnvEntry(key, lastValueStartIdx, i - lastValueStartIdx));
+                            keyBuffer.Clear();
+                            lastValueStartIdx = -1;
+                            state = State.LineStart;
+                        }
+                    }
+                    break;
+                case State.PlainValueBlock:
+                    {
+                        if (c == SChar.NewLine || isLastChar)
+                        {
+                            var key = keyBuffer.ToString();
+                            result.Add(key, new EnvEntry(key, lastValueStartIdx, i - lastValueStartIdx + (isLastChar ? 1 : 0)));
+                            keyBuffer.Clear();
+                            lastValueStartIdx = -1;
+                            state = State.LineStart;
+                        }
+                        if (c == SChar.ValueContinuation)
+                        {
+                            state = State.ValueContinuation;
+                        }
+                    }
+                    break;
+                case State.ValueContinuation:
+                    {
+                        if (c == SChar.NewLine)
+                        {
+                            state = State.PlainValueBlock;
+                        }
+                    }
+                    break;
+                default:
+                    break;
             }
         }
-        var e = GetResultFromContext(ctx);
-        result.Add(e.Key, e);
+
 
         return result;
     }
