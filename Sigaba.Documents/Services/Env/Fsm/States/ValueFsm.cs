@@ -10,38 +10,44 @@ internal class ValueFsm(FsmContext ctx) : IFsm
 
     public IFsm? Handle()
     {
-
-        ctx.PlainValueBuffer.Clear();
-        ctx.RawValueBuffer.Clear();
-
         if (cursor.IsLastChar)
         {
+            // return early: it's end of file, so value will be always empty
             ApplyTokenValue(ctx, rawValueStartIdx, ctx.Cursor.CurrIndex);
             return null;
         }
 
+        // real value only starts after white spaces, so we can skip them
         SkipWhiteSpaces(ctx);
 
         if (cursor.CurrChar == SChar.DoubleQuote || cursor.CurrChar == SChar.SingleQuote)
-            return HandleQhotedValue();
+            HandleQuotedValue();
         else
-            return HandlePlainValue();
+            HandlePlainValue();
+
+        var lastIndexAdjust = cursor.CurrChar == SChar.NewLine ? -1 : 0;
+        ApplyTokenValue(ctx, rawValueStartIdx, ctx.Cursor.CurrIndex + lastIndexAdjust);
+
+        if (cursor.CurrChar == SChar.NewLine)
+            return new LineStartFsm(ctx);
+
+        return null;
     }
 
-    private IFsm? HandlePlainValue()
+    private void HandlePlainValue()
     {
         do
         {
             if (cursor.CurrChar == SChar.ValueContinuation)
             {
-                HandleLineContinuation(ctx); // advances the cursor
-                continue;
+                HandleContinuationValue();
+                return;
             }
 
             if (cursor.CurrChar == SChar.Comment)
             {
-                HandleComment(ctx); // advances the cursor
-
+                HandleComment(ctx);
+                return;
             }
 
             if (cursor.CurrChar == SChar.Eq)
@@ -51,46 +57,73 @@ internal class ValueFsm(FsmContext ctx) : IFsm
                 throw new FormatException($"Unexpected character '{cursor.CurrChar}' in value. Expected a plain value or a quoted value.");
 
             if (cursor.CurrChar == SChar.NewLine)
-            {
-                ApplyTokenValue(ctx, rawValueStartIdx, ctx.Cursor.CurrIndex - 1); // -1 because we don't want to include the new line in the value
-                return new LineStartFsm(ctx);
-            }
+                return;
 
             ctx.RawValueBuffer.Append(cursor.CurrChar);
             ctx.PlainValueBuffer.Append(cursor.CurrChar);
-
-            if (cursor.IsLastChar)
-            {
-                // there's no next char, so we can apply the token value and return null to indicate that we're done
-                ApplyTokenValue(ctx, rawValueStartIdx, ctx.Cursor.CurrIndex);
-                return null;
-            }
-
         }
         while (cursor.Next() != null);
-        return null;
     }
 
-    private IFsm? HandleQhotedValue()
+    private static void HandleComment(FsmContext ctx)
     {
-        var quoteChar = cursor.CurrChar;
-        var startIdx = ctx.Cursor.CurrIndex;
+        var cursor = ctx.Cursor;
+
+        if (cursor.CurrChar != SChar.Comment)
+            throw new Exception("Expecting a existing token");
+
+        if (cursor.CurrChar != SChar.Comment)
+            throw new Exception($"Unexpected character '{cursor.CurrChar}' while handling comment. Expected a comment character.");
+
         do
         {
-            ctx.PlainValueBuffer.Append(cursor.CurrChar); // it will append the quote char for raw value, we can sanitize later
-
-            if (cursor.IsLastChar)
-                throw new FormatException($"Unexpected end of input while parsing quoted value. Expected closing quote: {quoteChar}");
-
-            if (cursor.CurrChar == quoteChar)
-            {
-                ApplyTokenValue(ctx, startIdx, ctx.Cursor.CurrIndex);
-                return new LineStartFsm(ctx);
-            }
+            if (cursor.CurrChar == SChar.NewLine)
+                return;
+            ctx.RawValueBuffer.Append(cursor.CurrChar);
         }
         while (cursor.Next() != null);
-        return null;
+    }
 
+    private void HandleContinuationValue()
+    {
+        do
+        {
+
+            if (cursor.CurrChar == SChar.ValueContinuation)
+            {
+                throw new FormatException("Unexpected character '\\' in value. Only white space characters are allowed after a line continuation.");
+            }
+            if (cursor.CurrChar == SChar.Comment)
+            {
+                throw new FormatException("Unexpected character '#' in value. Only white space characters are allowed after a line continuation.");
+            }
+            if (cursor.CurrChar == SChar.NewLine)
+            {
+                HandlePlainValue();
+                return;
+            }
+
+            ctx.RawValueBuffer.Append(cursor.CurrChar);
+        }
+        while (cursor.Next() != null);
+    }
+
+    private void HandleQuotedValue()
+    {
+        var quoteChar = cursor.CurrChar;
+        do
+        {
+            if (cursor.CurrChar == quoteChar)
+            {
+                return;
+            }
+
+            ctx.PlainValueBuffer.Append(cursor.CurrChar);
+            ctx.RawValueBuffer.Append(cursor.CurrChar);
+        }
+        while (cursor.Next() != null);
+
+        throw new FormatException($"Unexpected end of input while parsing quoted value. Expected closing quote: {quoteChar}");
     }
 
     private static void ApplyTokenValue(FsmContext ctx, int startIndex, int endIndex)
@@ -118,43 +151,6 @@ internal class ValueFsm(FsmContext ctx) : IFsm
             if (ctx.Cursor.IsLastChar)
                 return;
             ctx.Cursor.Next();
-        }
-    }
-
-    private static void HandleComment(FsmContext ctx)
-    {
-        var cursor = ctx.Cursor;
-
-        if (cursor.CurrChar != SChar.Comment)
-            throw new Exception($"Unexpected character '{cursor.CurrChar}' while handling comment. Expected a comment character.");
-
-        do
-        {
-            if (cursor.IsLastChar)
-                return;
-            ctx.RawValueBuffer.Append(cursor.CurrChar);
-        }
-        while (cursor.Next() != null);
-    }
-
-    private static void HandleLineContinuation(FsmContext ctx)
-    {
-        var cursor = ctx.Cursor;
-        if (cursor.CurrChar != SChar.ValueContinuation)
-            throw new Exception($"Unexpected character '{cursor.CurrChar}' while handling line continuation. Expected a value continuation character.");
-        while (cursor.Next() != null)
-        {
-            ctx.RawValueBuffer.Append(cursor.CurrChar);
-
-            if (cursor.CurrChar == SChar.NewLine)
-                return;
-
-            if (cursor.CurrChar != SChar.WhiteSpace)
-                throw new FormatException($"Only white space characters are allowed after a line continuation. Unexpected character: '{cursor.CurrChar}'.");
-
-            if (cursor.IsLastChar)
-                throw new FormatException($"Unexpected end of file while handling line continuation. Expected a new line character.");
-
         }
     }
 

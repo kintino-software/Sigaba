@@ -55,10 +55,8 @@ public class ValueFsmTests
 
     [Theory]
     [InlineData("abc#def", "abc", "abc#def", 0, 6)]
-    //[InlineData("  bar#foo", "bar", "  bar#foo", 0, 8)]
-    //[InlineData("bar  #foo", "bar  ", "bar  #foo", 0, 8)]
-    //[InlineData("bar\n#foo", "bar", "bar#foo", 0, 7)]
-    //[InlineData("bar  \n  #foo", "bar  ", "bar  ", 0, 4)]
+    [InlineData("  bar#foo", "bar", "  bar#foo", 0, 8)]
+    [InlineData("bar  #foo", "bar  ", "bar  #foo", 0, 8)]
     public void Should_handle_plain_values_with_comments(
         string content,
         string expectedParsedValue,
