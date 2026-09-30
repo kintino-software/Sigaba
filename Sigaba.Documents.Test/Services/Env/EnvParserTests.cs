@@ -1,4 +1,6 @@
-﻿namespace Sigaba.Documents.Services.Env.Fsm;
+﻿using Sigaba.Documents.Services.Env.Fsm;
+
+namespace Sigaba.Documents.Services.Env;
 
 public class EnvParserTests
 {

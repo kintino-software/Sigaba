@@ -2,6 +2,9 @@
 
 public record EnvEntry(string Key, int ValueStartIdx, int ValueLength);
 
+/// <summary>
+/// Based on this spec: https://github.com/env-lang/env/blob/main/env.md
+/// </summary>
 public class EnvParser
 {
     public IReadOnlyDictionary<string, EnvEntry> Parse(string envDocument)
@@ -38,7 +41,6 @@ public class EnvParser
                 throw new EnvParseException(lineIdx + 1, colIndex + 1, ex.Message);
             }
         }
-
 
         return fsm.Entries;
     }
