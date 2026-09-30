@@ -7,6 +7,17 @@ public class CursorTests
         return new Cursor(content);
     }
 
+    //
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void Should_throw_when_instantiating_with_null_or_empty_string(string content)
+    {
+        Action act = () => CreateCursor(content);
+        act.Should().Throw<ArgumentException>().WithMessage("Content cannot be null or empty.*");
+    }
+
     [Fact]
     public void Next_should_move_forward_and_return_next_character()
     {
@@ -89,7 +100,6 @@ public class CursorTests
         cursor.LineIndex.Should().Be(2);
         cursor.ColumnIndex.Should().Be(0);
     }
-
 
 }
 

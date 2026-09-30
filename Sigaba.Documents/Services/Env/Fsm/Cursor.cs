@@ -1,12 +1,21 @@
 ﻿namespace Sigaba.Documents.Services.Env.Fsm;
 
-internal class Cursor(string content)
+internal class Cursor
 {
+    private readonly string content;
+
     public int LineIndex { get; private set; } = 0;
     public int ColumnIndex { get; private set; } = 0;
     public int CurrIndex { get; private set; } = 0;
     public bool IsLastChar => CurrIndex == content.Length - 1;
-    public char CurrChar => content[CurrIndex];
+    public char CurrChar => CurrIndex < content.Length ? content[CurrIndex] : '\0';
+
+    public Cursor(string content)
+    {
+        if (string.IsNullOrEmpty(content))
+            throw new ArgumentException("Content cannot be null or empty.", nameof(content));
+        this.content = content;
+    }
 
     public char? Next()
     {
