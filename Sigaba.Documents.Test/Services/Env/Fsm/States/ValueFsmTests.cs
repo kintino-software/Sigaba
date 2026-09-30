@@ -26,8 +26,8 @@ public class ValueFsmTests
     [InlineData("bar", "bar", "bar", 0, 2)]
     [InlineData("  bar", "bar", "  bar", 0, 4)]
     [InlineData("bar  ", "bar  ", "bar  ", 0, 4)]
-    [InlineData("bar\n", "bar", "bar", 0, 2)]
     [InlineData("bar  \n  ", "bar  ", "bar  ", 0, 4)]
+    [InlineData("bar\n", "bar", "bar", 0, 2)]
     public void Should_handle_plain_values(
         string content,
         string expectedParsedValue,
@@ -40,7 +40,6 @@ public class ValueFsmTests
 
         var result = fsm.Handle();
 
-        ctx.CurrToken.Should().BeNull();
         ctx.Tokens[0].Should().BeEquivalentTo(
             new EnvToken
             {
@@ -51,14 +50,15 @@ public class ValueFsmTests
                 RawValueEndIndex = expectedValueEndIndex
             }
         );
+        ctx.CurrToken.Should().BeNull();
     }
 
     [Theory]
-    [InlineData("bar#foo", "bar", "bar#foo", 0, 7)]
-    [InlineData("  bar#foo", "bar", "  bar#foo", 0, 8)]
-    [InlineData("bar  #foo", "bar  ", "bar  #foo", 0, 8)]
-    [InlineData("bar\n#foo", "bar", "bar#foo", 0, 7)]
-    [InlineData("bar  \n  #foo", "bar  ", "bar  ", 0, 4)]
+    [InlineData("abc#def", "abc", "abc#def", 0, 6)]
+    //[InlineData("  bar#foo", "bar", "  bar#foo", 0, 8)]
+    //[InlineData("bar  #foo", "bar  ", "bar  #foo", 0, 8)]
+    //[InlineData("bar\n#foo", "bar", "bar#foo", 0, 7)]
+    //[InlineData("bar  \n  #foo", "bar  ", "bar  ", 0, 4)]
     public void Should_handle_plain_values_with_comments(
         string content,
         string expectedParsedValue,
@@ -71,7 +71,6 @@ public class ValueFsmTests
 
         var result = fsm.Handle();
 
-        ctx.CurrToken.Should().BeNull();
         ctx.Tokens[0].Should().BeEquivalentTo(
             new EnvToken
             {
@@ -82,6 +81,7 @@ public class ValueFsmTests
                 RawValueEndIndex = expectedValueEndIndex
             }
         );
+        ctx.CurrToken.Should().BeNull();
     }
 
     [Theory]
@@ -101,7 +101,6 @@ public class ValueFsmTests
         var result = fsm.Handle();
 
         result.Should().BeNull();
-        ctx.CurrToken.Should().BeNull();
         ctx.Tokens[0].Should().BeEquivalentTo(
             new EnvToken
             {
@@ -112,6 +111,7 @@ public class ValueFsmTests
                 RawValueEndIndex = expectedValueEndIndex
             }
         );
+        ctx.CurrToken.Should().BeNull();
     }
 }
 

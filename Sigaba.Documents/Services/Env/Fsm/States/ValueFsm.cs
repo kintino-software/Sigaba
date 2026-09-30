@@ -34,31 +34,41 @@ internal class ValueFsm(FsmContext ctx) : IFsm
         {
             if (cursor.CurrChar == SChar.ValueContinuation)
             {
-                SkipWhiteSpaces(ctx);
-                if (cursor.CurrChar != SChar.NewLine)
-                    throw new FormatException($"Unexpected character '{cursor.CurrChar}' after line continuation. Expected a new line.");
-                ctx.RawValueBuffer.Append(cursor.Next()); // append to raw value and skip the new line
+                HandleLineContinuation(ctx); // advances the cursor
                 continue;
+            }
+
+            if (cursor.CurrChar == SChar.Comment)
+            {
+                HandleComment(ctx); // advances the cursor
+
             }
 
             if (cursor.CurrChar == SChar.Eq)
                 throw new FormatException($"Unexpected character '{SChar.Eq}' in value. Expected a plain value or a quoted value.");
 
+            if (cursor.CurrChar == SChar.DoubleQuote || cursor.CurrChar == SChar.SingleQuote)
+                throw new FormatException($"Unexpected character '{cursor.CurrChar}' in value. Expected a plain value or a quoted value.");
+
             if (cursor.CurrChar == SChar.NewLine)
             {
-                break;
+                ApplyTokenValue(ctx, rawValueStartIdx, ctx.Cursor.CurrIndex - 1); // -1 because we don't want to include the new line in the value
+                return new LineStartFsm(ctx);
             }
 
             ctx.RawValueBuffer.Append(cursor.CurrChar);
             ctx.PlainValueBuffer.Append(cursor.CurrChar);
+
+            if (cursor.IsLastChar)
+            {
+                // there's no next char, so we can apply the token value and return null to indicate that we're done
+                ApplyTokenValue(ctx, rawValueStartIdx, ctx.Cursor.CurrIndex);
+                return null;
+            }
+
         }
         while (cursor.Next() != null);
-
-        ApplyTokenValue(ctx, rawValueStartIdx, ctx.Cursor.CurrIndex);
-
-        if (cursor.IsLastChar)
-            return null;
-        return new LineStartFsm(ctx);
+        return null;
     }
 
     private IFsm? HandleQhotedValue()
@@ -102,10 +112,49 @@ internal class ValueFsm(FsmContext ctx) : IFsm
 
     private static void SkipWhiteSpaces(FsmContext ctx)
     {
-        while (!ctx.Cursor.IsLastChar && ctx.Cursor.CurrChar == SChar.WhiteSpace)
+        while (ctx.Cursor.CurrChar == SChar.WhiteSpace)
         {
             ctx.RawValueBuffer.Append(ctx.Cursor.CurrChar);
+            if (ctx.Cursor.IsLastChar)
+                return;
             ctx.Cursor.Next();
+        }
+    }
+
+    private static void HandleComment(FsmContext ctx)
+    {
+        var cursor = ctx.Cursor;
+
+        if (cursor.CurrChar != SChar.Comment)
+            throw new Exception($"Unexpected character '{cursor.CurrChar}' while handling comment. Expected a comment character.");
+
+        do
+        {
+            if (cursor.IsLastChar)
+                return;
+            ctx.RawValueBuffer.Append(cursor.CurrChar);
+        }
+        while (cursor.Next() != null);
+    }
+
+    private static void HandleLineContinuation(FsmContext ctx)
+    {
+        var cursor = ctx.Cursor;
+        if (cursor.CurrChar != SChar.ValueContinuation)
+            throw new Exception($"Unexpected character '{cursor.CurrChar}' while handling line continuation. Expected a value continuation character.");
+        while (cursor.Next() != null)
+        {
+            ctx.RawValueBuffer.Append(cursor.CurrChar);
+
+            if (cursor.CurrChar == SChar.NewLine)
+                return;
+
+            if (cursor.CurrChar != SChar.WhiteSpace)
+                throw new FormatException($"Only white space characters are allowed after a line continuation. Unexpected character: '{cursor.CurrChar}'.");
+
+            if (cursor.IsLastChar)
+                throw new FormatException($"Unexpected end of file while handling line continuation. Expected a new line character.");
+
         }
     }
 
