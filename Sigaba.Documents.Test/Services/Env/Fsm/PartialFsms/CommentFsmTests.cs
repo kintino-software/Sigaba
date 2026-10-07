@@ -1,6 +1,6 @@
 ﻿using Sigaba.Documents.TestHelpers;
 
-namespace Sigaba.Documents.Services.Env.Fsm.States;
+namespace Sigaba.Documents.Services.Env.Fsm.PartialFsms;
 
 public class CommentFsmTests
 {
@@ -9,30 +9,31 @@ public class CommentFsmTests
         return new CommentFsm(ctx ?? FsmFaker.CrateFsmContext());
     }
 
-    [Fact]
-    public void Handle_should_handle_end_of_file()
+    [Theory]
+    [InlineData("foobar", 5)]
+    public void Should_handle_end_of_file(string content, int expectedFinalIndex)
     {
-        var content = "# foobar";
         var ctx = FsmFaker.CrateFsmContext(content: content);
         var fsm = CreateFsm(ctx);
 
         var result = fsm.Handle();
 
         result.Should().BeNull();
-        ctx.Cursor.CurrIndex.Should().Be(7);
+        ctx.Cursor.CurrIndex.Should().Be(expectedFinalIndex);
     }
 
-    [Fact]
-    public void Handle_should_next_line()
+    [Theory]
+    [InlineData(" foobar\nfoo=bar", 7)] // The cursor should consume the new line character
+    [InlineData("foobar\n", 6)]
+    public void Handle_should_next_line(string content, int expectedFinalIndex)
     {
-        var content = "# foobar\nfoo=bar";
         var ctx = FsmFaker.CrateFsmContext(content: content);
         var fsm = CreateFsm(ctx);
 
         var result = fsm.Handle();
 
         result.Should().BeOfType<LineStartFsm>();
-        ctx.Cursor.CurrIndex.Should().Be(8);
+        ctx.Cursor.CurrIndex.Should().Be(expectedFinalIndex);
     }
 }
 

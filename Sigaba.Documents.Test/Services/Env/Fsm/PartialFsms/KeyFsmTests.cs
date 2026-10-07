@@ -1,6 +1,6 @@
 ﻿using Sigaba.Documents.TestHelpers;
 
-namespace Sigaba.Documents.Services.Env.Fsm.States;
+namespace Sigaba.Documents.Services.Env.Fsm.PartialFsms;
 
 public class KeyFsmTests
 {
@@ -9,20 +9,22 @@ public class KeyFsmTests
         return new KeyFsm(ctx ?? FsmFaker.CrateFsmContext());
     }
 
+    //
+
     [Fact]
-    public void Handle_should_do_something()
+    public void Should_handle_value()
     {
         var content = "foo=bar";
-        var ctx = FsmFaker.CrateFsmContext(content);
+        var ctx = FsmFaker.CrateFsmContext(content: content);
         var fsm = CreateFsm(ctx);
 
         var result = fsm.Handle();
 
         result.Should().BeOfType<ValueFsm>();
         ctx.CurrToken.Should().NotBeNull();
-        ctx.KeyBuffer.Length.Should().Be(0); // KeyBuffer should be cleared after processing
-        ctx.Cursor.CurrChar.Should().Be('b'); // Next fsm gets the state in it's first significant character, not the previous one
         ctx.CurrToken.Key.Should().Be("foo");
+        ctx.KeyBuffer.Length.Should().Be(0); // KeyBuffer should be cleared after processing
+        ctx.Cursor.CurrIndex.Should().Be(3); // Cursor should be at the '=' character
     }
 
     [Theory]

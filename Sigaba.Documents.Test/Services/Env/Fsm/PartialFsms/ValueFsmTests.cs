@@ -1,6 +1,6 @@
 ﻿using Sigaba.Documents.TestHelpers;
 
-namespace Sigaba.Documents.Services.Env.Fsm.States;
+namespace Sigaba.Documents.Services.Env.Fsm.PartialFsms;
 
 public class ValueFsmTests
 {
@@ -14,7 +14,7 @@ public class ValueFsmTests
         var ctx = FsmFaker.CrateFsmContext(content);
         if (key != null)
         {
-            ctx.CurrToken = new EnvToken { Key = key, ParsedValue = null };
+            ctx.CurrToken = new EnvToken { Key = key };
 
         }
         return ctx;
@@ -23,15 +23,15 @@ public class ValueFsmTests
     //
 
     [Theory]
-    [InlineData("bar", "bar", "bar", 0, 2)]
-    [InlineData("  bar", "bar", "  bar", 0, 4)]
-    [InlineData("bar  ", "bar  ", "bar  ", 0, 4)]
-    [InlineData("bar  \n  ", "bar  ", "bar  ", 0, 4)]
-    [InlineData("bar\n", "bar", "bar", 0, 2)]
+    [InlineData("bar", "bar", 0, 2)]
+    [InlineData("  bar", "bar", 0, 4)]
+    [InlineData("bar  ", "bar  ", 0, 4)]
+    [InlineData("bar  \n  ", "bar  ", 0, 4)]
+    [InlineData("\tbar\n", "bar", 0, 2)]
+    [InlineData("\tbar\t", "bar\t", 0, 2)]
     public void Should_handle_plain_values(
         string content,
-        string expectedParsedValue,
-        string expectedRawValue,
+        string expectedValue,
         int expectedValueStartIndex,
         int expectedValueEndIndex)
     {
@@ -40,12 +40,12 @@ public class ValueFsmTests
 
         var result = fsm.Handle();
 
+        result.Should().BeOfType<LineStartFsm>();
         ctx.Tokens[0].Should().BeEquivalentTo(
             new EnvToken
             {
                 Key = "key",
-                ParsedValue = expectedParsedValue,
-                RawValue = expectedRawValue,
+                Value = expectedValue,
                 RawValueStartIndex = expectedValueStartIndex,
                 RawValueEndIndex = expectedValueEndIndex
             }
@@ -54,13 +54,11 @@ public class ValueFsmTests
     }
 
     [Theory]
-    [InlineData("abc#def", "abc", "abc#def", 0, 6)]
-    [InlineData("  bar#foo", "bar", "  bar#foo", 0, 8)]
-    [InlineData("bar  #foo", "bar  ", "bar  #foo", 0, 8)]
+    [InlineData("abc#def", 0, 6)]
+    [InlineData("  bar#foo", 0, 8)]
+    [InlineData("bar  #foo", 0, 8)]
     public void Should_handle_plain_values_with_comments(
         string content,
-        string expectedParsedValue,
-        string expectedRawValue,
         int expectedValueStartIndex,
         int expectedValueEndIndex)
     {
@@ -73,8 +71,6 @@ public class ValueFsmTests
             new EnvToken
             {
                 Key = "key",
-                ParsedValue = expectedParsedValue,
-                RawValue = expectedRawValue,
                 RawValueStartIndex = expectedValueStartIndex,
                 RawValueEndIndex = expectedValueEndIndex
             }
@@ -83,13 +79,11 @@ public class ValueFsmTests
     }
 
     [Theory]
-    [InlineData("\"bar\"", "bar", "\"bar\"", 0, 4)]
-    [InlineData("  \"bar\"", "bar", "  \"bar\"", 0, 6)]
-    [InlineData("\"bar\"  ", "bar", "\"bar\"  ", 0, 6)]
+    [InlineData("\"bar\"", 0, 4)]
+    [InlineData("  \"bar\"", 0, 6)]
+    [InlineData("\"bar\"  ", 0, 6)]
     public void Should_handle_quoted_values(
         string content,
-        string expectedParsedValue,
-        string expectedRawValue,
         int expectedValueStartIndex,
         int expectedValueEndIndex)
     {
@@ -103,8 +97,6 @@ public class ValueFsmTests
             new EnvToken
             {
                 Key = "key",
-                ParsedValue = expectedParsedValue,
-                RawValue = expectedRawValue,
                 RawValueStartIndex = expectedValueStartIndex,
                 RawValueEndIndex = expectedValueEndIndex
             }

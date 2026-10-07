@@ -24,24 +24,27 @@ public class CursorTests
         var content = "abc";
         var cursor = CreateCursor(content);
 
+        cursor.Next().Should().Be('a');
         cursor.Next().Should().Be('b');
         cursor.Next().Should().Be('c');
         cursor.Next().Should().BeNull();
     }
 
     [Fact]
-    public void CurrChar_should_return_current_char()
+    public void Peek_should_return_current_char()
     {
         var content = "abc";
         var cursor = CreateCursor(content);
 
-        cursor.CurrChar.Should().Be('a');
+        cursor.Peek().Should().BeNull();
         cursor.Next();
-        cursor.CurrChar.Should().Be('b');
+        cursor.Peek().Should().Be('a');
         cursor.Next();
-        cursor.CurrChar.Should().Be('c');
+        cursor.Peek().Should().Be('b');
         cursor.Next();
-        cursor.CurrChar.Should().Be('c'); // as it could not move next, remains in the last char
+        cursor.Peek().Should().Be('c');
+        cursor.Next();
+        cursor.Peek().Should().BeNull();
     }
 
     [Fact]
@@ -50,6 +53,8 @@ public class CursorTests
         var content = "ab\nc";
         var cursor = CreateCursor(content);
 
+        cursor.CurrIndex.Should().Be(-1); // starts at -1 as it has not moved yet
+        cursor.Next();
         cursor.CurrIndex.Should().Be(0);
         cursor.Next();
         cursor.CurrIndex.Should().Be(1);
@@ -57,7 +62,6 @@ public class CursorTests
         cursor.CurrIndex.Should().Be(2);
         cursor.Next();
         cursor.CurrIndex.Should().Be(3);
-        cursor.Next();
         cursor.CurrIndex.Should().Be(3); // as it could not move next, remains in the last index
 
     }
@@ -68,37 +72,57 @@ public class CursorTests
         var content = "ab\ncd\ne";
         var cursor = CreateCursor(content);
 
-        //a
+        // before moving, the cursor should be at the initial position
+        cursor.LineIndex.Should().Be(0);
+        cursor.ColumnIndex.Should().Be(-1);
+
+        cursor.Next(); //a
         cursor.LineIndex.Should().Be(0);
         cursor.ColumnIndex.Should().Be(0);
-        cursor.Next();
-        //b
+
+        cursor.Next(); //b
         cursor.LineIndex.Should().Be(0);
         cursor.ColumnIndex.Should().Be(1);
-        cursor.Next();
-        // \n
+
+        cursor.Next(); // \n
         cursor.LineIndex.Should().Be(0);
         cursor.ColumnIndex.Should().Be(2);
-        cursor.Next();
-        //c
+
+        cursor.Next(); //c
         cursor.LineIndex.Should().Be(1);
         cursor.ColumnIndex.Should().Be(0);
-        cursor.Next();
-        //d
+
+        cursor.Next(); //d
         cursor.LineIndex.Should().Be(1);
         cursor.ColumnIndex.Should().Be(1);
-        cursor.Next();
-        // \n
+
+        cursor.Next(); // \n
         cursor.LineIndex.Should().Be(1);
         cursor.ColumnIndex.Should().Be(2);
-        cursor.Next();
-        //e
+
+        cursor.Next(); //e
         cursor.LineIndex.Should().Be(2);
         cursor.ColumnIndex.Should().Be(0);
-        cursor.Next();
         // as it cant move forward, it should remain in the last indexes
+        cursor.Next();
         cursor.LineIndex.Should().Be(2);
         cursor.ColumnIndex.Should().Be(0);
+    }
+
+    [Theory]
+    [InlineData("abc", 2)]
+    [InlineData("ab\nc", 3)]
+    [InlineData("a", 0)]
+    public void Cursor_index_should_not_go_beyond_last_char(string content, int expectedLastIndex)
+    {
+        var cursor = CreateCursor(content);
+
+        for (int i = 0; i < 10; i++)
+        {
+            cursor.Next();
+        }
+
+        cursor.CurrIndex.Should().Be(expectedLastIndex);
     }
 
 }

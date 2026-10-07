@@ -2,7 +2,8 @@
 
 public static class SChar
 {
-    public readonly static char WhiteSpace = ' ';
+    public readonly static char Space = ' '; // todo: it could be a tab: create an extension to check both
+    public readonly static char Tab = '\t';
     public readonly static char ValueContinuation = '\\';
     public readonly static char Comment = '#';
     public readonly static char NewLine = '\n';

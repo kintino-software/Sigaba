@@ -1,6 +1,7 @@
 ﻿using Sigaba.Documents.TestHelpers;
+using Sigaba.Documents.Services.Env.Fsm.PartialFsms;
 
-namespace Sigaba.Documents.Services.Env.Fsm.States;
+namespace Sigaba.Documents.Services.Env.Fsm.PartialFsms;
 
 public class LineStartFsmTests
 {

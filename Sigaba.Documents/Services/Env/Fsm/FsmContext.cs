@@ -8,6 +8,5 @@ internal class FsmContext(string content)
     public EnvToken? CurrToken { get; set; } = null;
     public Cursor Cursor { get; } = new(content);
     public StringBuilder KeyBuffer = new(256);
-    public StringBuilder PlainValueBuffer = new(256);
-    public StringBuilder RawValueBuffer = new(256);
+    public StringBuilder ValueBuffer = new(256);
 }

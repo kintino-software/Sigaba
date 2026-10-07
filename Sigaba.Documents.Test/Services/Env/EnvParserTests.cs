@@ -1,12 +1,15 @@
 ﻿using Sigaba.Documents.Services.Env.Fsm;
+using Sigaba.Documents.Services.Env;
 
 namespace Sigaba.Documents.Services.Env;
 
 public class EnvParserTests
 {
+    private readonly IFsm fsm = Substitute.For<IFsm>();
+
     private EnvParser CreateParser()
     {
-        var parser = new EnvParser();
+        var parser = new EnvParser(fsm);
         return parser;
     }
 
