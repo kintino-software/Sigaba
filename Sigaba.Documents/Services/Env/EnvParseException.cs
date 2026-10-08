@@ -1,4 +1,4 @@
-﻿namespace Sigaba.Documents.Services.Env.Interpreter;
+﻿namespace Sigaba.Documents.Services.Env;
 
 public sealed class EnvParseException(int line, int column, string message) : Exception(message)
 {
