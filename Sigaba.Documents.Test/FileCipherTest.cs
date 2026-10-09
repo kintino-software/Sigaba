@@ -10,7 +10,7 @@ public class FileCipherTest
     private readonly ILogger<FileCipher> logger = Substitute.For<ILogger<FileCipher>>();
     private readonly MockFileSystem fs = new();
     private readonly FakeCipher cipher = new FakeCipher().CheckKeysAndPasswords(false);
-    private readonly Predicate<string> fieldFilter = (f) => f.Contains("_secret");
+    private readonly Predicate<string> fieldFilter = (f) => f.Contains("_secret") || f.Contains("_SECRET");
 
     private IFileCipher CreateService()
     {
@@ -44,6 +44,25 @@ public class FileCipherTest
         jsonTester.GetJsonValue<string>("$.c.e").Should().Be("e value");
     }
 
+    [Fact]
+    public async Task Should_encrypt_env_documents()
+    {
+        var service = CreateService();
+        var jsonDocument = """
+        KEY1_SECRET=secret value 1
+        KEY2=normal value 2
+        KEY3_SECRET=secret value 3
+        """;
+        var filePath = fs.AddMockFilePath(jsonDocument, ".env");
+
+        await service.CipherFile(filePath, PublicKey.Any(), fieldFilter);
+
+        var newContent = fs.GetFile(filePath.Path).TextContents;
+        newContent.Should().NotContain("secret value 1");
+        newContent.Should().Contain("normal value 2");
+        newContent.Should().NotContain("secret value 3");
+    }
+
     // DecipherFile
 
     [Fact]
@@ -63,6 +82,24 @@ public class FileCipherTest
         }
         """;
         var filePath = fs.AddMockFilePath(originalJson, "test.json");
+
+        await service.CipherFile(filePath, cipher.ThePublicKey, fieldFilter);
+        await service.DecipherFile(filePath, cipher.ThePrivateKey);
+        var actualJson = fs.GetFile(filePath.Path).TextContents;
+
+        actualJson.Should().Be(originalJson);
+    }
+
+    [Fact]
+    public async Task Should_decipher_env_documents()
+    {
+        var service = CreateService();
+        var originalJson = """
+        KEY1_SECRET=secret value 1
+        KEY2=normal value 2
+        KEY3_SECRET=secret value 3
+        """;
+        var filePath = fs.AddMockFilePath(originalJson, ".env");
 
         await service.CipherFile(filePath, cipher.ThePublicKey, fieldFilter);
         await service.DecipherFile(filePath, cipher.ThePrivateKey);
@@ -92,6 +129,25 @@ public class FileCipherTest
         }
         """;
         var filePath = fs.AddMockFilePath(originalJson, "test.json");
+
+        await service.CipherFile(filePath, PublicKey.Any(), fieldFilter);
+        await service.DecipherFile(filePath, PrivateKey.Any());
+        var result = fs.GetFile(filePath.Path).TextContents;
+
+        result.Should().Be(originalJson);
+    }
+
+    [Fact]
+    public async Task Should_recover_original_format_when_deciphering_env_documents()
+    {
+        var service = CreateService();
+        var originalJson = """
+            KEY1_SECRET=secret value 1         
+                              KEY2=normal value 2
+                # comment
+                    KEY3_SECRET=       secret value 3 # another comment
+        """;
+        var filePath = fs.AddMockFilePath(originalJson, ".env");
 
         await service.CipherFile(filePath, PublicKey.Any(), fieldFilter);
         await service.DecipherFile(filePath, PrivateKey.Any());

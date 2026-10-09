@@ -150,5 +150,15 @@ public class FilePathTest
 
         act.Should().NotThrow();
     }
+
+    // GetFileName
+
+    [Fact]
+    public void Should_get_file_name()
+    {
+        var file = new FilePath(fs, "a", "b", "c.txt");
+        var fileName = file.GetFileName();
+        fileName.Should().Be("c.txt");
+    }
 }
 
