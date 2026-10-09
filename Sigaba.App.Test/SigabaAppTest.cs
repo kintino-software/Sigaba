@@ -6,6 +6,7 @@ using Sigaba.Crypto;
 using Sigaba.Documents;
 using Sigaba.Primitives.Crypto;
 using Sigaba.Primitives.FileSystem;
+using System.IO.Abstractions.TestingHelpers;
 
 namespace Sigaba.App;
 
@@ -16,10 +17,11 @@ public class SigabaAppTest : BaseTest
     private readonly ISigabaFileManager sigabaFileManager = Substitute.For<ISigabaFileManager>();
     private readonly IPrivateKeyManager privateKeyManager = Substitute.For<IPrivateKeyManager>();
     private readonly ISigabaFile sigabaFile = Substitute.For<ISigabaFile>();
+    private readonly MockFileSystem fs = new();
 
     private ISigabaApp CreateService()
     {
-        return new SigabaApp(cipher, sigabaFileManager, privateKeyManager, fileCipher);
+        return new SigabaApp(cipher, fs, sigabaFileManager, privateKeyManager, fileCipher);
     }
 
     private void SetupCipher()
@@ -30,17 +32,17 @@ public class SigabaAppTest : BaseTest
     private void SetupPrivateKeyManager()
     {
         privateKeyManager.LoadAsync(default, default, default).ReturnsForAnyArgs(
-            new PrivateKeyLoadResult(PrivateKey.Any(), Fs.NewFilePath("b", "private.key")));
+            new PrivateKeyLoadResult(PrivateKey.Any(), new FilePath("b", "private.key")));
         privateKeyManager.SaveAsync(default, default, default).ReturnsForAnyArgs(
-            new PrivateKeySaveResult(Fs.NewFilePath("b", "private.key")));
+            new PrivateKeySaveResult(new FilePath("b", "private.key")));
     }
 
     private void SetupSigabaFileManager()
     {
         sigabaFileManager.LoadAsync(default).ReturnsForAnyArgs(
-            new SigabaFileLoadResult(sigabaFile, Fs.NewFilePath("a", "sigaba.json")));
+            new SigabaFileLoadResult(sigabaFile, new FilePath("a", "sigaba.json")));
         sigabaFileManager.SaveAsync(default, default).ReturnsForAnyArgs(
-            new SigabaFileSaveResult(Fs.NewFilePath("a", "sigaba.json")));
+            new SigabaFileSaveResult(new FilePath("a", "sigaba.json")));
     }
 
     // InitAsync
@@ -48,7 +50,7 @@ public class SigabaAppTest : BaseTest
     [Fact]
     public async Task Should_initialize_context()
     {
-        var optionsArg = new InitializationOptions(Fs.NewDirPath(Fs.Directory.GetCurrentDirectory()), "password");
+        var optionsArg = new InitializationOptions(new DirPath(fs.Directory.GetCurrentDirectory()), "password");
         var service = CreateService();
         SetupCipher();
         SetupSigabaFileManager();
@@ -68,14 +70,14 @@ public class SigabaAppTest : BaseTest
     [Fact]
     public async Task Should_cipher_files()
     {
-        var referenceFolderArg = Fs.NewDirPath("any");
+        var referenceFolderArg = new DirPath("any");
         var service = CreateService();
         FilePath[] files =
             [
-                Fs.AddMockFilePath(null, "a", "b", "file1.txt"),
-                Fs.AddMockFilePath(null, "a", "b", "file2.txt"),
+                fs.AddMockFilePath(null, new FilePath("a", "b", "file1.txt")),
+                fs.AddMockFilePath(null, new FilePath("a", "b", "file2.txt")),
             ];
-        sigabaFile.GetTargetFiles(default).ReturnsForAnyArgs(files);
+        sigabaFile.GetTargetFiles(default, default).ReturnsForAnyArgs(files);
         SetupSigabaFileManager();
 
         await service.CipherFilesAsync(referenceFolderArg);
@@ -90,15 +92,15 @@ public class SigabaAppTest : BaseTest
     [Fact]
     public async Task Should_decipher_files()
     {
-        var referenceFolderArg = Fs.NewDirPath("any");
+        var referenceFolderArg = new DirPath("any");
         var passwordArg = "password";
         var service = CreateService();
         FilePath[] files =
             [
-                Fs.AddMockFilePath(null, "a", "b", "file1.txt"),
-                Fs.AddMockFilePath(null, "a", "b", "file2.txt"),
+                fs.AddMockFilePath(null, new FilePath("a", "b", "file1.txt")),
+                fs.AddMockFilePath(null, new FilePath("a", "b", "file2.txt")),
             ];
-        sigabaFile.GetTargetFiles(default).ReturnsForAnyArgs(files);
+        sigabaFile.GetTargetFiles(default, default).ReturnsForAnyArgs(files);
         SetupSigabaFileManager();
         SetupPrivateKeyManager();
 
@@ -113,11 +115,11 @@ public class SigabaAppTest : BaseTest
     [Fact]
     public async Task Should_edit_files()
     {
-        var filePathArg = Fs.AddMockFilePath(string.Empty, "a", "b", "file1.txt");
+        var filePathArg = fs.AddMockFilePath(string.Empty, new FilePath("a", "b", "file1.txt"));
         var textEditorArg = Substitute.For<ITextEditor>();
         var service = CreateService();
 
-        sigabaFile.IsTargetFile(default, default).ReturnsForAnyArgs(true);
+        sigabaFile.IsTargetFile(default, default, default).ReturnsForAnyArgs(true);
         SetupSigabaFileManager();
 
         //
@@ -133,7 +135,7 @@ public class SigabaAppTest : BaseTest
     [Fact]
     public async Task Should_throw_when_file_does_not_exist()
     {
-        var filePathArg = Fs.NewFilePath("a", "b", "file1.txt"); // created path without writing a file to it
+        var filePathArg = new FilePath("a", "b", "file1.txt"); // created path without writing a file to it
         var textEditorArg = Substitute.For<ITextEditor>();
         var service = CreateService();
 
@@ -146,10 +148,10 @@ public class SigabaAppTest : BaseTest
     [Fact]
     public async Task Should_throw_when_editing_file_outside_of_a_sigaba_file_context()
     {
-        var filePathArg = Fs.AddMockFilePath(string.Empty, "a", "b", "file1.txt");
+        var filePathArg = fs.AddMockFilePath(string.Empty, new FilePath("a", "b", "file1.txt"));
         var textEditorArg = Substitute.For<ITextEditor>();
         var service = CreateService();
-        sigabaFile.GetTargetFiles(default).ReturnsForAnyArgs([Fs.NewFilePath("a", "b", "other-file.txt")]);
+        sigabaFile.GetTargetFiles(default, default).ReturnsForAnyArgs([new FilePath("a", "b", "other-file.txt")]);
         SetupSigabaFileManager();
 
         var action = () => service.EditFileAsync(textEditorArg, filePathArg);

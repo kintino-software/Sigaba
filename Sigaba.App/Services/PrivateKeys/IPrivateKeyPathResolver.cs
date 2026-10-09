@@ -2,7 +2,6 @@
 using Sigaba.Primitives.FileSystem;
 using Sigaba.Services;
 using System.Diagnostics.CodeAnalysis;
-using System.IO.Abstractions;
 
 namespace Sigaba.App.Services.PrivateKeys;
 
@@ -13,7 +12,6 @@ internal interface IPrivateKeyPathResolver
 }
 
 internal class PrivateKeyPathResolver(
-    IFileSystem fs,
     IEnvironmentVariables env,
     ILogger<PrivateKeyPathResolver> logger)
     : IPrivateKeyPathResolver
@@ -35,7 +33,8 @@ internal class PrivateKeyPathResolver(
         var envVar = env.GetEnvironmentVariable(PrivateKeyDirEnvVarKey);
         if (envVar != null)
         {
-            var filePath = fs.NewFilePath(envVar, PrivateKeyFileName);
+            var dir = new DirPath(envVar);
+            var filePath = new FilePath(dir, PrivateKeyFileName);
             logger.TryingGetPrivateKeyPathFrom(filePath);
             yield return filePath;
         }
@@ -45,7 +44,7 @@ internal class PrivateKeyPathResolver(
         }
 
         // #2. Get from project directory
-        var projectRootFilePath = projectRootPath.CombineAsFile(PrivateKeyFileName);
+        var projectRootFilePath = new FilePath(projectRootPath, PrivateKeyFileName);
         logger.TryingGetPrivateKeyPathFrom(projectRootFilePath);
         yield return projectRootFilePath;
 
@@ -58,9 +57,9 @@ internal class PrivateKeyPathResolver(
 
     // helpers
 
-    private FilePath GetDefaultPrivateKeyOutputPath(string projectId)
+    private static FilePath GetDefaultPrivateKeyOutputPath(string projectId)
     {
-        return fs.NewFilePath(SigabaSystemDir, projectId, PrivateKeyFileName);
+        return new FilePath(SigabaSystemDir, projectId, PrivateKeyFileName);
     }
 }
 

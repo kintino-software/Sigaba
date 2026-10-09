@@ -4,6 +4,7 @@ using Sigaba.App.Services.SigabaFiles;
 using Sigaba.Crypto;
 using Sigaba.Documents;
 using Sigaba.Primitives.FileSystem;
+using System.IO.Abstractions;
 
 namespace Sigaba.App;
 
@@ -18,6 +19,7 @@ public interface ISigabaApp
 
 internal class SigabaApp(
     ICipher cipher,
+    IFileSystem fs,
     ISigabaFileManager sigabaFileManager,
     IPrivateKeyManager privateKeyManager,
     IFileCipher fileCipher) : ISigabaApp
@@ -39,7 +41,10 @@ internal class SigabaApp(
         var (sigabaFile, sigabaFilePath) = await sigabaFileManager.LoadAsync(referenceFolderPath);
 
         List<string> affectedFiles = [];
-        foreach (var filePath in sigabaFile.GetTargetFiles(sigabaFilePath.Parent()))
+        var topMostFolder = fs.Path.GetDirectoryName(sigabaFilePath)
+            ?? throw new InvalidOperationException($"Failed to get the directory name for '{sigabaFilePath}'.");
+
+        foreach (var filePath in sigabaFile.GetTargetFiles(fs, topMostFolder))
         {
             await fileCipher.CipherFile(filePath, sigabaFile.PublicKey, sigabaFile.FieldNamePredicate);
             affectedFiles.Add(filePath.ToString());
@@ -51,10 +56,12 @@ internal class SigabaApp(
     async Task<CipherResult> ISigabaApp.DecipherFilesAsync(DirPath referenceFolderPath, string password)
     {
         var (sigabaFile, sigabaFilePath) = await sigabaFileManager.LoadAsync(referenceFolderPath);
-        var (privateKey, _) = await privateKeyManager.LoadAsync(sigabaFilePath.Parent(), sigabaFile.ProjectId, password);
+        var topMostFolder = fs.Path.GetDirectoryName(sigabaFilePath)
+            ?? throw new InvalidOperationException($"Failed to get the directory name for '{sigabaFilePath}'.");
+        var (privateKey, _) = await privateKeyManager.LoadAsync(topMostFolder, sigabaFile.ProjectId, password);
 
         List<string> affectedFiles = [];
-        foreach (var filePath in sigabaFile.GetTargetFiles(sigabaFilePath.Parent()))
+        foreach (var filePath in sigabaFile.GetTargetFiles(fs, topMostFolder))
         {
             await fileCipher.DecipherFile(filePath, privateKey);
             affectedFiles.Add(filePath.ToString());
@@ -65,13 +72,16 @@ internal class SigabaApp(
 
     async Task<EditFileResult> ISigabaApp.EditFileAsync(ITextEditor textEditor, FilePath editingFilePath)
     {
-        if (!editingFilePath.Exists)
+        if (!fs.File.Exists(editingFilePath))
             throw new FileNotFoundException($"The file '{editingFilePath}' does not exist.");
 
-        var (sigabaFile, sigabaFilePath) = await sigabaFileManager.LoadAsync(editingFilePath.Parent());
+        var referenceDir = fs.Path.GetDirectoryName(editingFilePath)
+            ?? throw new InvalidOperationException($"Failed to get the directory name for '{editingFilePath}'.");
+
+        var (sigabaFile, sigabaFilePath) = await sigabaFileManager.LoadAsync(referenceDir);
 
         // Check if the file is part of the target files in the Sigaba file
-        if (!sigabaFile.IsTargetFile(editingFilePath, sigabaFilePath.Parent()))
+        if (!sigabaFile.IsTargetFile(fs, editingFilePath, referenceDir))
             throw new InvalidOperationException(
                 $"The file '{editingFilePath}' is not part of Sigaba target files. Make sure you have the correct filter in {Constants.SigabaFileName}.");
 

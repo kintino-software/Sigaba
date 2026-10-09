@@ -1,4 +1,5 @@
-﻿using Xunit.Abstractions;
+﻿using Sigaba.Primitives.FileSystem;
+using Xunit.Abstractions;
 
 namespace Sigaba.Cli.IntegrationTest.Cases;
 
@@ -25,7 +26,7 @@ public sealed class EncryptTest : BaseTest
                 "field2_secret": "secret value 2",
             }
             """,
-            cwd, "fileA.secrets.json");
+            new FilePath(cwd, "fileA.secrets.json"));
 
         var file2Path = Fs.AddMockFilePath("""
             {
@@ -33,19 +34,19 @@ public sealed class EncryptTest : BaseTest
                 "field4_secret": "secret value 4",
             }
             """,
-            cwd, "subdir1", "subdir2", "fileB.secrets.json");
+            new FilePath(cwd, "subdir1", "subdir2", "fileB.secrets.json"));
 
         var file3Path = Fs.AddMockFilePath("""
             KEY=value
             KEY_SECRET=secret value
             """,
-            cwd, "subdir1", "subdir2", ".env");
+            new FilePath(cwd, "subdir1", "subdir2", ".env"));
 
         var file4Path = Fs.AddMockFilePath("""
             KEY=value
             KEY_SECRET=secret value
             """,
-            cwd, ".env");
+            new FilePath(cwd, ".env"));
 
         //
 
@@ -66,16 +67,16 @@ public sealed class EncryptTest : BaseTest
             ^\s\s.*\.env$
             """);
 
-        var jsonTester1 = JsonTester.FromFile(file1Path);
+        var jsonTester1 = JsonTester.FromFile(Fs, file1Path);
         jsonTester1.GetJsonValue<string>("$.field1").Should().Be("value 1");
         jsonTester1.GetJsonValue<string>("$.field2_secret").Should().NotBe("secret value 2");
 
-        var jsonTester2 = JsonTester.FromFile(file2Path);
+        var jsonTester2 = JsonTester.FromFile(Fs, file2Path);
         jsonTester2.GetJsonValue<string>("$.field3").Should().Be("value 3");
         jsonTester2.GetJsonValue<string>("$.field4_secret").Should().NotBe("secret value 4");
 
-        file3Path.Read().Should().NotContain("secret value");
-        file4Path.Read().Should().NotContain("secret value");
+        Fs.GetFile(file3Path).TextContents.Should().NotContain("secret value");
+        Fs.GetFile(file4Path).TextContents.Should().NotContain("secret value");
     }
 
     [Fact]

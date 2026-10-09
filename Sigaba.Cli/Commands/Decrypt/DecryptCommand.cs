@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Sigaba.App;
 using Sigaba.Cli.Models;
-using Sigaba.Primitives.FileSystem;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using System.ComponentModel;
@@ -33,7 +32,7 @@ internal class DecryptCommand(
 
     protected override async Task<int> ExecuteCoreAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
-        var result = await app.DecipherFilesAsync(fs.NewCwdDirPath(), settings.Password);
+        var result = await app.DecipherFilesAsync(fs.Directory.GetCurrentDirectory(), settings.Password);
         logger.LogCipherResult(LogLevel.Information, result);
         return 0;
     }

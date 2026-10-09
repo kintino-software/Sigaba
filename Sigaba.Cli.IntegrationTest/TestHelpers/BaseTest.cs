@@ -28,16 +28,15 @@ public abstract class BaseTest
     /// <returns>The initialization data.</returns>
     protected async Task<InitializationData> InitializeAppAsync()
     {
-        var cwdDirPath = Fs.NewDirPath("application");
-        cwdDirPath.EnsureCreated();
-        Fs.Directory.SetCurrentDirectory(cwdDirPath.Path);
+        var cwd = new DirPath("application");
+        Fs.Directory.SetCurrentDirectory(cwd);
 
         var password = "password";
 
         var ephemeralApp = CreateCommandApp();
         await ephemeralApp.RunAsync(["init", "-n", "-l", "-p", password]);
 
-        return new InitializationData(password, cwdDirPath.Path);
+        return new InitializationData(password, cwd);
     }
 
     public CommandAppTester CreateCommandApp()

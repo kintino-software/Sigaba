@@ -10,12 +10,12 @@ internal static class DocumentModelFactory
     public static IDocumentModel GetDocumentModelByFilePath(FilePath filePath)
     {
         // env files could be like: .env, .env.local, .env.development, etc.
-        if (filePath.GetFileName().StartsWith(".env"))
+        if (Path.GetFileName(filePath).StartsWith(".env"))
         {
             return new EnvDocumentModel();
         }
 
-        var extensionWithDot = filePath.ExtensionWithDot.ToLower();
+        var extensionWithDot = Path.GetExtension(filePath).ToLower();
         return extensionWithDot switch
         {
             ".json" => new JsonDocumentModel(),

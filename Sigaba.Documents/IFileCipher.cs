@@ -5,6 +5,7 @@ using Sigaba.Documents.Services;
 using Sigaba.Primitives.Crypto;
 using Sigaba.Primitives.FileSystem;
 using System.Diagnostics.CodeAnalysis;
+using System.IO.Abstractions;
 using System.Text;
 
 namespace Sigaba.Documents;
@@ -30,12 +31,12 @@ public interface IFileCipher
     ValueTask DecipherFile(FilePath filePath, PrivateKey privateKey);
 }
 
-internal class FileCipher(ICipher cipher, ILogger<FileCipher> logger) : IFileCipher
+internal class FileCipher(IFileSystem fs, ICipher cipher, ILogger<FileCipher> logger) : IFileCipher
 {
-    private static async Task<IDocumentModel> LoadDocumentModelFromFileAsync(FilePath filePath)
+    private async Task<IDocumentModel> LoadDocumentModelFromFileAsync(FilePath filePath)
     {
         var document = DocumentModelFactory.GetDocumentModelByFilePath(filePath);
-        var content = await filePath.ReadAsync();
+        var content = await fs.File.ReadAllTextAsync(filePath);
         document.Parse(content);
         return document;
     }
@@ -43,7 +44,7 @@ internal class FileCipher(ICipher cipher, ILogger<FileCipher> logger) : IFileCip
     private async Task SaveChangedDocumentAsync(IDocumentModel document, FilePath filePath)
     {
         var newContent = document.Serialize();
-        await filePath.WriteAsync(newContent, overwrite: true);
+        await fs.File.WriteAllTextAsync(filePath, newContent);
         logger.ChangesSavedSuccessfully(filePath);
     }
 

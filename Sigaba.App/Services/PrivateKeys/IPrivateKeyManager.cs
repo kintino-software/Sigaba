@@ -3,6 +3,7 @@ using Sigaba.Crypto;
 using Sigaba.Primitives.Crypto;
 using Sigaba.Primitives.FileSystem;
 using System.Diagnostics.CodeAnalysis;
+using System.IO.Abstractions;
 
 namespace Sigaba.App.Services.PrivateKeys;
 
@@ -17,6 +18,7 @@ internal interface IPrivateKeyManager
 
 
 internal class PrivateKeyManager(
+    IFileSystem fs,
     ICipher cipher,
     IPrivateKeyPathResolver pathResolver,
     ILogger<PrivateKeyManager> logger)
@@ -24,7 +26,9 @@ internal class PrivateKeyManager(
 {
     async Task<PrivateKeyLoadResult> IPrivateKeyManager.LoadAsync(DirPath projectRoot, string projectId, string password)
     {
-        var resolvedPath = pathResolver.GetPossibleLoadingPaths(projectRoot, projectId).FirstOrDefault(p => p.Exists)
+        var resolvedPath = pathResolver
+            .GetPossibleLoadingPaths(projectRoot, projectId)
+            .FirstOrDefault(p => fs.File.Exists(p))
             ?? throw new InvalidOperationException($"Private key not found on any of expected locations.");
 
         var privateKey = await LoadAsync(resolvedPath, password);
@@ -43,19 +47,15 @@ internal class PrivateKeyManager(
 
     private async Task SaveAsync(PrivateKey privateKey, FilePath path, string password)
     {
-        if (path.Exists)
-        {
-            throw new InvalidOperationException($"Private key already exists at {path}. Overwriting is not allowed.");
-        }
         var encryptedPrivateKey = cipher.EncryptWithPassword(new PlainData(privateKey.Bytes), password);
         var content = encryptedPrivateKey.ToBase64();
-        await path.WriteAsync(content, overwrite: false, createFolders: true);
+        await fs.SafeWriteAllTextAsync(path, content, allowOverwrite: false);
         logger.SavedPrivateKey(path);
     }
 
     private async Task<PrivateKey> LoadAsync(FilePath path, string password)
     {
-        var privateKeyContent = await path.ReadAsync();
+        var privateKeyContent = await fs.File.ReadAllTextAsync(path);
 
         logger.ReadPrivateKey(path);
 

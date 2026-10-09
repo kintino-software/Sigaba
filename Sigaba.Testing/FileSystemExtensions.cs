@@ -15,10 +15,9 @@ public static class FileSystemExtensions
         /// <param name="content">The content of the mock file.</param>
         /// <param name="segments">The path segments for the mock file.</param>
         /// <returns>The created <see cref="FilePath"/>.</returns>
-        public FilePath AddMockFilePath(string content, params string[] segments)
+        public FilePath AddMockFilePath(string content, FilePath filePath)
         {
-            var filePath = fs.NewFilePath(segments);
-            fs.AddFile(filePath.Path, new MockFileData(content ?? string.Empty));
+            fs.AddFile(filePath, new MockFileData(content ?? string.Empty));
             return filePath;
         }
 
@@ -27,10 +26,9 @@ public static class FileSystemExtensions
         /// </summary>
         /// <param name="segments">The path segments of the mock directory.</param>
         /// <returns>The created <see cref="DirPath"/>.</returns>
-        public DirPath AddMockDirPath(params string[] segments)
+        public DirPath AddMockDirPath(DirPath dirPath)
         {
-            var dirPath = fs.NewDirPath(segments);
-            fs.AddDirectory(dirPath.Path);
+            fs.AddDirectory(dirPath);
             return dirPath;
         }
     }

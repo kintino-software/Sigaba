@@ -4,6 +4,7 @@ using Sigaba.App.Services.SigabaFiles.V1;
 using Sigaba.Primitives.Crypto;
 using Sigaba.Primitives.FileSystem;
 using System.Diagnostics.CodeAnalysis;
+using System.IO.Abstractions;
 
 namespace Sigaba.App.Services.SigabaFiles;
 
@@ -18,7 +19,7 @@ internal interface ISigabaFileManager
 }
 
 
-internal class SigabaFileManager(ILogger<SigabaFileManager> logger) : ISigabaFileManager
+internal class SigabaFileManager(IFileSystem fs, ILogger<SigabaFileManager> logger) : ISigabaFileManager
 {
     async Task<SigabaFileSaveResult> ISigabaFileManager.SaveAsync(ISigabaFile sigabaFile, DirPath projectRoot)
     {
@@ -28,12 +29,8 @@ internal class SigabaFileManager(ILogger<SigabaFileManager> logger) : ISigabaFil
             _ => throw new UnknownSigabaFileVersionException(sigabaFile.Version)
         };
 
-        var filePath = projectRoot.CombineAsFile(Constants.SigabaFileName);
-        if (filePath.Exists)
-            throw new InvalidOperationException($"File '{filePath}' already exists. Overwriting is not allowed.");
-
-        await filePath.WriteAsync(content, overwrite: false); // not allowed to overwrite
-
+        var filePath = new FilePath(projectRoot, Constants.SigabaFileName);
+        await fs.SafeWriteAllTextAsync(filePath, content, allowOverwrite: false);
         logger.SavedSigabaFile(filePath);
 
         return new SigabaFileSaveResult(filePath);
@@ -41,11 +38,11 @@ internal class SigabaFileManager(ILogger<SigabaFileManager> logger) : ISigabaFil
 
     async Task<SigabaFileLoadResult> ISigabaFileManager.LoadAsync(DirPath referenceFolder)
     {
-        if (!referenceFolder.TryGetNearestFileWithNameGoingUp(Constants.SigabaFileName, out var sigabaFilePath))
-            throw new SigabaFileNotFoundException(referenceFolder.Path);
+        if (!TryGetNearestFileWithNameGoingUp(referenceFolder, Constants.SigabaFileName, out var sigabaFilePath))
+            throw new SigabaFileNotFoundException(referenceFolder);
         logger.FoundSigabaFileAt(sigabaFilePath);
 
-        var content = await sigabaFilePath.ReadAsync();
+        var content = await fs.File.ReadAllTextAsync(sigabaFilePath);
 
         var version = JsonHelper.ReadVersionFromJson(content);
         logger.SigabaFileVersion(version);
@@ -64,6 +61,28 @@ internal class SigabaFileManager(ILogger<SigabaFileManager> logger) : ISigabaFil
     {
         var v1 = SigabaFileV1.CreateDefault(publicKey); // TODO: Consider querying through reflection the latest version
         return v1;
+    }
+
+    // helpers
+
+
+    public bool TryGetNearestFileWithNameGoingUp(DirPath referenceFolder, string fileName, [NotNullWhen(true)] out FilePath? foundFilePath)
+    {
+        if (string.IsNullOrWhiteSpace(fileName))
+            throw new ArgumentException("File name cannot be null or whitespace.", nameof(fileName));
+
+        for (var curDir = referenceFolder; curDir != null; curDir = curDir.Parent())
+        {
+            var filePath = new FilePath(curDir, fileName);
+            if (fs.File.Exists(filePath))
+            {
+                foundFilePath = filePath;
+                return true;
+            }
+        }
+
+        foundFilePath = null;
+        return false;
     }
 }
 

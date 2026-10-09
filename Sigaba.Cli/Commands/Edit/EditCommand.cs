@@ -26,8 +26,8 @@ internal class EditCommand(
 
     protected override async Task<int> ExecuteCoreAsync(CommandContext context, EditCommandSettings settings, CancellationToken cancellationToken)
     {
-        var cwd = fs.NewCwdDirPath();
-        var filePath = cwd.CombineAsFile(settings.File);
+        var cwd = fs.Directory.GetCurrentDirectory();
+        var filePath = new FilePath(cwd, settings.File);
 
         var result = await app.EditFileAsync(textEditor, filePath);
 

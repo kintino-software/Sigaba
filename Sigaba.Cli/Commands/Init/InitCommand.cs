@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Sigaba.App;
 using Sigaba.Cli.Models;
-using Sigaba.Primitives.FileSystem;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using System.ComponentModel;
@@ -58,14 +57,14 @@ internal class InitCommand(
 
     private Task<InitializationResult> ExecuteNonInteractiveAsync(InitSettings settings)
     {
-        return app.InitAsync(new InitializationOptions(SigabaFileOutputDir: fs.NewCwdDirPath(), PrivateKeyPassword: settings.Password));
+        return app.InitAsync(new InitializationOptions(SigabaFileOutputDir: fs.Directory.GetCurrentDirectory(), PrivateKeyPassword: settings.Password));
     }
 
     private Task<InitializationResult> ExecuteInteractiveAsync()
     {
         var password = console.PromptForPasswordDefinition("Enter a password to protect the private key:");
 
-        return app.InitAsync(new InitializationOptions(SigabaFileOutputDir: fs.NewCwdDirPath(), PrivateKeyPassword: password));
+        return app.InitAsync(new InitializationOptions(SigabaFileOutputDir: fs.Directory.GetCurrentDirectory(), PrivateKeyPassword: password));
     }
 
 }

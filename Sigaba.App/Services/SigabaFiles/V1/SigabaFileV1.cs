@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.FileSystemGlobbing;
 using Sigaba.Primitives.Crypto;
 using Sigaba.Primitives.FileSystem;
+using System.IO.Abstractions;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Vipentti.IO.Abstractions.FileSystemGlobbing;
@@ -85,17 +86,17 @@ internal class SigabaFileV1(
         return this.lazyFieldNameRegex.Value.IsMatch(name);
     }
 
-    IEnumerable<FilePath> ISigabaFile.GetTargetFiles(DirPath rootFolder)
+    IEnumerable<FilePath> ISigabaFile.GetTargetFiles(IFileSystem fs, DirPath rootFolder)
     {
         var matcher = CreateMatcher();
-        var matches = matcher.GetResultsInFullPath(rootFolder.Fs, rootFolder.Path);
-        return matches.Select(f => rootFolder.Fs.NewFilePath(f));
+        var matches = matcher.GetResultsInFullPath(fs, rootFolder);
+        return matches.Select(f => new FilePath(f));
     }
 
-    bool ISigabaFile.IsTargetFile(FilePath filePath, DirPath rootFolder)
+    bool ISigabaFile.IsTargetFile(IFileSystem fs, FilePath filePath, DirPath rootFolder)
     {
         var matcher = CreateMatcher();
-        var result = matcher.Match(rootFolder.Path, filePath.Path);
+        var result = matcher.Match(rootFolder, filePath);
         return result.HasMatches;
     }
 }
