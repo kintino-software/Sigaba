@@ -1,8 +1,8 @@
 # Sigaba
 
-Sigaba is a command-line tool that encrypts/decrypts determined fields in files that contain sensitive information, such as passwords and connection strings. It is mainly intended to be used on configuration files.
+Sigaba is a command-line tool for encrypting selected values in configuration files. It is designed for sensitive data such as passwords, API keys, and connection strings.
 
-Once encrypted, the file will still be human-readable, but the sensitive fields will be replaced with encrypted values. 
+Once encrypted, the file remains human-readable, but matching values are replaced with encrypted values.
 
 So, before encryption you would have a file with the following content:
 
@@ -12,7 +12,9 @@ So, before encryption you would have a file with the following content:
     "public_field": "public value"
 }
 ```
+
 and/or
+
 ```env
 KEY_SECRET=some secret data
 KEY=value
@@ -26,16 +28,18 @@ and after the encryption:
     "public_field": "public value"
 }
 ```
+
 and/or
+
 ```env
 KEY_SECRET=ENC(AJFFKTRS...)
 KEY=value
 ```
 
 
-**IMPORTANT:** For now, this tool only works on ```json``` and ```.env``` files.
+**Important:** Sigaba currently supports only `JSON` and `.env` files.
 
-## TLDR;
+## TL;DR
 
 ### Initialize:
 Run:
@@ -47,9 +51,9 @@ sigaba init
 > Enter the password again to confirm: ********
 ```
 
-Edit ```sigaba.json``` file to select which files and fields will be encrypted/decrypted.
+Edit `sigaba.json` to select which files and fields will be encrypted or decrypted.
 
-Move the private key (```<user profile folder>\.sigaba\private.key```) to a secure location.
+Move the private key from `<user profile folder>\.sigaba\private.key` to a secure location.
 
 ### Encrypt:
 
@@ -62,6 +66,7 @@ Put the private key file (```private.key```) in:
 - the current working directory, or 
 - in a folder defined in the environment variable ```SIGABA_PRIVATE_KEY_DIR```, or
 - in the ```.sigaba``` folder in the user profile, in a subfolder matching the ```projectId``` in the ```sigaba.json``` file.
+- anywhere, since you can specify its path with the ```--private-key-file``` option.
 
 Then run: 
 
@@ -81,11 +86,11 @@ sigaba edit <path-to-file>
 
 ## Features
 
-1. Encrypts any kind of json values (strings, numbers, booleans, arrays and even nulls) except entire objects (see more below).
+1. Encrypts any kind of JSON values — strings, numbers, booleans, arrays, and even nulls — except entire objects (see limitations below).
 2. Encrypts .env files.
 3. Preserves comments and formatting after decryption and encryption.
-4. Allows users to update the secret values and re-encrypt them, but not decrypt them.
-5. Scans files deep into the folder structure, so you will have a single configuration file for multiple projects or subfolders.
+4. Allows users to update the secret values and re-encrypt them, but not decrypt them without the private key and password.
+5. Searches through nested folders, allowing one configuration file to process multiple projects or subfolders.
 
 ## Installation
 
@@ -104,19 +109,19 @@ dotnet tool install Sigaba
 
 ### Initialization
 
-Initialize Sigaba in your project or solution directory, running on terminal:
+Initialize Sigaba from your project or solution directory:
 
 ```bash
 sigaba init
 ```
 or
 ```bash
-sigaba init --non-interactive -password <password>
+sigaba init --non-interactive --password <password>
 ```
 
-In this step you will set the password that will be necessary to decrypt the files.
+During initialization, you set the password required to decrypt the files.
 
-Also, the tool will create 2 files: ```sigaba.json``` and ```private.key```:
+The tool creates `sigaba.json` in the current directory and stores the encrypted private key in the user profile:
 
 - **sigaba.json**:
   - placed in the current working directory, i.e. the folder where you run the command.
@@ -125,12 +130,12 @@ Also, the tool will create 2 files: ```sigaba.json``` and ```private.key```:
   - sets the topmost folder where the tool will search for files to encrypt/decrypt.
   - this file can be kept in the source control, so that all team members will have the same configuration. 
 - **private.key**:
-  - placed in the user profile folder for safety, i.e. ```%USERPROFILE%\.sigaba\private.key``` on Windows or ```~/.sigaba/private.key``` on Linux and MacOS.
+  - stored in the user profile for safety, such as `%USERPROFILE%\.sigaba\private.key` on Windows or `~/.sigaba/private.key` on Linux and macOS.
   - it is needed to decrypt files.
   - the private key content is encrypted with the provided password, so it is useless without it.
   - once created, move it to a secure location.
   - **do not check it into source control**!
-  - it's generally good practice to allow only an automated system to access the private key through a secure mechanism. For example, in Azure Devops, you can upload the private key as a secure file and use it during a deployment pipeline.
+  - it is generally good practice to allow only an automated system to access the private key through a secure mechanism. For example, in Azure DevOps, you can upload the private key as a secure file and use it during a deployment pipeline.
 
 ### Encryption
 
@@ -140,9 +145,9 @@ To encrypt your files, use the following command:
   sigaba encrypt
   ```
 
-The tool will look for the files and fields according to the configuration file and encrypt/re-encrypt them.
+The tool looks for files and fields according to the configuration file and encrypts matching values.
 
-If any field has changed and it's not encrypted yet, the tool will encrypt it. If any field is already encrypted, the tool will leave it as is.
+Values that are already in the `ENC(...)` format are left unchanged. To change an encrypted value, use `sigaba edit`, update the value, save the file, and close the editor. Sigaba will encrypt the new value automatically.
 
 ### Edit and encrypt
 
@@ -162,12 +167,12 @@ To decrypt your files, use:
 sigaba decrypt -p <password>
 ```
 
-For decryption, the tool will need:
+To decrypt files, Sigaba requires:
 - the password you defined during initialization. You pass it to the command line as shown above. This password is used to decrypt the private key file.
 - the private key file ```private.key``` that was created during initialization. The tool will search for it in the following locations, in order:
   - A directory path defined in the environment variable ```SIGABA_PRIVATE_KEY_DIR```
   - The current working directory, i.e. the folder where you run the command.
-  - The ```.sigaba``` folder in the user profile, in a subfolder matching the ```projectId``` in the ```sigaba.json``` file. 
+  - The `.sigaba` folder in the user profile, in a subfolder matching the `projectId` in `sigaba.json`.
  
 Keep in mind those locations above when you are planning to use the tool in a CI/CD pipeline, so that the private key is available for decryption.
 
@@ -180,7 +185,7 @@ With the ```--private-key-file``` option, you can specify the path to the privat
 
 ## Configuration
 
-To configure the tool, open and edit ```sigaba.json``` file and edit any field on the ```configuration``` section.
+To configure the tool, open `sigaba.json` and edit the fields in the `configuration` section.
 
 **Do not modify the fields outside the ```configuration``` section**.
 
@@ -207,7 +212,7 @@ With the following configuration:
   "meta": {
     "version": 1,
     "projectId": "b5f2a6d1b4124bc38012c2a70c575646",
-    "publicKey": "ATBZMBMGByqGSM49Ag==",
+    "publicKey": "ATBZMBMGByqGSM49Ag=="
   }
   
 }
@@ -215,10 +220,10 @@ With the following configuration:
 
 the tool will work according to these rules:
 
-- the tool will process all files that ends with *.secrets.json* (like *appsettings.secrets.json*, *myconfig.secrets.json*, etc.).
-- the tool will process all files that are named *.env*.
+- the tool will process all files that end with `.secrets.json`, such as `appsettings.secrets.json` and `myconfig.secrets.json`.
+- the tool will process all files that end with `.env`.
 - the tool will skip any file inside a *node_modules*, *bin*, *obj* or *dist* folder.
-- on each of the filtered files, the tool will look for any field name that ends with *_secret* and encrypt/decrypt its value. 
+- in each matching file, the tool will look for field names that end with `_secret` and encrypt or decrypt their values.
  
 **NOTE:** Mind that the regex pattern to match field names is **case-insensitive**.
 
@@ -233,7 +238,7 @@ Currently, the tool cannot handle nested ```sigaba.json``` files in the same fol
 
 ### Json files
 
-Although the tool can reach any field in the document hiearchy, it cannot encrypt entire json objects. So if you have:
+Although the tool can reach any field in the document hierarchy, it cannot encrypt entire JSON objects. So if you have:
 
   ```json
   {
