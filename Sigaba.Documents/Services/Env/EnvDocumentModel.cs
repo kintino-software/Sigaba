@@ -32,19 +32,21 @@ internal class EnvDocumentModel() : IDocumentModel
 
     }
 
-    bool IDocumentModel.TryGetValue<T>(string fieldName, out T value)
+    bool IDocumentModel.TryGetValueAsString(string fieldName, [NotNullWhen(true)] out string? value)
     {
         var rawValue = (this as IDocumentModel).GetFieldRawValue(fieldName);
-        if (typeof(T) == typeof(string))
+        if (rawValue != null)
         {
-            value = (T)(object)rawValue;
+            value = rawValue;
             return true;
         }
-        throw new NotSupportedException($"Type '{typeof(T).Name}' is not supported for env files.");
+        value = null;
+        return false;
     }
 
     void IDocumentModel.SetFieldRawValue(string fieldName, string rawValue)
     {
+        // setting as raw value here as in .env files, the value is by default a string, and we don't have to do any conversion.
         replacements[fieldName] = rawValue;
     }
 

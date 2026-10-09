@@ -31,20 +31,24 @@ internal interface IDocumentModel
     IEnumerable<string> GetFieldNames();
 
     /// <summary>
-    /// Tries to get the value of a field with the specified key.
+    /// Tries to get the value of a field with the specified key as a string.
     /// </summary>
-    /// <typeparam name="T">The type of the field value.</typeparam>
+    /// <remarks>
+    /// Example:<br/>
+    /// The field is a number 1234, the result value should be a C# string "1234".<br/>
+    /// The field is a boolean true, the result value should be a C# string "true".<br/>
+    /// </remarks>
     /// <param name="fieldName">The name of the field.</param>
-    /// <param name="value">When this method returns, contains the value of the field if found; otherwise, the default value for the type.</param>
-    /// <returns>true if the field was found; otherwise, false.</returns>
-    bool TryGetValue<T>(string fieldName, [MaybeNull] out T value);
+    /// <param name="value">When this method returns, contains the value of the field if it was found and it's value converted to a string; otherwise, null.</param>
+    /// <returns>true if the field was found and it's value could be converted to a string; otherwise, false.</returns>
+    bool TryGetValueAsString(string fieldName, [NotNullWhen(true)] out string? value);
 
     /// <summary>
-    /// Sets the value of a field with the specified key.
+    /// Sets the value of a field with the specified key.<br/>
+    /// Implementers should convert the C# value to the document's string format.
     /// </summary>
-    /// <typeparam name="T">The type of the field value.</typeparam>
     /// <param name="fieldName">The name of the field.</param>
-    /// <param name="value">The value to set.</param>
+    /// <param name="value">The C# value to set and be converted to the document's corresponding format.</param>
     void SetFieldValue<T>(string fieldName, [MaybeNull] T value);
 
     /// <summary>
