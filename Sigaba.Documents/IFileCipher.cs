@@ -132,13 +132,14 @@ internal class FileCipher(ICipher cipher, ILogger<FileCipher> logger) : IFileCip
         var document = await LoadDocumentModelFromFileAsync(filePath);
         logger.LoadedDocumentModel(document.GetType().Name);
 
-        var fieldNames = document.GetFieldNames().Where(f => fieldFilter(f)).ToList();
-        logger.FilteredFielNames(fieldNames.Count, string.Join(", ", fieldNames));
+        var fieldNames = document.GetFieldNames();
+        var targetFieldNames = fieldNames.Where(f => fieldFilter(f)).ToList();
+        logger.FilteredFielNames(targetFieldNames.Count, string.Join(", ", targetFieldNames));
 
-        if (fieldNames.Count < 1)
+        if (targetFieldNames.Count < 1)
             return;
 
-        foreach (var fieldName in fieldNames)
+        foreach (var fieldName in targetFieldNames)
         {
             if (TryGetValueToEncrypt(document, fieldName, out var rawValue))
             {

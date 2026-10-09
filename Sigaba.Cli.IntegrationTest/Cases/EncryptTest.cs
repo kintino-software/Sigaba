@@ -35,6 +35,20 @@ public sealed class EncryptTest : BaseTest
             """,
             cwd, "subdir1", "subdir2", "fileB.secrets.json");
 
+        var file3Path = Fs.AddMockFilePath("""
+            KEY=value
+            KEY_SECRET=secret value
+            """,
+            cwd, "subdir1", "subdir2", ".env");
+
+        var file4Path = Fs.AddMockFilePath("""
+            KEY=value
+            KEY_SECRET=secret value
+            """,
+            cwd, ".env");
+
+        //
+
         //
 
         var result = await App.RunAsync(["encrypt"]);
@@ -44,6 +58,14 @@ public sealed class EncryptTest : BaseTest
 
         result.ExitCode.Should().Be(0);
 
+        App.Console.ShouldHaveOutputThatMatches("""
+            ^4 file\(s\) affected:$
+            ^\s\s.*fileA\.secrets\.json$
+            ^\s\s.*\.env$
+            ^\s\s.*fileB\.secrets\.json$
+            ^\s\s.*\.env$
+            """);
+
         var jsonTester1 = JsonTester.FromFile(file1Path);
         jsonTester1.GetJsonValue<string>("$.field1").Should().Be("value 1");
         jsonTester1.GetJsonValue<string>("$.field2_secret").Should().NotBe("secret value 2");
@@ -52,11 +74,8 @@ public sealed class EncryptTest : BaseTest
         jsonTester2.GetJsonValue<string>("$.field3").Should().Be("value 3");
         jsonTester2.GetJsonValue<string>("$.field4_secret").Should().NotBe("secret value 4");
 
-        App.Console.ShouldHaveOutputThatMatches("""
-            ^2 file\(s\) affected:$
-            ^\s\s.*fileA\.secrets\.json$
-            ^\s\s.*fileB\.secrets\.json$
-            """);
+        file3Path.Read().Should().NotContain("secret value");
+        file4Path.Read().Should().NotContain("secret value");
     }
 
     [Fact]
