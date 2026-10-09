@@ -12,6 +12,11 @@ So, before encryption you would have a file with the following content:
     "public_field": "public value"
 }
 ```
+and/or
+```env
+KEY_SECRET=some secret data
+KEY=value
+```
 
 and after the encryption:
 
@@ -21,6 +26,12 @@ and after the encryption:
     "public_field": "public value"
 }
 ```
+and/or
+```env
+KEY_SECRET=ENC(AJFFKTRS...)
+KEY=value
+```
+
 
 **IMPORTANT:** For now, this tool only works on ```json``` and ```.env``` files.
 
@@ -57,6 +68,10 @@ Then run:
 ```bash
 sigaba decrypt -p <password>
 ```
+or
+```bash
+sigaba decrypt -p <password> -k <path-to-private-key>
+```
 
 ### Edit and encrypt
 
@@ -66,10 +81,11 @@ sigaba edit <path-to-file>
 
 ## Features
 
-1. Encrypts any kind of values (strings, numbers, booleans, arrays and even nulls) except entire objects (see more below).
-2. Preserves comments and formatting after decryption and encryption.
-3. Allows users to update the secret values and re-encrypt them, but not decrypt them.
-4. Scans file deep into the folder structure, so you will have a single configuration file for multiple projects or subfolders.
+1. Encrypts any kind of json values (strings, numbers, booleans, arrays and even nulls) except entire objects (see more below).
+2. Encrypts .env files.
+3. Preserves comments and formatting after decryption and encryption.
+4. Allows users to update the secret values and re-encrypt them, but not decrypt them.
+5. Scans files deep into the folder structure, so you will have a single configuration file for multiple projects or subfolders.
 
 ## Installation
 
@@ -146,8 +162,6 @@ To decrypt your files, use:
 sigaba decrypt -p <password>
 ```
 
-#### Prerequisites for decryption
-
 For decryption, the tool will need:
 - the password you defined during initialization. You pass it to the command line as shown above. This password is used to decrypt the private key file.
 - the private key file ```private.key``` that was created during initialization. The tool will search for it in the following locations, in order:
@@ -156,6 +170,12 @@ For decryption, the tool will need:
   - The ```.sigaba``` folder in the user profile, in a subfolder matching the ```projectId``` in the ```sigaba.json``` file. 
  
 Keep in mind those locations above when you are planning to use the tool in a CI/CD pipeline, so that the private key is available for decryption.
+
+Or you can use:
+```bash
+sigaba decrypt --password <password> --private-key-file <path-to-private-key>
+```
+With the ```--private-key-file``` option, you can specify the path to the private key file, so the tool will not search for it in the default locations.
 
 
 ## Configuration
@@ -236,6 +256,9 @@ Although the tool can reach any field in the document hiearchy, it cannot encryp
   That's to avoid confusion on which level of the document would be encrypted first and the hassle to handle nested encrypted values.
 
   ## Changelog
+
+  ### 0.5
+  - For decryption, you can place the private key anywhere, as long as you specify its path with the ```--private-key-file``` option.
 
   ### 0.4
   - support for .env files
