@@ -14,6 +14,7 @@ public interface ISigabaApp
     Task<InitializationResult> InitAsync(InitializationOptions options);
     Task<CipherResult> CipherFilesAsync(DirPath referenceFolderPath);
     Task<CipherResult> DecipherFilesAsync(DirPath referenceFolderPath, string password);
+    Task<CipherResult> DecipherFilesAsync(DirPath referenceFolderPath, FilePath privateKeyFilePath, string password);
     Task<EditFileResult> EditFileAsync(ITextEditor textEditor, FilePath editingFilePath);
 }
 
@@ -31,7 +32,6 @@ internal class SigabaApp(
             await InitAsyncCore(options.SigabaFileOutputDir, options.PrivateKeyPassword);
 
         return new InitializationResult(sigabaFilePath, privateKeyPath);
-
     }
 
     async Task<CipherResult> ISigabaApp.CipherFilesAsync(DirPath referenceFolderPath)
@@ -55,6 +55,17 @@ internal class SigabaApp(
             privateKey,
             sigabaFile.GetTargetFiles(fs, projectRoot));
 
+        return new CipherResult(affectedFiles);
+    }
+
+    async Task<CipherResult> ISigabaApp.DecipherFilesAsync(DirPath referenceFolderPath, FilePath privateKeyFilePath, string password)
+    {
+        var (sigabaFile, sigabaFilePath) = await sigabaFileManager.LoadAsync(referenceFolderPath);
+        var projectRoot = sigabaFilePath.GetContainingDirectory();
+        var (privateKey, _) = await privateKeyManager.LoadAsync(privateKeyFilePath, password);
+        var affectedFiles = await DecipherFilesAsyncCore(
+            privateKey,
+            sigabaFile.GetTargetFiles(fs, projectRoot));
         return new CipherResult(affectedFiles);
     }
 

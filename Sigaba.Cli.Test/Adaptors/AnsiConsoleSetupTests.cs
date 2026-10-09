@@ -1,7 +1,6 @@
-﻿using Sigaba.Cli.Adaptors;
-using Spectre.Console.Cli;
+﻿using Spectre.Console.Cli;
 
-namespace Sigaba.Cli;
+namespace Sigaba.Cli.Adaptors;
 
 public class AnsiConsoleSetupTests
 {
