@@ -1,3 +1,5 @@
-﻿namespace Sigaba.App;
+﻿using Sigaba.Primitives.FileSystem;
 
-public record CipherResult(IEnumerable<string> PathsOfFilesAffected);
+namespace Sigaba.App;
+
+public record CipherResult(IEnumerable<FilePath> PathsOfFilesAffected);

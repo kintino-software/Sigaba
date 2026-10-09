@@ -14,6 +14,7 @@ internal interface IPrivateKeyManager
 {
     Task<PrivateKeySaveResult> SaveAsync(PrivateKey privateKey, string projectId, string password);
     Task<PrivateKeyLoadResult> LoadAsync(DirPath projectRoot, string projectId, string password);
+    Task<PrivateKeyLoadResult> LoadAsync(FilePath filePath, string password);
 }
 
 
@@ -41,6 +42,12 @@ internal class PrivateKeyManager(
         var path = pathResolver.GetDefaultSavePath(projectId);
         await SaveAsync(privateKey, path, password);
         return new PrivateKeySaveResult(path);
+    }
+
+    async Task<PrivateKeyLoadResult> IPrivateKeyManager.LoadAsync(FilePath filePath, string password)
+    {
+        var privateKey = await LoadAsync(filePath, password);
+        return new PrivateKeyLoadResult(privateKey, filePath);
     }
 
     // helpers

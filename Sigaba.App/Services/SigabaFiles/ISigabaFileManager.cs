@@ -68,8 +68,13 @@ internal class SigabaFileManager(IFileSystem fs, ILogger<SigabaFileManager> logg
 
     public bool TryGetNearestFileWithNameGoingUp(DirPath referenceFolder, string fileName, [NotNullWhen(true)] out FilePath? foundFilePath)
     {
+        foundFilePath = null;
+
         if (string.IsNullOrWhiteSpace(fileName))
-            throw new ArgumentException("File name cannot be null or whitespace.", nameof(fileName));
+            return false;
+
+        if (!fs.Directory.Exists(referenceFolder))
+            return false;
 
         for (var curDir = referenceFolder; curDir != null; curDir = curDir.Parent())
         {
@@ -81,7 +86,6 @@ internal class SigabaFileManager(IFileSystem fs, ILogger<SigabaFileManager> logg
             }
         }
 
-        foundFilePath = null;
         return false;
     }
 }
