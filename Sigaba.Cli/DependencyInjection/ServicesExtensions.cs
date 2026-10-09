@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Sigaba.App;
+using Sigaba.App.Dependencies;
 using Sigaba.App.DependencyInjection;
 using Sigaba.Cli.Models;
 using Sigaba.Cli.Services.Logging;

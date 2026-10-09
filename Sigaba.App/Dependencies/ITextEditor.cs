@@ -1,6 +1,6 @@
 ﻿using Sigaba.Primitives.FileSystem;
 
-namespace Sigaba.App;
+namespace Sigaba.App.Dependencies;
 
 /// <summary>
 /// Abstraction for a text editor that can be used to edit files. 

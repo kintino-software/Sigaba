@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Sigaba.App;
+using Sigaba.App.Dependencies;
 using Sigaba.Cli.Adaptors;
 using Sigaba.Primitives.FileSystem;
 using Sigaba.Services;
