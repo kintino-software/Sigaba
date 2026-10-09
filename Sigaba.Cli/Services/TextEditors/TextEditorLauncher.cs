@@ -9,7 +9,7 @@ internal static class TextEditorLauncher
     {
         try
         {
-            var process = Process.Start(programName, $"\"{filePath.Path}\"");
+            var process = Process.Start(programName, $"\"{filePath.Value}\"");
             await process.WaitForExitAsync();
         }
         catch (Exception ex)

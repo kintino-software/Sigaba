@@ -90,10 +90,10 @@ public class EnvDocumentModelTests
         model.GetFieldRawValue("key3").Should().Be("value3");
     }
 
-    // GetFieldValue
+    // TryGetValueAsString
 
     [Fact]
-    public void GetFieldValue_should_get_field_value()
+    public void TryGetValueAsString_should_get_field_value()
     {
         var content = """
             key1=value1
@@ -104,34 +104,16 @@ public class EnvDocumentModelTests
             """;
         var model = CreateDocument();
         model.Parse(content);
-        model.TryGetValue<string>("key1", out var value1).Should().BeTrue();
+        model.TryGetValueAsString("key1", out var value1).Should().BeTrue();
         value1.Should().Be("value1");
-        model.TryGetValue<string>("key2", out var value2).Should().BeTrue();
+        model.TryGetValueAsString("key2", out var value2).Should().BeTrue();
         value2.Should().Be($$"""
             multi1 \
             multi2 \
             multi3
             """);
-        model.TryGetValue<string>("key3", out var value3).Should().BeTrue();
+        model.TryGetValueAsString("key3", out var value3).Should().BeTrue();
         value3.Should().Be("value3");
-    }
-
-    [Fact]
-    public void GetFieldValue_should_throw_when_type_is_not_string()
-    {
-        var content = """
-            key1=value1
-            key2=multi1 \
-            multi2 \
-            multi3
-            key3=value3
-            """;
-        var model = CreateDocument();
-        model.Parse(content);
-
-        var action = () => model.TryGetValue<int>("key1", out var value);
-
-        action.Should().Throw<NotSupportedException>().WithMessage("Type 'Int32' is not supported for env files.");
     }
 
     // Serialize

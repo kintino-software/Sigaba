@@ -1,4 +1,4 @@
-﻿using System.IO.Abstractions.TestingHelpers;
+﻿using Sigaba.Primitives.FileSystem;
 using Xunit.Abstractions;
 
 namespace Sigaba.Cli.IntegrationTest.Cases;
@@ -28,30 +28,27 @@ public class DecryptTest : BaseTest
     [InlineData("decrypt", "--password")]
     public async Task Should_decrypt_all_files_in_directory_tree(string command, string passwordArg)
     {
-        var path1 = Fs.Path.Combine(cwd, "file1.secrets.json");
         var originalContent1 = """
             {
                 "field1": "value 1",
                 "field2_secret": "secret value 2",
             }
             """;
-        Fs.AddFile(path1, new MockFileData(originalContent1));
+        var path1 = Fs.AddMockFilePath(originalContent1, new FilePath(cwd, "file1.secrets.json"));
 
-        var path2 = Fs.Path.Combine(cwd, "file2.secrets.json");
         var originalContent2 = """
             {
                 "field3": "value 3",
                 "field4_secret": "secret value 4",
             }
             """;
-        Fs.AddFile(path2, new MockFileData(originalContent2));
+        var path2 = Fs.AddMockFilePath(originalContent2, new FilePath(cwd, "dir", "file2.secrets.json"));
 
-        var path3 = Fs.Path.Combine(cwd, ".env");
         var originalContent3 = """
             KEY1_SECRET=secret value 1         
             KEY2=normal value 2
             """;
-        Fs.AddFile(path3, new MockFileData(originalContent3));
+        var path3 = Fs.AddMockFilePath(originalContent3, new FilePath(cwd, "dir", "subdir", ".env"));
 
         await Encrypt();
 
@@ -71,6 +68,41 @@ public class DecryptTest : BaseTest
             ^\s\s.*file1\.secrets\.json$
             ^\s\s.*file2\.secrets\.json$
             ^\s\s.*\.env$
+            """);
+    }
+
+    [Theory]
+    [InlineData("--private-key-path")]
+    [InlineData("-k")]
+    public async Task Should_decrypt_files_with_provided_private_key_path(string command)
+    {
+        Fs.AddMockFilePath(
+            """
+            {
+                "field2_secret": "secret value 2",
+            }
+            """,
+            new FilePath(cwd, "file.secrets.json"));
+
+        var privateKeyPath = Fs.AllFiles.First(f => f.EndsWith("private.key"));
+        var newLocation = new FilePath(cwd, "new-location", "private.key");
+        Fs.EnsureDirectoryExists(newLocation.GetContainingDirectory());
+        Fs.File.Move(privateKeyPath, newLocation);
+
+        await Encrypt();
+
+        //
+
+        var result = await App.RunAsync(["encrypt", "-p", password, command, newLocation]);
+        testOutput.WriteLine(App.Console.Output);
+
+        //
+
+        result.ExitCode.Should().Be(0);
+
+        App.Console.ShouldHaveOutputThatMatches("""
+            ^1 file\(s\) affected:$
+            ^\s\s.*file\.secrets\.json$
             """);
     }
 
@@ -112,4 +144,6 @@ public class DecryptTest : BaseTest
         result.ExitCode.Should().NotBe(0);
         App.Console.ShouldHaveOutputThatMatches(@"Error: Decryption with password failed\.");
     }
+
+
 }

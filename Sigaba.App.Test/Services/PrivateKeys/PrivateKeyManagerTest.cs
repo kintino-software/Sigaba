@@ -1,6 +1,7 @@
 ﻿using Sigaba.Crypto;
 using Sigaba.Primitives.Crypto;
 using Sigaba.Primitives.FileSystem;
+using System.IO.Abstractions.TestingHelpers;
 
 namespace Sigaba.App.Services.PrivateKeys;
 
@@ -8,10 +9,11 @@ public class PrivateKeyManagerTest : BaseTest
 {
     private readonly ICipher cipher = Substitute.For<ICipher>();
     private readonly IPrivateKeyPathResolver pathResolver = Substitute.For<IPrivateKeyPathResolver>();
+    private readonly MockFileSystem fs = new();
 
     private IPrivateKeyManager CreateService()
     {
-        return new PrivateKeyManager(cipher, pathResolver, CreateLogger<PrivateKeyManager>());
+        return new PrivateKeyManager(fs, cipher, pathResolver, CreateLogger<PrivateKeyManager>());
     }
 
     private void SetupCipher()
@@ -22,7 +24,7 @@ public class PrivateKeyManagerTest : BaseTest
 
     private void SetupPathResolver(out FilePath resolvedPath)
     {
-        var path = Fs.NewFilePath("dir", "private.key");
+        var path = new FilePath(fs.Directory.GetCurrentDirectory(), "dir", "private.key");
         resolvedPath = path;
         pathResolver.GetDefaultSavePath(default).ReturnsForAnyArgs(path);
         pathResolver.GetPossibleLoadingPaths(default, default).ReturnsForAnyArgs([path]);
@@ -43,7 +45,7 @@ public class PrivateKeyManagerTest : BaseTest
         await service.SaveAsync(privateKeyArg, projectIdArg, passwordArg);
 
         cipher.Received().EncryptWithPassword(new PlainData(privateKeyArg.Bytes), passwordArg);
-        filePath.Exists.Should().BeTrue();
+        fs.FileExists(filePath).Should().BeTrue();
     }
 
     [Fact]
@@ -56,10 +58,10 @@ public class PrivateKeyManagerTest : BaseTest
         SetupCipher();
         SetupPathResolver(out var filePath);
 
-        Fs.AddEmptyFile(filePath.Path);
+        fs.AddEmptyFile(filePath);
         var action = () => service.SaveAsync(privateKeyArg, projectIdArg, passwordArg);
 
-        await action.Should().ThrowAsync<InvalidOperationException>().WithMessage($"Private key already exists at *");
+        await action.Should().ThrowAsync<InvalidOperationException>().WithMessage($"*already exists*");
     }
 
     // LoadAsync
@@ -67,13 +69,13 @@ public class PrivateKeyManagerTest : BaseTest
     [Fact]
     public async Task Should_load_private_key_from_file_system()
     {
-        var projectRootArg = Fs.NewDirPath("any");
+        var projectRootArg = new DirPath("any");
         var projectIdArg = "projectId";
         var passwordArg = "password";
         var service = CreateService();
+        var expectedPrivateKey = PrivateKey.Any();
         SetupCipher();
         SetupPathResolver(out _);
-        var expectedPrivateKey = PrivateKey.Any();
         await service.SaveAsync(expectedPrivateKey, projectIdArg, passwordArg);
 
         //

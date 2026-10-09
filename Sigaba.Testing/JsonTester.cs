@@ -15,9 +15,11 @@ public class JsonTester
 {
     private readonly string jsonContent;
     private readonly Lazy<JsonNode> lazyJsonNode;
+    private readonly IFileSystem fs;
 
-    private JsonTester(string jsonContent)
+    private JsonTester(IFileSystem fs, string jsonContent)
     {
+        this.fs = fs;
         this.jsonContent = jsonContent;
         lazyJsonNode = new Lazy<JsonNode>(() => JsonNode.Parse(
             jsonContent,
@@ -29,17 +31,17 @@ public class JsonTester
     /// </summary>
     /// <param name="jsonContent">The JSON content as a string.</param>
     /// <returns>A new instance of <see cref="JsonTester"/>.</returns>
-    public static JsonTester FromString(string jsonContent) => new(jsonContent);
+    public static JsonTester FromString(IFileSystem fs, string jsonContent) => new(fs, jsonContent);
 
     /// <summary>
     /// Creates a <see cref="JsonTester"/> from a <see cref="FilePath"/>.
     /// </summary>
     /// <param name="filePath">The file path to read the JSON content from.</param>
     /// <returns>A new instance of <see cref="JsonTester"/>.</returns>
-    public static JsonTester FromFile(FilePath filePath)
+    public static JsonTester FromFile(IFileSystem fs, FilePath filePath)
     {
-        var jsonContent = filePath.Read();
-        return new JsonTester(jsonContent);
+        var jsonContent = fs.File.ReadAllText(filePath);
+        return new JsonTester(fs, jsonContent);
     }
 
     /// <summary>

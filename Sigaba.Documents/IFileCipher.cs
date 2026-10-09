@@ -5,6 +5,7 @@ using Sigaba.Documents.Services;
 using Sigaba.Primitives.Crypto;
 using Sigaba.Primitives.FileSystem;
 using System.Diagnostics.CodeAnalysis;
+using System.IO.Abstractions;
 using System.Text;
 
 namespace Sigaba.Documents;
@@ -30,12 +31,12 @@ public interface IFileCipher
     ValueTask DecipherFile(FilePath filePath, PrivateKey privateKey);
 }
 
-internal class FileCipher(ICipher cipher, ILogger<FileCipher> logger) : IFileCipher
+internal class FileCipher(IFileSystem fs, ICipher cipher, ILogger<FileCipher> logger) : IFileCipher
 {
-    private static async Task<IDocumentModel> LoadDocumentModelFromFileAsync(FilePath filePath)
+    private async Task<IDocumentModel> LoadDocumentModelFromFileAsync(FilePath filePath)
     {
         var document = DocumentModelFactory.GetDocumentModelByFilePath(filePath);
-        var content = await filePath.ReadAsync();
+        var content = await fs.File.ReadAllTextAsync(filePath);
         document.Parse(content);
         return document;
     }
@@ -43,7 +44,7 @@ internal class FileCipher(ICipher cipher, ILogger<FileCipher> logger) : IFileCip
     private async Task SaveChangedDocumentAsync(IDocumentModel document, FilePath filePath)
     {
         var newContent = document.Serialize();
-        await filePath.WriteAsync(newContent, overwrite: true);
+        await fs.File.WriteAllTextAsync(filePath, newContent);
         logger.ChangesSavedSuccessfully(filePath);
     }
 
@@ -71,29 +72,24 @@ internal class FileCipher(ICipher cipher, ILogger<FileCipher> logger) : IFileCip
 
     private static bool TryGetValueToEncrypt(IDocumentModel document, string fieldName, [NotNullWhen(true)] out string? rawValue)
     {
-        rawValue = null;
-
-        // First try to get the value as string to check if its encrypted or not
+        // First check, try to get the value as string to check if its encrypted or not
         // if the value is not even an string, means that is not encrypted.
         // We dont get the raw value at this point because each document would have it's own content formatting
         // and we need an document-agnostic way to check if the value is already encrypted or not.
-        if (document.TryGetValue<string>(fieldName, out var value))
+        // Second check: if the value is encrypted, we won't encrypt it again, so we return false.
+        if (document.TryGetValueAsString(fieldName, out var value) && !IsEncryptedFieldValue(value))
         {
-            // as the value is a string, we check if it is already encrypted, if so we skip it
-            if (IsEncryptedFieldValue(value))
-            {
-                rawValue = null;
-                return false;
-            }
+            rawValue = document.GetFieldRawValue(fieldName);
+            return true;
         }
+        rawValue = null;
+        return false;
 
-        rawValue = document.GetFieldRawValue(fieldName);
-        return true;
     }
 
     private static bool TryGetValueToDecrypt(IDocumentModel document, string fieldName, [NotNullWhen(true)] out string? value)
     {
-        if (!document.TryGetValue<string>(fieldName, out value) || // field is not a string, it means that is not encrypted
+        if (!document.TryGetValueAsString(fieldName, out value) || // field is not a string, it means that is not encrypted
             value is null ||                                        // field is null, also means is not encrypted
             !IsEncryptedFieldValue(value))                          // field is not encrypted
         {

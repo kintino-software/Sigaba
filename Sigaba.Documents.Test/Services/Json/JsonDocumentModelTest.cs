@@ -103,10 +103,10 @@ public class JsonDocumentModelTest
         model.GetFieldRawValue("targetParent.target").Should().Be("null");
     }
 
-    // GetFieldValue
+    // TryGetValueAsString
 
     [Fact]
-    public void Should_get_field_value()
+    public void TryGetValueAsString_should_get_field_value()
     {
         var json = """
         {
@@ -122,16 +122,16 @@ public class JsonDocumentModelTest
         """;
         model.Parse(json);
 
-        model.TryGetValue<string>("field1", out var field1).Should().BeTrue();
+        model.TryGetValueAsString("field1", out var field1).Should().BeTrue();
         field1.Should().Be("value1");
-        model.TryGetValue<int>("field2", out var field2).Should().BeTrue();
-        field2.Should().Be(42);
-        model.TryGetValue<bool>("field3", out var field3).Should().BeTrue();
-        field3.Should().Be(true);
-        model.TryGetValue<int[]>("field4", out var field4).Should().BeTrue();
-        field4.Should().BeEquivalentTo([1, 2, 3]);
-        model.TryGetValue<object>("targetParent.target", out var target).Should().BeTrue();
-        target.Should().BeNull();
+        model.TryGetValueAsString("field2", out var field2).Should().BeTrue();
+        field2.Should().Be("42");
+        model.TryGetValueAsString("field3", out var field3).Should().BeTrue();
+        field3.Should().Be("true");
+        model.TryGetValueAsString("field4", out var field4).Should().BeTrue();
+        field4.Should().Be("[1, 2, 3]");
+        model.TryGetValueAsString("targetParent.target", out var target).Should().BeTrue();
+        target.Should().Be("null");
     }
 
     // SetFieldRawValue
@@ -154,7 +154,7 @@ public class JsonDocumentModelTest
         {
             "field1": 42,
             "field2": true,
-            "field3": [1, 2, 3],
+            "field3": [1,2,3],
             "field4": null,
             "targetParent": {
                 "target": "foobar"
@@ -165,9 +165,9 @@ public class JsonDocumentModelTest
 
         model.SetFieldRawValue("field1", "42");
         model.SetFieldRawValue("field2", "true");
-        model.SetFieldRawValue("field3", "[1, 2, 3]");
+        model.SetFieldRawValue("field3", "[1,2,3]");
         model.SetFieldRawValue("field4", "null");
-        model.SetFieldRawValue("targetParent.target", @"""foobar""");
+        model.SetFieldRawValue("targetParent.target", "\"foobar\"");
 
         var result = model.Serialize();
         result.Should().Be(expected);
@@ -204,7 +204,7 @@ public class JsonDocumentModelTest
 
         model.SetFieldValue("field1", 42);
         model.SetFieldValue("field2", true);
-        model.SetFieldValue("field3", new int[] { 1, 2, 3 });
+        model.SetFieldValue("field3", new[] { 1, 2, 3 });
         model.SetFieldValue<object>("field4", null);
         model.SetFieldValue("targetParent.target", "foobar");
 

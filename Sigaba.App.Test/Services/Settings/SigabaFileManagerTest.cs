@@ -1,13 +1,16 @@
 ﻿using Sigaba.App.Services.SigabaFiles;
 using Sigaba.Primitives.FileSystem;
+using System.IO.Abstractions.TestingHelpers;
 
 namespace Sigaba.App.Services.Settings;
 
 public class SigabaFileManagerTest(Fixture fixture) : BaseTest
 {
-    private static ISigabaFileManager CreateService()
+    private readonly MockFileSystem fs = new();
+
+    private ISigabaFileManager CreateService()
     {
-        return new SigabaFileManager(CreateLogger<SigabaFileManager>());
+        return new SigabaFileManager(fs, CreateLogger<SigabaFileManager>());
     }
 
     // SaveAsync
@@ -15,13 +18,13 @@ public class SigabaFileManagerTest(Fixture fixture) : BaseTest
     [Fact]
     public async Task Should_save_sigaba_file()
     {
-        var projectRootArg = Fs.AddMockDirPath("projectRoot");
+        var projectRootArg = fs.AddMockDirPath("projectRoot");
         var service = CreateService();
         var instances = fixture.AllImplementationsInstancesOfSigabaFile;
 
         foreach (var instance in instances)
         {
-            var filePath = Fs.NewFilePath($"{Guid.NewGuid()}.json");
+            var filePath = new FilePath($"{Guid.NewGuid()}.json");
 
             var action = () => service.SaveAsync(instance, projectRootArg);
 
@@ -34,7 +37,7 @@ public class SigabaFileManagerTest(Fixture fixture) : BaseTest
     [Fact]
     public async Task Should_load_sigaba_file()
     {
-        var projectRootArg = Fs.AddMockDirPath("projectRoot");
+        var projectRootArg = fs.AddMockDirPath(new DirPath(fs.Directory.GetCurrentDirectory(), "projectRoot"));
         var service = CreateService();
         var instances = fixture.AllImplementationsInstancesOfSigabaFile;
 

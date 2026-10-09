@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using Sigaba.App;
+using Sigaba.App.Dependencies;
 using Sigaba.Primitives.FileSystem;
 using System.Diagnostics.CodeAnalysis;
 
