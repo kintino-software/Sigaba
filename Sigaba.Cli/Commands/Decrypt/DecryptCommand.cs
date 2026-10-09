@@ -20,9 +20,9 @@ internal class DecryptCommand(
         [Description("The password to decrypt the private key.")]
         public required string Password { get; set; }
 
-        [CommandOption("-k|--private-key-file <PRIVATE_KEY_FILE_PATH>")]
-        [Description("The path to the private key file.")]
-        public string? PrivateKeyFilePath { get; set; }
+        [CommandOption("-k|--private-key-file <PATH>")]
+        [Description("(Optional) The path to the private key file. If none provided, the path will be inferred (see docs).")]
+        public string? PrivateKeyFilePath { get; set; } = null;
     }
 
     protected override ValidationResult Validate(CommandContext context, Settings settings)
@@ -36,7 +36,7 @@ internal class DecryptCommand(
 
     protected override async Task<int> ExecuteCoreAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
-        var result = settings.PrivateKeyFilePath == null
+        var result = string.IsNullOrWhiteSpace(settings.PrivateKeyFilePath)
             ? await app.DecipherFilesAsync(fs.Directory.GetCurrentDirectory(), settings.Password)
             : await app.DecipherFilesAsync(settings.PrivateKeyFilePath, settings.Password);
         logger.LogCipherResult(LogLevel.Information, result);

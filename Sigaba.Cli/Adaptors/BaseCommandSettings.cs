@@ -8,13 +8,12 @@ namespace Sigaba.Cli.Adaptors;
 internal class BaseCommandSettings : CommandSettings
 {
     [CommandOption("-q|--quiet")]
-    [Description("No console output. Same as verbosity level Quiet.")]
+    [Description("(Optional) No console output. Same as verbosity level Quiet.")]
     public bool IsQuiet { get; set; } = false;
 
     [CommandOption("--verbosity")]
     [AllowedValues(VerbosityLevel.Normal, VerbosityLevel.Detailed, VerbosityLevel.Quiet)]
-    [DefaultValue(VerbosityLevel.Normal)]
-    [Description("Sets the verbosity level.")]
+    [Description("(Optional) Sets the verbosity level (Detailed, Normal, Quiet). Default: Normal")]
     public VerbosityLevel Verbosity { get; set; } = VerbosityLevel.Normal;
 
 }

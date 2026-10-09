@@ -18,15 +18,15 @@ internal class InitCommand(
     public class InitSettings : BaseCommandSettings
     {
         [CommandOption("-n|--non-interactive")]
-        [Description("Runs the command in non-interactive mode.")]
+        [Description("(Optional) Runs the command in non-interactive mode.")]
         public bool NonInteractive { get; set; } = false;
 
         [CommandOption("-p|--password <PASSWORD>")]
-        [Description("Sets the password to decrypt the private key.")]
+        [Description("(Required in non-interactive mode) Sets the password to decrypt the private key.")]
         public string Password { get; set; } = string.Empty;
 
         [CommandOption("--no-logo")]
-        [Description("Disables the display of the logo.")]
+        [Description("(Optional) Disables the display of the logo.")]
         public bool NoLogo { get; set; } = false;
     }
 
