@@ -23,5 +23,21 @@ public class FilePathTest
         FilePath file = Path.Combine("a", "b", "c.txt");
         file.Value.Should().Be(Path.Combine("a", "b", "c.txt"));
     }
+
+    [Fact]
+    public void Should_get_parent_directory()
+    {
+        var dir = new FilePath("a", "b", "c");
+        var parent = dir.GetContainingDirectory();
+        parent.Should().NotBeNull();
+        parent.Value.Should().Be(Path.Combine("a", "b"));
+    }
+
+    [Fact]
+    public void Should_override_to_string()
+    {
+        var file = new FilePath("a", "b", "c.txt");
+        file.ToString().Should().Be(file.Value);
+    }
 }
 

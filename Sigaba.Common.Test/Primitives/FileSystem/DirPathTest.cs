@@ -23,5 +23,25 @@ public sealed class DirPathTest
         DirPath dir = Path.Combine("a", "b", "c");
         dir.Value.Should().Be(Path.Combine("a", "b", "c"));
     }
+
+    [Fact]
+    public void Should_get_parent()
+    {
+        var dirPath = new DirPath("a", "b", "c");
+
+        var b = dirPath.Parent();
+        b.Should().NotBeNull();
+        b.Value.Should().Be(Path.Combine("a", "b"));
+
+        var a = b.Parent();
+        a.Should().NotBeNull();
+        a.Value.Should().Be("a");
+
+        var root = a.Parent();
+        root.Value.Should().BeEmpty();
+
+        var nullParent = root.Parent();
+        nullParent.Should().BeNull();
+    }
 }
 
