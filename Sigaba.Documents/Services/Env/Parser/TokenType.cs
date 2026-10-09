@@ -1,4 +1,4 @@
-﻿namespace Sigaba.Documents.Services.Env.Interpreter;
+﻿namespace Sigaba.Documents.Services.Env.Parser;
 
 public enum TokenType
 {

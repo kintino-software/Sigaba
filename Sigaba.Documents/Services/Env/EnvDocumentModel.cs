@@ -1,18 +1,20 @@
 ﻿using Sigaba.Documents.Models;
+using Sigaba.Documents.Services.Env.Parser;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Sigaba.Documents.Services.Env;
 
-internal class EnvDocumentModel : IDocumentModel
+internal class EnvDocumentModel() : IDocumentModel
 {
-    private record ValuePosition(int StartIndex, int Length);
+    private IReadOnlyDictionary<string, EnvEntry> fields = new Dictionary<string, EnvEntry>(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, string> replacements = [];
+    private string originalContent = string.Empty;
 
     void IDocumentModel.Parse(string documentContent)
     {
         originalContent = documentContent;
-        var bytes = Encoding.UTF8.GetBytes(documentContent);
-        ReadFromBytes(bytes);
+        fields = EnvParser.Parse(documentContent);
     }
 
     IEnumerable<string> IDocumentModel.GetFieldNames()
@@ -22,32 +24,27 @@ internal class EnvDocumentModel : IDocumentModel
 
     string IDocumentModel.GetFieldRawValue(string fieldName)
     {
-        if (!fields.TryGetValue(fieldName, out var position))
+        if (fields.TryGetValue(fieldName, out var entry))
         {
-            return string.Empty;
+            return entry.RawValue;
         }
-        return originalContent.Substring(position.StartIndex, position.Length);
+        throw new KeyNotFoundException($"Field '{fieldName}' not found.");
+
     }
 
     bool IDocumentModel.TryGetValue<T>(string fieldName, out T value)
     {
+        var rawValue = (this as IDocumentModel).GetFieldRawValue(fieldName);
         if (typeof(T) == typeof(string))
         {
-            value = (T)(object)(this as IDocumentModel).GetFieldRawValue(fieldName);
+            value = (T)(object)rawValue;
             return true;
         }
-        else
-        {
-            throw new NotSupportedException($"Type '{typeof(T).FullName}' is not supported for env files.");
-        }
+        throw new NotSupportedException($"Type '{typeof(T).Name}' is not supported for env files.");
     }
 
     void IDocumentModel.SetFieldRawValue(string fieldName, string rawValue)
     {
-        if (!fields.ContainsKey(fieldName))
-        {
-            throw new KeyNotFoundException($"Field '{fieldName}' does not exist.");
-        }
         replacements[fieldName] = rawValue;
     }
 
@@ -59,7 +56,7 @@ internal class EnvDocumentModel : IDocumentModel
     string IDocumentModel.Serialize()
     {
         var sb = new StringBuilder(originalContent);
-        var kvList = fields.ToList().OrderByDescending(kv => kv.Value.StartIndex);
+        var kvList = fields.ToList().OrderByDescending(kv => kv.Value.ValueStartIdx);
         foreach (var kvp in kvList)
         {
             if (!replacements.TryGetValue(kvp.Key, out var newValue))
@@ -69,8 +66,8 @@ internal class EnvDocumentModel : IDocumentModel
 
             if (fields.TryGetValue(kvp.Key, out var position))
             {
-                sb.Remove(position.StartIndex, position.Length);
-                sb.Insert(position.StartIndex, newValue);
+                sb.Remove(position.ValueStartIdx, position.ValueLength);
+                sb.Insert(position.ValueStartIdx, newValue);
             }
         }
         return sb.ToString();

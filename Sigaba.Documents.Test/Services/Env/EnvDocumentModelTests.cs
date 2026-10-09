@@ -4,7 +4,7 @@ namespace Sigaba.Documents.Services.Env;
 
 public class EnvDocumentModelTests
 {
-    private static IDocumentModel CreateDocument()
+    private IDocumentModel CreateDocument()
     {
         var model = new EnvDocumentModel();
         return model;
@@ -81,11 +81,11 @@ public class EnvDocumentModelTests
 
         model.Parse(content);
 
-        model.GetFieldRawValue("key1").Should().Be("value1\r");
+        model.GetFieldRawValue("key1").Should().Be("value1");
         model.GetFieldRawValue("key2").Should().Be($$"""
             multi1 \
             multi2 \
-            multi3{{"\r"}}
+            multi3
             """);
         model.GetFieldRawValue("key3").Should().Be("value3");
     }
@@ -105,12 +105,12 @@ public class EnvDocumentModelTests
         var model = CreateDocument();
         model.Parse(content);
         model.TryGetValue<string>("key1", out var value1).Should().BeTrue();
-        value1.Should().Be("value1\r");
+        value1.Should().Be("value1");
         model.TryGetValue<string>("key2", out var value2).Should().BeTrue();
         value2.Should().Be($$"""
             multi1 \
             multi2 \
-            multi3{{"\r"}}
+            multi3
             """);
         model.TryGetValue<string>("key3", out var value3).Should().BeTrue();
         value3.Should().Be("value3");
@@ -131,7 +131,7 @@ public class EnvDocumentModelTests
 
         var action = () => model.TryGetValue<int>("key1", out var value);
 
-        action.Should().Throw<NotSupportedException>().WithMessage("Type 'System.Int32' is not supported for env files.");
+        action.Should().Throw<NotSupportedException>().WithMessage("Type 'Int32' is not supported for env files.");
     }
 
     // Serialize
@@ -179,7 +179,6 @@ public class EnvDocumentModelTests
         var serialized = model.Serialize();
 
         serialized.Should().Be(expected);
-
     }
 }
 

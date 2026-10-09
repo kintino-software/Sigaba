@@ -2,7 +2,7 @@
 using Superpower.Model;
 using Superpower.Parsers;
 
-namespace Sigaba.Documents.Services.Env.Interpreter;
+namespace Sigaba.Documents.Services.Env.Parser.Superpower;
 
 internal static class EnvGrammar
 {

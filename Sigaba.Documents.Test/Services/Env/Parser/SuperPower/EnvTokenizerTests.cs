@@ -1,6 +1,8 @@
 ﻿using Xunit.Abstractions;
+using Sigaba.Documents.Services.Env.Parser;
+using Sigaba.Documents.Services.Env.Parser.Superpower;
 
-namespace Sigaba.Documents.Services.Env.Interpreter;
+namespace Sigaba.Documents.Services.Env.Parser.SuperPower;
 
 public class EnvTokenizerTests(ITestOutputHelper output)
 {

@@ -3,7 +3,7 @@ using Superpower.Model;
 using Superpower.Parsers;
 using Superpower.Tokenizers;
 
-namespace Sigaba.Documents.Services.Env.Interpreter;
+namespace Sigaba.Documents.Services.Env.Parser.Superpower;
 
 internal static class EnvTokenizer
 {
@@ -22,7 +22,12 @@ internal static class EnvTokenizer
     public static TokenList<TokenType> Tokenize(string input)
     {
         var tokens = Tokenizer.Tokenize(input)
-            .Select(token => new Token<TokenType>(token.Kind, new TextSpan(token.ToStringValue().TrimEnd('\r', '\n'))))
+            .Select(token =>
+            {
+                var value = token.Span.ToStringValue().TrimEnd('\r', '\n');
+                var span = token.Span.Slice(0, value.Length);
+                return new Token<TokenType>(token.Kind, span);
+            })
             .ToArray();
 
         return new TokenList<TokenType>(tokens);
