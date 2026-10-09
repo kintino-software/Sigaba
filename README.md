@@ -22,7 +22,7 @@ and after the encryption:
 }
 ```
 
-**IMPORTANT:** For now, this tool only works on ```json``` files.
+**IMPORTANT:** For now, this tool only works on ```json``` and ```.env``` files.
 
 ## TLDR;
 
@@ -110,7 +110,7 @@ Also, the tool will create 2 files: ```sigaba.json``` and ```private.key```:
   - this file can be kept in the source control, so that all team members will have the same configuration. 
 - **private.key**:
   - placed in the user profile folder for safety, i.e. ```%USERPROFILE%\.sigaba\private.key``` on Windows or ```~/.sigaba/private.key``` on Linux and MacOS.
-  - it is needed to decrypt all files.
+  - it is needed to decrypt files.
   - the private key content is encrypted with the provided password, so it is useless without it.
   - once created, move it to a secure location.
   - **do not check it into source control**!
@@ -180,8 +180,8 @@ With the following configuration:
 {
   "configuration": {
     "fieldRegex": "^.*_secret$",
-    "include": [ "**/*.secrets.json" ],
-    "exclude": [ "**node_modules/**", "**/bin/**", "**/obj/**" ]
+    "include": [ "**/*.secrets.json", "**/*.env" ],
+    "exclude": [ "**node_modules/**", "**/bin/**", "**/obj/**", "**/dist/**" ]
   },
 
   "meta": {
@@ -196,8 +196,11 @@ With the following configuration:
 the tool will work according to these rules:
 
 - the tool will process all files that ends with *.secrets.json* (like *appsettings.secrets.json*, *myconfig.secrets.json*, etc.).
-- the tool will skip any file inside a *node_modules* or *bin* or *obj* folder.
-- on each of the filtered files, the tool will look for any field name that ends with *_secret* and encrypt/decrypt it's value.
+- the tool will process all files that are named *.env*.
+- the tool will skip any file inside a *node_modules*, *bin*, *obj* or *dist* folder.
+- on each of the filtered files, the tool will look for any field name that ends with *_secret* and encrypt/decrypt its value. 
+ 
+**NOTE:** Mind that the regex pattern to match field names is **case-insensitive**.
 
 ## Limitations
 
@@ -233,6 +236,10 @@ Although the tool can reach any field in the document hiearchy, it cannot encryp
   That's to avoid confusion on which level of the document would be encrypted first and the hassle to handle nested encrypted values.
 
   ## Changelog
+
+  ### 0.4
+  - support for .env files
+  - updated exclude patterns to include **/dist/**
 
   ### 0.3
   - Improved cli experience with better messages

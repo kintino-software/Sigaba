@@ -44,8 +44,8 @@ internal class SigabaFileV1(
             projectId: Guid.NewGuid().ToString("N"),
             publicKey: publicKey,
             fieldRegexPattern: @"^.*_secret$",
-            includeGlob: ["**/*.secrets.json"],
-            excludeGlob: ["**node_modules/**", "**/bin/**", "**/obj/**"]);
+            includeGlob: ["**/*.secrets.json", "**/.env"],
+            excludeGlob: ["**node_modules/**", "**/bin/**", "**/obj/**", "**/dist/**"]);
     }
 
     public static SigabaFileV1 Deserialize(string serialized)

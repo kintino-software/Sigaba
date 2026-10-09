@@ -14,6 +14,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.11" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.11" />
+    <PackageReference Include="Superpower" Version="3.2.1" />
     <PackageReference Include="System.IO.Abstractions" Version="22.2.0" />
   </ItemGroup>
 

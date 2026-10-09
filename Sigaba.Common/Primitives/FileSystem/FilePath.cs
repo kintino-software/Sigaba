@@ -53,4 +53,9 @@ public class FilePath(IFileSystem fs, params string[] parts) : BasePath(fs, part
             throw new FileNotFoundException($"File '{Path}' does not exist.");
         }
     }
+
+    public string GetFileName()
+    {
+        return Fs.Path.GetFileName(Path) ?? throw new InvalidOperationException($"Cannot get file name for file path '{Path}'.");
+    }
 }

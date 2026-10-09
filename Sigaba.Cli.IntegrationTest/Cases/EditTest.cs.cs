@@ -1,4 +1,5 @@
-﻿using Xunit.Abstractions;
+﻿using System.IO.Abstractions.TestingHelpers;
+using Xunit.Abstractions;
 
 namespace Sigaba.Cli.IntegrationTest.Cases;
 
@@ -20,20 +21,17 @@ public class EditTest : BaseTest
     }
 
     [Theory]
-    [InlineData("file1.secrets.json")]
-    [InlineData(".|file1.secrets.json")]
-    [InlineData("subdir1|file1.secrets.json")]
-    [InlineData(".|subdir1|file1.secrets.json")]
-    public async Task Should_edit_and_encrypt_files(string filePath)
+    [InlineData("file1.secrets.json", @"{""foo"": ""bar""}")]
+    [InlineData("dir/file1.secrets.json", @"{""foo"": ""bar""}")]
+    [InlineData("dir/subdir/file1.secrets.json", @"{""foo"": ""bar""}")]
+    [InlineData(".env", "KEY=value")]
+    [InlineData("dir/.env", "KEY=value")]
+    [InlineData("dir/subdir/.env", "KEY=value")]
+    public async Task Should_edit_and_encrypt_files(string filePath, string content)
     {
-        var file1Path = Fs.Path.Combine(filePath.Split('|'));
-        var fileJson = """
-            {
-                "data_secret": 1234,
-                "data_public": "public"
-            }
-            """;
-        Fs.AddFile(file1Path, fileJson);
+        var file1Path = Fs.Path.Combine(filePath);
+        var fileJson = content;
+        Fs.AddFile(file1Path, new MockFileData(fileJson));
         await Encrypt();
 
         var result = await App.RunAsync(["edit", file1Path]);

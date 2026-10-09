@@ -46,6 +46,13 @@ public class DecryptTest : BaseTest
             """;
         Fs.AddFile(path2, new MockFileData(originalContent2));
 
+        var path3 = Fs.Path.Combine(cwd, ".env");
+        var originalContent3 = """
+            KEY1_SECRET=secret value 1         
+            KEY2=normal value 2
+            """;
+        Fs.AddFile(path3, new MockFileData(originalContent3));
+
         await Encrypt();
 
         //
@@ -58,10 +65,12 @@ public class DecryptTest : BaseTest
         result.ExitCode.Should().Be(0);
         Fs.GetFile(path1).TextContents.Should().Be(originalContent1);
         Fs.GetFile(path2).TextContents.Should().Be(originalContent2);
+        Fs.GetFile(path3).TextContents.Should().Be(originalContent3);
         App.Console.ShouldHaveOutputThatMatches("""
-            ^2 file\(s\) affected:$
+            ^3 file\(s\) affected:$
             ^\s\s.*file1\.secrets\.json$
             ^\s\s.*file2\.secrets\.json$
+            ^\s\s.*\.env$
             """);
     }
 

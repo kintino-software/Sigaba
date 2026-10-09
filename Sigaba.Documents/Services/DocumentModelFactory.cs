@@ -1,4 +1,5 @@
 ﻿using Sigaba.Documents.Models;
+using Sigaba.Documents.Services.Env;
 using Sigaba.Documents.Services.Json;
 using Sigaba.Primitives.FileSystem;
 
@@ -8,8 +9,12 @@ internal static class DocumentModelFactory
 {
     public static IDocumentModel GetDocumentModelByFilePath(FilePath filePath)
     {
-        var extensionWithDot = filePath.ExtensionWithDot.ToLower();
+        if (filePath.GetFileName().StartsWith(".env"))
+        {
+            return new EnvDocumentModel();
+        }
 
+        var extensionWithDot = filePath.ExtensionWithDot.ToLower();
         return extensionWithDot switch
         {
             ".json" => new JsonDocumentModel(),
