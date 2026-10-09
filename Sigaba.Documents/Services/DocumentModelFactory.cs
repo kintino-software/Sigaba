@@ -9,6 +9,7 @@ internal static class DocumentModelFactory
 {
     public static IDocumentModel GetDocumentModelByFilePath(FilePath filePath)
     {
+        // env files could be like: .env, .env.local, .env.development, etc.
         if (filePath.GetFileName().StartsWith(".env"))
         {
             return new EnvDocumentModel();

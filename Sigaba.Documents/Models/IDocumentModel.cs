@@ -4,16 +4,22 @@ namespace Sigaba.Documents.Models;
 /// <summary>
 /// Represents a document model that can be parsed, serialilzed and offers functionality to query its fields.
 /// </summary>
+/// <remarks>
+/// Terminology:<br/>
+/// Field value: the value already parsed as a C# primitive type (int, string, DateTime, etc.)<br/>
+/// Raw field value: the value as it is stored in the document, usually a string representation of the field value.<br/>
+/// What should be encrypted and replaced in the document during encryption operation.<br/>
+/// </remarks>
 internal interface IDocumentModel
 {
     /// <summary>
-    /// Parses the document content and populates the model's fields accordingly.
+    /// Parses the document content and prepare internal state to execute further operations.
     /// </summary>
     /// <param name="documentContent">The content of the document to parse.</param>
     void Parse(string documentContent);
 
     /// <summary>
-    /// Serializes the model's fields into a string representation of the document.
+    /// Serializes the document to it's original form with all operations applied.
     /// </summary>
     /// <returns>The string representation of the document.</returns>
     string Serialize();

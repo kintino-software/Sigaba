@@ -73,7 +73,7 @@ internal class FileCipher(ICipher cipher, ILogger<FileCipher> logger) : IFileCip
     {
         rawValue = null;
 
-        // First try to get the value as string to check if its encrypted or not
+        // First, try to get the value as string to check if its encrypted or not
         // if the value is not even an string, means that is not encrypted.
         // We dont get the raw value at this point because each document would have it's own content formatting
         // and we need an document-agnostic way to check if the value is already encrypted or not.
